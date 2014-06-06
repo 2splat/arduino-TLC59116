@@ -16,8 +16,10 @@
 class TLC59116 {
 
   public:
+    class Scan;
 
-    static bool DEBUG; // default to 0 I think
+    static bool DEBUG; // defaults to "off". Set to 1 to get debug output.
+
     template <typename T> static void debug(T msg) { if (TLC59116::DEBUG) Serial.print(msg);} // and inlined
     template <typename T> static void debug(T msg, int format) { // and inlined
       if (TLC59116::DEBUG) {
@@ -26,6 +28,8 @@ class TLC59116 {
         }
       } 
     static void debug() { if (TLC59116::DEBUG) Serial.println();}
+
+    static const char* Device; // "TLC59116" for printing
 
     // Addresses (7 bits, as per Wire library)
     // 8 addresses are unassigned, +3 more if SUBADR's aren't used
@@ -41,87 +45,73 @@ class TLC59116 {
     static const byte SUBADR3      = Base_Addr + 0x0C; // +0b1100 Programmable Disabled at on/reset
     //                                         + 0x0D  // Unassigned at on/reset
 
+    static const byte Control_Register_Min = 0;
+    static const byte Control_Register_Max = 0x1E; // NB, no 0x1F !
+
+    static boolean reset() {} // Resets all
+    static Scan& scan(void) { // convenince, same as TLC59116::Scan::scanner();
+      return Scan::scanner();
+      };
+
+    // some tests
+    static bool is_device_range_addr(byte address) { return address >= Base_Addr && address <= Max_Addr; } // inline
+    static bool is_SUBADR(byte address) { // inline
+      // does not take into account changing these programmable addresses, nor whether they are enabled
+      return address == SUBADR1 || address == SUBADR2 || address == SUBADR3 ;
+      }
+    static bool is_single_device_addr(byte address) { // inline
+      // Is a single device.
+      // does not take into account programmable addresses, nor whether they are enabled
+      return is_device_range_addr(address) && address != Reset_Addr && address != AllCall_Addr && !is_SUBADR(address);
+      }
+    static bool is_control_register(byte register_num) { // inline
+      return (register_num >= Control_Register_Min && register_num <= Control_Register_Max);
+      }
+    static byte normalize_address(byte address) { return (address <= (Max_Addr-Base_Addr)) ? (Base_Addr+address) : address; }
+
+    // Constructors (plus ::Each, ::Broadcast)
+    // NB: The initial state is "outputs off"
+    TLC59116() {}; // Means first from scanner
+    TLC59116(byte address) {this->_address = normalize_address(address);}
+
+    TLC59116& describe();
+
+    byte address(); // does a lazy init thing for "first"
+
+    // Low Level interface
+    byte control_register(byte register_num); // get. Failure returns 0, set DEBUG=1 and check monitor
+    void control_register(byte register_num, byte data); // set
+    void get_control_registers(byte count, const byte *register_num, byte *data); // get a bunch (more efficient)
+    void set_control_registers(byte count, const byte *register_num, const byte *data); // set a bunch
+
+  private:
+    byte _address; // use the accessor (cf. lazy first)
+    void describe_mode1();
+    void describe_mode2();
+  
+  public:
     class Scan {
       public:
 
-        // We only want one
+        // We only want one scanner
         static Scan& scanner() {static Scan instance; return instance;} // singleton. didn't bother with clone & =
-        Scan& print() {
-          bool has_reset = 0;
-          for (byte i=0; i<this->found; i++) {
-            byte addr = addreses[i];
-            pp("Device at 0x");
-            pp(addr,HEX);
-            pp("/");pp(addr);
-            pp("(");pp(addr-Base_Addr);pp(")");
-            if (addr == Reset_Addr) {
-              pp(" Reset_Addr");
-              }
-            
-          // addresses[0..found] 0xaddr/dec +0x/+dec attributes Reset_Addr SUBADRx AllCall_Addr
-          // note: reset is avail
-          }
-          }
+        Scan& print(); 
 
-        byte is_any() { return found > 0; }
-        byte first_addr() { return found > 0 ? addresses[0] : -1; }
-        bool is_reset_available() {
-          // ...
-          }
-        bool is_AllCall_default() { // is something at the default AllCall_Addr?
-          }
-
-        Scan& rescan() {
-          // Find all the TLC59116 addresses, including broadcast(s)
-          // If group-addresses are turned on, we might get collisions and count them as bad.
-
-          // You should call TLC59116.reset() first (as appropriate),
-          // Otherwise, this reads the current state.
-
-          // See the field list for interesting attributes.
-
-          // this code lifted & adapted from Nick Gammon (written 20th April 2011)
-          // http://www.gammon.com.au/forum/?id=10896&reply=6#reply6
-          // Thanks Nick!
-
-          debug("I2C scanner. Scanning ...");
-
-          byte debug_tried = 0;
-
-          for (byte addr = Base_Addr; addr <= Max_Addr; addr++)
-          {
-            debug_tried++;
-            debug("Try ");debug(addr,HEX);debug();
-
-            // yup, just "ping"
-            Wire.beginTransmission(addr);
-            int stat = Wire.endTransmission(); // the trick is: 0 means "something there"
-
-            if (stat == 0) {
-              this->addresses[ this->found++ ] = addr;
-              debug("got ");debug(addr,HEX);debug();
-
-              delay(10);  // maybe unneeded?
-              } // end of good response
-            else if (stat != 2) {
-              debug("Unexpected stat("); debug(stat); debug(") at address "); debug(addr,HEX); debug();
-              }
-
-          } // end of for loop
-          debug("Checked ");debug(debug_tried);
-          debug(" out of ");debug(Base_Addr,HEX); debug(Max_Addr,HEX);
-          debug();
-          
-          if (this->found) {
-              debug("Found ");
-              debug(this->found);
-              debug(" address(es) that responded.");
-              debug();
+        bool is_any() { return found > 0; }
+        byte first_addr() { // debug message and -1 if none 
+          if (DEBUG) {
+            if ( !is_any() ) { debug("Error: There is no first address for a ");debug(Device);debug(); }
             }
-          else {
-            debug("None found!");
-            }
-        }
+          return is_any() ? addresses[0] : -1; 
+          }
+        bool is_AllCall_default(); // is something at the default AllCall_Addr?
+
+        // Find all the TLC59116 addresses, including broadcast(s)
+        // If group-addresses are turned on, we might get collisions and count them as bad.
+        // You should call TLC59116.reset() first (as appropriate),
+        // Otherwise, this reads the current state.
+        // Scan::scanner.print() is useful with this.
+        Scan& rescan(); 
 
       private:
         Scan() {
@@ -136,39 +126,11 @@ class TLC59116 {
       byte dumy;
       };
 
-    class First;
-
-    class All {
-      byte addresses[14];
+    class Each { // Broadcast doesn't work for read?
+      Scan *scanner; // just use the scanner list
       };
       
-
-    static boolean reset() {}
-    static Scan& scan(void) { // convenince, same as TLC59116::Scan::scanner();
-      return Scan::scanner();
-      };
-    static bool is_device_range_addr(byte address) { return address >= Base_Addr && address <= Max_Addr; } // inline
-    static bool is_SUBADR(byte address) { // inline
-      // does not take into account changing these programmable addresses, nor whether they are enabled
-      return address == SUBADR1 || address == SUBADR2 || address == SUBADR3 ;
-      }
-    static bool is_single_device_addr(byte address) { // inline
-      // Is a single device.
-      // does not take into account programmable addresses, nor whether they are enabled
-      return is_device_range_addr(address) && address != Reset_Addr && address != AllCall_Addr && !is_SUBADR(address);
-      }
-
-    TLC59116() {};
-    TLC59116(byte address) {};
-
-  private:
-    byte address;
 };
-
-class TLC59116::First : public TLC59116 {
-  public:
-  First() {};
-      };
 
 
 #endif
