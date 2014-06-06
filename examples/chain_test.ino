@@ -8,16 +8,20 @@
 
 #define TEST_NUM 1
 
+#include <Wire.h> // FIXME: I get errors in the .h w/o this
 #include <TLC59116.h>
 
 void setup() {
   Serial.begin(9600);
+  TLC59116::DEBUG=1;
 
+  Serial.println("Setup wire...");
+  Wire.begin();
 }
 
 TLC59116::First tlc_first; 
 TLC59116::Broadcast tlc_broadcast; 
-TLC59116 tlcs; // all of them
+TLC59116::All tlcs; // all of them
 TLC59116 tlc(0); // address pins set to 0
 
 int first = 1; // first time in loop for initing
@@ -27,7 +31,7 @@ void loop() {
 
   case 1:
     // Find out that TLC59116's are hooked up and working (and the broadcast addresses).
-    // TLC59116::scan.print();
+    TLC59116::scan().print();
     while(1) {delay(1000);}
     break;
 /*

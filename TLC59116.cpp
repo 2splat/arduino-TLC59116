@@ -1,6 +1,9 @@
 
-#include <TLC5926.h>
+#include <TLC59116.h>
 #include <Wire.h>
+
+bool TLC59116::DEBUG = 0;
+
 /*
 byte Z::scan() {
     };
