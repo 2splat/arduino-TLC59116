@@ -4,6 +4,10 @@
 /*
   In your setup():
     Wire.begin();
+    Serial.init(nnnnn); // if you do DEBUG=1, or use any of the describes
+
+  ?? Does LEDx=GRP+PWM do PWMx * GRPPWM ?
+  ?? What does blinkduty do
 */
 
 #include <Arduino.h>
@@ -31,6 +35,8 @@ class TLC59116 {
 
     static const char* Device; // "TLC59116" for printing
 
+    static const byte Channels = 16; // number of channels
+
     // Addresses (7 bits, as per Wire library)
     // 8 addresses are unassigned, +3 more if SUBADR's aren't used
     // these are defined by the device (datasheet)
@@ -47,6 +53,10 @@ class TLC59116 {
 
     static const byte Control_Register_Min = 0;
     static const byte Control_Register_Max = 0x1E; // NB, no 0x1F !
+    static const byte PWM0_Register = 0x02;
+    static const byte SUBADR1_Register = 0x18;
+    // for LEDx_Register, see Register_Led_State
+
 
     static boolean reset() {} // Resets all
     static Scan& scan(void) { // convenince, same as TLC59116::Scan::scanner();
@@ -69,6 +79,17 @@ class TLC59116 {
       }
     static byte normalize_address(byte address) { return (address <= (Max_Addr-Base_Addr)) ? (Base_Addr+address) : address; }
 
+    // utility
+    static byte LEDx_Register(byte led_num) {
+      // 4 leds per register, 2 bits per led
+      // 0b00 = digital off
+      // 0b01 = digital on
+      // 0b10 = PWM
+      // 0b11 = PWM + GRPPWM
+      static const byte led_register[] = {0x14, 0x15, 0x16, 0x17}; 
+      return led_register[led_num/4];
+      }
+
     // Constructors (plus ::Each, ::Broadcast)
     // NB: The initial state is "outputs off"
     TLC59116() {}; // Means first from scanner
@@ -87,7 +108,11 @@ class TLC59116 {
   private:
     byte _address; // use the accessor (cf. lazy first)
     void describe_mode1();
+    void describe_addresses();
     void describe_mode2();
+    void describe_channels();
+    void describe_iref();
+    void describe_error_flag();
   
   public:
     class Scan {
