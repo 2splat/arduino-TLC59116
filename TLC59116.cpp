@@ -43,6 +43,7 @@ void TLC59116::describe_channels() {
     
     // General/Group
     byte grppwm = control_register(0x12);
+    byte mode1 = control_register(0x00);
     byte mode2 = control_register(0x01);
     bool is_blink = (mode2 && 0x10);
 
@@ -64,9 +65,13 @@ void TLC59116::describe_channels() {
       }
     Serial.print(is_blink ? "" : "(ignored):");
 
-    Serial.println(" for outputs that are GRP");
+    Serial.println(" for outputs that are Gnnn");
     
     Serial.print("Outputs ");
+    Serial.print( (mode1 & 0x10) ? "OFF" : "ON"); // nb. reverse, "OSC"
+    Serial.println();
+    Serial.print("        ");
+
     for(byte led_num=0; led_num < Channels; led_num++) {
         byte led_state = control_register(LEDx_Register(led_num));
         // The led state is groups of 4
@@ -77,19 +82,21 @@ void TLC59116::describe_channels() {
 
             // Digital
             case 0x00:
-                Serial.print("D- ");
+                Serial.print("D-  ");
                 break;
             case 0x01:
-                Serial.print("D+ ");
+                Serial.print("D+  ");
                 break;
 
             // PWM
             case 0x02:
                 pwm_value = control_register(PWM0_Register + led_num);
                 printf0(pwm_value);
+                Serial.print(" ");
                 break;
             case 0x03:
-                Serial.print("GRP");
+                Serial.print("G");
+                printf0(pwm_value);
                 break;
             }
 
@@ -104,15 +111,19 @@ void TLC59116::describe_channels() {
     }
 
 void TLC59116::describe_addresses() {
+  byte mode1 = control_register(0x00);
   byte the_addr;
 
   the_addr = control_register(0x1B);
   // Internal addresses are 7:1, with bit 0=r/w
-  Serial.print("ALLCALL(0x");Serial.print(the_addr >> 1,HEX);Serial.print(") ");
+  Serial.print(mode1 & 0x01 ? "+" : "-");
+  Serial.print("AllCall(0x");Serial.print(the_addr >> 1,HEX);Serial.print(") ");
 
   for(byte i = 0; i<3; i++) {
       the_addr = control_register(SUBADR1_Register + i);
-      Serial.print("SUBADDR"); Serial.print(i+1); Serial.print("(0x");
+      // mode bit is 2,4,8 for enable
+      Serial.print(mode1 & (2<<1) ? "+" : "-");
+      Serial.print("SUBADR"); Serial.print(i+1); Serial.print("(0x");
       Serial.print(the_addr >> 1, HEX); Serial.print(") ");
       }
   Serial.println();
@@ -131,17 +142,21 @@ void TLC59116::describe_iref() {
     }
 
 void TLC59116::describe_error_flag() {
+    byte mode2 = control_register(0x01);
     byte value;
     // format same as channels
 
     Serial.print("Errors  ");
+    Serial.print((mode2 & 0x80) ? "clear" : "enabled"); // EFCLR
+    Serial.println();
+    Serial.print("        ");
 
     // 8 channels per register
     for(byte i=0;i<=1;i++) {
         value = control_register(0x1D + i);
         // Each bit is a channel
         for(byte bit_num=0; bit_num<=7; bit_num++) {
-            Serial.print( (value & (1<<bit_num)) ? "1   " : "0   ");
+            Serial.print( (value & (1<<bit_num)) ? "1    " : "0    ");
             // format
             if (bit_num % 4 == 3 && !(bit_num==7 && i==1)) {Serial.println(); Serial.print("        ");}
             }
@@ -160,12 +175,12 @@ TLC59116& TLC59116::describe() {
   // We could get all the registers at once, and pass each value into describe_x's
   // But, efficiency isn't exactly important here. (We Serial.print!)
   // Not in register # order, but...
-  describe_mode1();
+  describe_iref();
+  describe_mode1(); // FIXME: collapse into describe_addresses(), + osc=on/off & autoincrement mode
   describe_addresses();
   describe_mode2();
   describe_channels();
   describe_error_flag();
-  describe_iref();
 
   return *this;
   }
@@ -173,16 +188,12 @@ TLC59116& TLC59116::describe() {
 void TLC59116::describe_mode1() {
     byte value = control_register(0x00);
     
-    Serial.print("MODE1");Serial.print(" 0x");Serial.print(value,HEX);Serial.print(" ");
-    
-    Serial.print( (value & 0x01) ? "+AllCall" : "-AllCall");
-    Serial.print( (value & 0x02) ? "+SUBADR3" : "-SUBADR3");
-    Serial.print( (value & 0x04) ? "+SUBADR2" : "-SUBADR2");
-    Serial.print( (value & 0x08) ? "+SUBADR1" : "-SUBADR1");
-    Serial.print( (value & 0x10) ? "-OSC" : "+OSC"); // nb. reverse
+    // Let describe_addresses() do the addr enable bits
 
+    // Serial.print("MODE1");Serial.print(" 0x");Serial.print(value,HEX);Serial.print(" ");
+    
     if (value & 0x80) {
-        Serial.print("+AutoIncrement");
+        Serial.print(" +AutoIncrement ");
         switch (value & 0xE0) {
             case 0x80:
                 break;
@@ -196,7 +207,7 @@ void TLC59116::describe_mode1() {
                 break;
             }
     } else {
-        Serial.print("-AutoIncrement");
+        Serial.print(" -AutoIncrement");
         }
 
     Serial.println();
@@ -205,10 +216,8 @@ void TLC59116::describe_mode1() {
 void TLC59116::describe_mode2() {
     byte value = control_register(0x01);
     
-    Serial.print("MODE2");Serial.print(" 0x");Serial.print(value,HEX);Serial.print(" ");
-    Serial.print("Latch(");Serial.print((value & 0x04) ? "ACK)" : "Stop)"); // OCH
-    Serial.print(", GRP=");Serial.print((value & 0x10) ? "blink" : "PWM"); // DMBLNK
-    Serial.print(", Error ");Serial.print((value & 0x80) ? "clear" : "enable"); // EFCLR
+    // Serial.print("MODE2");Serial.print(" 0x");Serial.print(value,HEX);Serial.print(" ");
+    Serial.print("Latch on ");Serial.print((value & 0x04) ? "ACK" : "Stop"); // OCH
     Serial.println();
     }
 

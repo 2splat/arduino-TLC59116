@@ -8,6 +8,7 @@
 
   ?? Does LEDx=GRP+PWM do PWMx * GRPPWM ?
   ?? What does blinkduty do
+  ?? What does a read on AllCall get?
 */
 
 #include <Arduino.h>
@@ -70,14 +71,20 @@ class TLC59116 {
       return address == SUBADR1 || address == SUBADR2 || address == SUBADR3 ;
       }
     static bool is_single_device_addr(byte address) { // inline
-      // Is a single device.
+      // Is a single device: not AllCall,Reset,or SUBADRx
       // does not take into account programmable addresses, nor whether they are enabled
       return is_device_range_addr(address) && address != Reset_Addr && address != AllCall_Addr && !is_SUBADR(address);
       }
     static bool is_control_register(byte register_num) { // inline
       return (register_num >= Control_Register_Min && register_num <= Control_Register_Max);
       }
-    static byte normalize_address(byte address) { return (address <= (Max_Addr-Base_Addr)) ? (Base_Addr+address) : address; }
+    static byte normalize_address(byte address) { 
+      return 
+        (address <= (Max_Addr-Base_Addr))  // 0..13 shorthand for 0x60..0x6D
+        ? (Base_Addr+address) 
+        : address
+        ;
+      }
 
     // utility
     static byte LEDx_Register(byte led_num) {
@@ -93,7 +100,15 @@ class TLC59116 {
     // Constructors (plus ::Each, ::Broadcast)
     // NB: The initial state is "outputs off"
     TLC59116() {}; // Means first from scanner
-    TLC59116(byte address) {this->_address = normalize_address(address);}
+    TLC59116(byte address) {
+      this->_address = normalize_address(address);
+      if (DEBUG) { 
+        if (_address == Reset_Addr) {
+          debug("You made a ");debug(Device);debug(" with the Reset address, ");
+          debug(Reset_Addr,HEX);debug(": that's not going to work.");debug();
+          }
+        }
+      }
 
     TLC59116& describe();
 
@@ -123,11 +138,16 @@ class TLC59116 {
         Scan& print(); 
 
         bool is_any() { return found > 0; }
-        byte first_addr() { // debug message and -1 if none 
-          if (DEBUG) {
-            if ( !is_any() ) { debug("Error: There is no first address for a ");debug(Device);debug(); }
+        byte first_addr() { // debug message and 0xff if none 
+          // return a good address or fall through
+          for(byte i=0; i<found; i++) {
+            if (is_single_device_addr(addresses[i])) return addresses[i]; 
             }
-          return is_any() ? addresses[0] : -1; 
+
+          if (DEBUG) {
+            debug("Error: There is no first address for a ");debug(Device);debug();
+            }
+          return 0xff;
           }
         bool is_AllCall_default(); // is something at the default AllCall_Addr?
 

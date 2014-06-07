@@ -8,7 +8,7 @@
 
 #define TEST_NUM 1
 
-#include <Wire.h> // FIXME: I get errors in the .h w/o this
+#include <Wire.h>
 #include <TLC59116.h>
 
 void setup() {
@@ -18,10 +18,16 @@ void setup() {
 
 }
 
-TLC59116 tlc_first;  // First
-TLC59116::Broadcast tlc_broadcast; 
+// Addresses can be 0x60..0x6D (96..109), or the shorthand 0..13
+// NB: 0x6B (11) is always the Reset_Addr
+// NB: 0x68 is AllCall on power-up.
+// NB: 0x69, 0x6A (10), and 0x6C (12) are the default group-addresses (disabled at power-up)
+TLC59116 tlc_first;  // Lowest address found by a scan: auto!
+TLC59116 tlc(0); // device whose address pins set to 0
+TLC59116 tlc4(4); // device whose address pins set to 4
+TLC59116 tlc5(0x65); // device whose address pins set to 5
 TLC59116::Each tlcs; // each from scanning, but not broadcast
-TLC59116 tlc(0); // address pins set to 0
+TLC59116::Broadcast tlc_broadcast; // everybody-at-once (AllCall), no reading
 
 int first = 1; // first time in loop for initing
 
