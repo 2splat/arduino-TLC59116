@@ -170,6 +170,10 @@ class TLC59116 {
     class Broadcast {
       byte dumy;
       };
+    
+    class Group1 {byte dumy1;};
+    class Group2 {byte dumy1;};
+    class Group3 {byte dumy1;};
 
     class Each { // Broadcast doesn't work for read?
       Scan *scanner; // just use the scanner list

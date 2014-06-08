@@ -146,7 +146,7 @@ void TLC59116::describe_error_flag() {
     byte value;
     // format same as channels
 
-    Serial.print("Errors  ");
+    Serial.print("Errors: ");
     Serial.print((mode2 & 0x80) ? "clear" : "enabled"); // EFCLR
     Serial.println();
     Serial.print("        ");
