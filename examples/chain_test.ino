@@ -9,13 +9,6 @@
 #include <Wire.h>
 #include <TLC59116.h>
 
-void setup() {
-  Serial.begin(9600);
-  TLC59116::DEBUG=1;
-  Wire.begin();
-
-}
-
 // Addresses can be 0x60..0x6D (96..109), or the shorthand 0..13
 // NB: 0x6B (11) is always the Reset_Addr
 // NB: 0x68 is AllCall on power-up.
@@ -28,20 +21,37 @@ TLC59116::Each tlcs; // each from scanning, but not broadcast
 TLC59116::Broadcast tlc_broadcast; // everybody-at-once (AllCall), no reading
 TLC59116::Group1 tlc_group1; // everybody-at-once who is on SUBADR1
 
-int first = 1; // first time in loop for initing
+void setup() {
+  // For debugging output:
+  TLC59116::DEBUG=1;   // change to 0 to skip warnings/etc.
+
+  // This example has the arduino ask you what to do,
+  // (open the serial monitor window).
+  Serial.begin(9600);
+
+  // Must do this for TLC59116 stuff
+  Wire.begin();
+
+  // Reset to power-up defaults. Known state, fix weirdness.
+  TLC59116::reset(); 
+
+  // Outputs are off at power up
+  tlc_first.enable_outputs();
+
+  Serial.print("Send '?' for menu of actions.");
+}
+
 
 void loop() {
   static char test_num = 'i'; // idle pattern
   switch (test_num) {
 
     case 0xff: // prompt
-      Serial.print("Choose: ");
+      Serial.print("Choose (? for help): ");
       test_num = NULL;
       break;
 
     case NULL: // means "done with last, do nothing"
-      while( (test_num = Serial.read()) == -1);
-      Serial.println(test_num);
       break; // do it
 
     case 's':
@@ -56,21 +66,51 @@ void loop() {
       test_num = 0xff;
       break;
 
-    case 'i':
-      Serial.println("Not implemented");
+    case 'r':
+      // Reset all
+      TLC59116::reset();
+      Serial.println("Reset'd");
+
+      tlc_first.reset_shadow_registers();
+      tlc_first.enable_outputs(); // before reset_shadow!
       test_num = 0xff;
       break;
 
+    case 'b':
+      // blink led 0 a couple of times
+      for(int i =0; i < 4; i++) {
+        tlc_first.on(0).delay(100)
+        .off(0).delay(200)
+        ;
+        }
 
-  /*
-    // on/off simple
-    case 2:
-      tlc.all(HIGH)->delay(900)
-        ->all(LOW)->delay(100)
-          ;        
+      Serial.print("Blinked LED 0 of device # ");Serial.println(TLC59116::Base_Addr - tlc_first.address());
+      test_num = 0xff;
       break;
 
-      // OE test - Should turn on/off & PWM dim
+    case 'i':
+      next_idle_state();
+      break;
+
+    case 'w':
+      next_hump_state();
+      break;
+
+    case 'S':
+      for (byte i=0; i <= TLC59116::Control_Register_Max; i++) {
+        Serial.print("@");Serial.print(i);Serial.print(" 0x");Serial.println(tlc_first.shadow_registers[i],HEX);
+        }
+      test_num = 0xff;
+      break;
+
+    case 'o':
+      for (byte i=0; i< 16;i++) {
+        tlc_first.pwm(i, 50);
+        }
+      test_num = 0xff;
+      break;
+
+  /*
     case 3:
 
       if (first) { 
@@ -210,13 +250,67 @@ void loop() {
       Serial.println("i Example blinking (idle)");
       Serial.println("s Scan for addresses");
       Serial.println("d Describe first TLC59116");
+      Serial.println("S dump Shadow registers of first");
+      Serial.println("r Reset all TCL59116 to power up");
+      Serial.println("b Blink led 0 of first TLC59116 a few times");
+      Serial.println("w Wave chased around.");
+      Serial.println("o all On (dim)");
 
       Serial.println("? Prompt again");
       test_num = 0xFF; // prompt
     }
 
-  first = 0;
+  // Change test_num?
+  if (Serial.available() > 0) {
+    test_num = Serial.read();
+    Serial.println(test_num);
+    }
+
 }          
+
+void next_idle_state() {
+  // progress through the idle blinky pattern
+  const unsigned long speed = 50; // time between changing. actually "slowness"
+  static unsigned long last_time = 0;
+  static byte chase_i = 0;
+
+  if (last_time == 0) Serial.println("Idling...");
+
+  // time for next ?
+  unsigned long now = millis();
+  if (now > last_time + speed) {
+    // 2 calls isn't that inefficient...
+    tlc_first.on(chase_i)
+    .off((chase_i + 15) % 16); // turn off the last one
+    chase_i = (chase_i + 1) % 16; // 0..15
+    last_time = now;
+    }
+  }
+
+void next_hump_state() {
+  // 6 leds 80,160,240,160,80 that chase around
+  const unsigned long speed = 50; // time between changing. actually "slowness"
+  static unsigned long last_time = 0;
+  static byte chase_i = 0;
+  static const byte hump[] = { 0,10,80,255,80,10,0 };
+
+  // time for next ?
+  unsigned long now = millis();
+  if (now > last_time + speed) {
+    // Serial.print("at ");Serial.print((chase_i+3) % 16);Serial.print(" ");
+    tlc_first.g_start();
+    for (char i = -3; i <= 3; i++) {
+      byte led_num = (chase_i + 3 + i) % 16;
+      byte pwm =  hump[i + 3];
+      // Serial.print(pwm);Serial.print(" ");
+      tlc_first.g_pwm(led_num, pwm);
+      }
+    // Serial.println("Doit");
+    tlc_first.g_doit();
+    chase_i = (chase_i + 1) % 16; // 0..15
+    last_time = now;
+    }
+  }
 
 
 

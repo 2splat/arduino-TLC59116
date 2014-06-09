@@ -9,6 +9,7 @@
   ?? Does LEDx=GRP+PWM do PWMx * GRPPWM ?
   ?? What does blinkduty do
   ?? What does a read on AllCall get?
+  !! Seeing a flicker when pwm is low (50?), and somehting is digital blink, try wb
 */
 
 #include <Arduino.h>
@@ -52,14 +53,20 @@ class TLC59116 {
     static const byte SUBADR3      = Base_Addr + 0x0C; // +0b1100 Programmable Disabled at on/reset
     //                                         + 0x0D  // Unassigned at on/reset
 
+    // Control Registers
     static const byte Control_Register_Min = 0;
     static const byte Control_Register_Max = 0x1E; // NB, no 0x1F !
+    static const byte MODE1_Register = 0x00;
+    static const byte MODE1_OSC_mask = 0b10000;
+    static const byte MODE2_Register = 0x01;
     static const byte PWM0_Register = 0x02;
     static const byte SUBADR1_Register = 0x18;
     // for LEDx_Register, see Register_Led_State
+    static const byte EFLAG_Register = 0x1d;
+
+    static const byte LEDx_Max = 15; // 0..15
 
 
-    static boolean reset() {} // Resets all
     static Scan& scan(void) { // convenince, same as TLC59116::Scan::scanner();
       return Scan::scanner();
       };
@@ -78,6 +85,9 @@ class TLC59116 {
     static bool is_control_register(byte register_num) { // inline
       return (register_num >= Control_Register_Min && register_num <= Control_Register_Max);
       }
+    static byte is_valid_led(byte v) { return v <= LEDx_Max; };
+
+    // utility
     static byte normalize_address(byte address) { 
       return 
         (address <= (Max_Addr-Base_Addr))  // 0..13 shorthand for 0x60..0x6D
@@ -85,21 +95,28 @@ class TLC59116 {
         : address
         ;
       }
-
-    // utility
     static byte LEDx_Register(byte led_num) {
       // 4 leds per register, 2 bits per led
       // 0b00 = digital off
       // 0b01 = digital on
       // 0b10 = PWM
       // 0b11 = PWM + GRPPWM
-      static const byte led_register[] = {0x14, 0x15, 0x16, 0x17}; 
-      return led_register[led_num/4];
+      // registers are: {0x14, 0x15, 0x16, 0x17}; 
+      return (byte)0x14 + (led_num >> 2); // int(led_num/4)
       }
+    static byte PWMx_Register(byte led_num) { return PWM0_Register + led_num; }
+
+    // LED register bits
+    static byte LEDx_Register_mask(byte led_num) { return 0b11 << (2 * (led_num % 4)); }
+    static byte LEDx_bits(byte led_num, byte register_value) {  return register_value & (0b11 << ((led_num % 4)* 2)); }
+    static byte LEDx_pwm(byte led_num) {return 0b10 << (2 * (led_num % 4));} // the 2 bits in the LEDx_Register
+    static byte LEDx_gpwm(byte led_num) {return 0b11 << (2 * (led_num % 4));} // the 2 bits in the LEDx_Register
+    static byte LEDx_digital_off(byte led_num) { return 0; }; // no calc needed
+    static byte LEDx_digital_on(byte led_num) {  return 0b01 << (2 * (led_num % 4)); }
 
     // Constructors (plus ::Each, ::Broadcast)
     // NB: The initial state is "outputs off"
-    TLC59116() {}; // Means first from scanner
+    TLC59116() { reset_shadow_registers(); }; // Means first from scanner
     TLC59116(byte address) {
       this->_address = normalize_address(address);
       if (DEBUG) { 
@@ -108,27 +125,73 @@ class TLC59116 {
           debug(Reset_Addr,HEX);debug(": that's not going to work.");debug();
           }
         }
+      reset_shadow_registers();
       }
 
-    TLC59116& describe();
+    // reset all TLC59116's to power-up values. 
+    // 0 means it worked, 2 means nobody there, others?
+    static int reset(); 
 
+    TLC59116& describe();
+    TLC59116& enable_outputs(bool yes = true); // enables w/o arg, use false for disable
+
+    TLC59116& on(byte led_num, bool yes = true); // turns the led on, false turns it off
+    TLC59116& off(byte led_num) { return on(led_num, false); } // convenience
+    TLC59116& pwm(byte led_num, byte value) { 
+      Wire.beginTransmission(this->address());
+      g_pwm(led_num, value);
+      _end_trans();
+      return *this;
+      }
+
+    TLC59116& delay(int msec) { ::delay(msec); return *this;} // convenience
+
+    // "grouped" versions. End a group with g_doit();
+    // Less overhead for communication. 
+    // All of the commands take effect at doit() time, if "latch on stop".
+    TLC59116& g_start() {Wire.beginTransmission(this->address()); return *this;}
+    TLC59116& g_pwm(byte led_num, byte value); // 0..255
+    int g_doit() {return _end_trans();} // returns 0 for success
+
+
+    TLC59116& reset_shadow_registers(); // reset to the power up values
     byte address(); // does a lazy init thing for "first"
 
-    // Low Level interface
+    // Low level interface: Modifies only those bits of interest
+    // Keeps a "shadow" of the control registers.
+    // Assumes power-up-reset to start with, or call .update_shadows(). # FIXME
+    // Each read via control_register(x) will update the shadow.
+    void modify_control_register(byte register_num, byte mask, byte bits);
+    void modify_control_register(byte register_num, byte value); // whole register
+
+    // Low Level interface: writes bash the whole register
     byte control_register(byte register_num); // get. Failure returns 0, set DEBUG=1 and check monitor
     void control_register(byte register_num, byte data); // set
     void get_control_registers(byte count, const byte *register_num, byte *data); // get a bunch (more efficient)
     void set_control_registers(byte count, const byte *register_num, const byte *data); // set a bunch
 
+    byte shadow_registers[Control_Register_Max + 1];  // FIXME: dumping them, maybe a method?
   private:
     byte _address; // use the accessor (cf. lazy first)
+    byte bracket;
+
     void describe_mode1();
     void describe_addresses();
     void describe_mode2();
     void describe_channels();
     void describe_iref();
     void describe_error_flag();
-  
+    static int _end_trans() {
+      int stat = Wire.endTransmission();
+
+      if (DEBUG) {
+        if (stat != 0) {
+          debug("endTransmission error, = ");debug(stat);debug();
+          }
+        }
+      return stat;
+      }
+
   public:
     class Scan {
       public:
