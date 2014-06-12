@@ -21,6 +21,24 @@ TLC59116::Each tlcs; // each from scanning, but not broadcast
 TLC59116::Broadcast tlc_broadcast; // everybody-at-once (AllCall), no reading
 TLC59116::Group1 tlc_group1; // everybody-at-once who is on SUBADR1
 
+// a little sequential state machine
+// start_sequence sequence(#, fn-name, duration)... end_sequence
+#define start_sequence { \
+  static byte sequence_i = 0; \
+  static unsigned long sequence_next = 0; \
+  if (millis() >= sequence_next) { \
+    Serial.print("Sequence ");Serial.println(sequence_next); \
+    switch (sequence_i) { \
+      case -1 : /* dumy */
+#define sequence(sofar, fn, duration) break; \
+      case sofar : sequence_i++; sequence_next = millis() + duration; (*fn)();
+#define end_sequence \
+      default: sequence_i=0; /* wrap i */ \
+      } \
+    Serial.print("Next seq in ");Serial.println(sequence_next - millis()); \
+    } \
+  }
+
 void setup() {
   // For debugging output:
   TLC59116::DEBUG=1;   // change to 0 to skip warnings/etc.
@@ -110,23 +128,15 @@ void loop() {
       test_num = 0xff;
       break;
 
-  /*
-    case 3:
-
-      if (first) { 
-        tlc.all(HIGH); 
-        tlc.off(); 
-      }
-      Serial.print(first);
-      tlc.on()->delay(900)
-        ->off()->delay(100)
-          ;
-      tlc.on()->delay(500)
-        ->brightness(100)->delay(500)
-          ->brightness(50)->delay(500)
-            ->brightness(10)->delay(500)
-              ;
+    case 'f' :
+      start_sequence
+        sequence(0, flicker_test_reset, 0)
+        sequence(1, on1, 250)
+        sequence(2, off1, 250)
+      end_sequence
       break;
+
+  /*
 
       // LE test - Should have NO flicker
     case 4:
@@ -247,7 +257,7 @@ void loop() {
     default:
       Serial.println();
       Serial.println("Do something:");
-      Serial.println("i Example blinking (idle)");
+      Serial.println("i example blinking (Idle)");
       Serial.println("s Scan for addresses");
       Serial.println("d Describe first TLC59116");
       Serial.println("S dump Shadow registers of first");
@@ -255,6 +265,7 @@ void loop() {
       Serial.println("b Blink led 0 of first TLC59116 a few times");
       Serial.println("w Wave chased around.");
       Serial.println("o all On (dim)");
+      Serial.println("f Flicker test (bug)");
 
       Serial.println("? Prompt again");
       test_num = 0xFF; // prompt
@@ -268,6 +279,19 @@ void loop() {
 
 }          
 
+void flicker_test_reset() {
+  const byte pwm_bug_level = 20;
+  static char pwm_number = 15;
+
+  for (byte i=1; i<= pwm_number; i++) { // leave #1 alone
+    tlc_first.pwm(i, pwm_bug_level);
+    }
+  pwm_number = (pwm_number - 1 ) % 16;
+  }
+
+void on1() { tlc_first.on(1); }
+void off1() { tlc_first.off(1); }
+  
 void next_idle_state() {
   // progress through the idle blinky pattern
   const unsigned long speed = 50; // time between changing. actually "slowness"

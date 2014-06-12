@@ -377,7 +377,7 @@ TLC59116::Scan& TLC59116::Scan::rescan() {
   // http://www.gammon.com.au/forum/?id=10896&reply=6#reply6
   // Thanks Nick!
 
-  debug("I2C scanner. Scanning ...");
+  debug("I2C scanner. Scanning ...");debug();
 
   byte debug_tried = 0;
 
