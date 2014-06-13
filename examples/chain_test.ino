@@ -22,20 +22,20 @@ TLC59116::Broadcast tlc_broadcast; // everybody-at-once (AllCall), no reading
 TLC59116::Group1 tlc_group1; // everybody-at-once who is on SUBADR1
 
 // a little sequential state machine
-// start_sequence sequence(#, fn-name, duration)... end_sequence
+// start_sequence sequence(#, fn(), delay)... end_sequence
 #define start_sequence { \
   static byte sequence_i = 0; \
   static unsigned long sequence_next = 0; \
   if (millis() >= sequence_next) { \
-    Serial.print("Sequence ");Serial.println(sequence_next); \
+    /* Serial.print(F("Sequence "));Serial.println(sequence_i); */ \
     switch (sequence_i) { \
       case -1 : /* dumy */
-#define sequence(sofar, fn, duration) break; \
-      case sofar : sequence_i++; sequence_next = millis() + duration; (*fn)();
+#define sequence(sofar, fn, delay_millis) break; \
+      case sofar : sequence_i++; sequence_next = millis() + delay_millis; fn;
 #define end_sequence \
       default: sequence_i=0; /* wrap i */ \
       } \
-    Serial.print("Next seq in ");Serial.println(sequence_next - millis()); \
+    /* Serial.print(F("Next seq in "));Serial.println(sequence_next - millis()); */ \
     } \
   }
 
@@ -130,9 +130,13 @@ void loop() {
 
     case 'f' :
       start_sequence
-        sequence(0, flicker_test_reset, 0)
-        sequence(1, on1, 250)
-        sequence(2, off1, 250)
+        sequence(0, flicker_test_reset(), 0)
+        sequence(1, on1(), 250)
+        sequence(2, off1(), 250)
+        sequence(3, on1(), 250)
+        sequence(4, off1(), 250)
+        sequence(5, on1(), 250)
+        sequence(6, off1(), 250)
       end_sequence
       break;
 
@@ -256,18 +260,18 @@ void loop() {
 
     default:
       Serial.println();
-      Serial.println("Do something:");
-      Serial.println("i example blinking (Idle)");
-      Serial.println("s Scan for addresses");
-      Serial.println("d Describe first TLC59116");
-      Serial.println("S dump Shadow registers of first");
-      Serial.println("r Reset all TCL59116 to power up");
-      Serial.println("b Blink led 0 of first TLC59116 a few times");
-      Serial.println("w Wave chased around.");
-      Serial.println("o all On (dim)");
-      Serial.println("f Flicker test (bug)");
+      Serial.println(F("Do something:"));
+      Serial.println(F("i example blinking (Idle)"));
+      Serial.println(F("s Scan for addresses"));
+      Serial.println(F("d Describe first TLC59116"));
+      Serial.println(F("S dump Shadow registers of first"));
+      Serial.println(F("r Reset all TCL59116 to power up"));
+      Serial.println(F("b Blink led 0 of first TLC59116 a few times"));
+      Serial.println(F("w Wave chased around."));
+      Serial.println(F("o all On (dim)"));
+      Serial.println(F("f Flicker test (bug)"));
 
-      Serial.println("? Prompt again");
+      Serial.println(F("? Prompt again"));
       test_num = 0xFF; // prompt
     }
 
@@ -281,10 +285,11 @@ void loop() {
 
 void flicker_test_reset() {
   const byte pwm_bug_level = 20;
-  static char pwm_number = 15;
+  static byte pwm_number = 15;
 
-  for (byte i=1; i<= pwm_number; i++) { // leave #1 alone
-    tlc_first.pwm(i, pwm_bug_level);
+  for (byte i=1; i <= 15; i++) { // leave #1 alone
+    if (i <= pwm_number) tlc_first.pwm(i, pwm_bug_level);
+    else tlc_first.off(i);
     }
   pwm_number = (pwm_number - 1 ) % 16;
   }

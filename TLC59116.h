@@ -6,10 +6,20 @@
     Wire.begin();
     Serial.init(nnnnn); // if you do DEBUG=1, or use any of the describes
 
+  FIXME: the g_pwm should do .write w/o start/end in control_register(..)
+
   ?? Does LEDx=GRP+PWM do PWMx * GRPPWM ?
   ?? What does blinkduty do
   ?? What does a read on AllCall get?
-  !! Seeing a flicker when pwm is low (50?), and somehting is digital blink, try wb
+  The TLC59108 is supposedly the same except only 8 channels.
+  !! GRPFREQ has to be programmed to 00h when DMBLNK = 0 (for group pwm)
+      GRPFREQ of n seems to reduce the range by setting (256/(n+1)) = 99% duty cycle
+  !! erratic flashes seen when using GRPPWM and decreasing it over time
+      claimed to happen at same point every time (speed dependant I think)
+  !! I see flickering when: many LEDsi (14) are pwm on fairly dim (20), and I on/off blink another LED.
+      adjustng Vext seems to improve the situation (so, current?)
+      need to try g_pwm & g_on/off (fix them!)
+
 */
 
 #include <Arduino.h>
@@ -121,8 +131,8 @@ class TLC59116 {
       this->_address = normalize_address(address);
       if (DEBUG) { 
         if (_address == Reset_Addr) {
-          debug("You made a ");debug(Device);debug(" with the Reset address, ");
-          debug(Reset_Addr,HEX);debug(": that's not going to work.");debug();
+          debug(F("You made a "));debug(Device);debug(F(" with the Reset address, "));
+          debug(Reset_Addr,HEX);debug(F(": that's not going to work."));debug();
           }
         }
       reset_shadow_registers();
@@ -151,6 +161,7 @@ class TLC59116 {
     // All of the commands take effect at doit() time, if "latch on stop".
     TLC59116& g_start() {Wire.beginTransmission(this->address()); return *this;}
     TLC59116& g_pwm(byte led_num, byte value); // 0..255
+    TLC59116& g_on(byte led_num, bool yes = true); // turns the led on, false turns it off
     int g_doit() {return _end_trans();} // returns 0 for success
 
 
@@ -186,7 +197,7 @@ class TLC59116 {
 
       if (DEBUG) {
         if (stat != 0) {
-          debug("endTransmission error, = ");debug(stat);debug();
+          debug(F("endTransmission error, = "));debug(stat);debug();
           }
         }
       return stat;
@@ -208,7 +219,7 @@ class TLC59116 {
             }
 
           if (DEBUG) {
-            debug("Error: There is no first address for a ");debug(Device);debug();
+            debug(F("Error: There is no first address for a "));debug(Device);debug();
             }
           return 0xff;
           }
