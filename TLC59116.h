@@ -180,6 +180,11 @@ class TLC59116 {
     TLC59116& on(byte led_num, bool yes = true); // turns the led on, false turns it off
     TLC59116& off(byte led_num) { return on(led_num, false); } // convenience
     TLC59116& pwm(byte led_num, byte value); 
+    // timings give 1/2..2millis for bulk, vs. 1..6millis for one-at-time (proportional to ct)
+    // Changing the LEDOUTx registers from digital to pwm seems to add 1/4millis for one-at-a-time
+    //  and about 1/8 millis for bulk.
+    // Seeing quite a bit of variance, first time is slowest (seems to be the "monitor" communications)
+    // The time ratio seems about equal to number of bytes written (~ 50%)
     TLC59116& pwm(byte led_num_start, byte ct, const byte* values); // bulk set
 
     TLC59116& delay(int msec) { ::delay(msec); return *this;} // convenience

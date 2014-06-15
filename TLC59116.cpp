@@ -428,11 +428,11 @@ void TLC59116::update_ledx_registers(byte addr, byte to_what, byte led_start_i, 
     //debug(F("Write ")); debug(change_last_r - change_first_r +1); debug(F(" bytes of data")); debug();
     _begin_trans(addr, Auto_All, change_first_r);
       //debug("  ");
+      Wire.write(&new_ledx[ change_first_r - LEDOUT0_Register ], change_last_r-change_first_r+1);
       for(; change_first_r <= change_last_r; change_first_r++) {
         byte new_val = new_ledx[ change_first_r - LEDOUT0_Register ];
         shadow_registers[ change_first_r ] = new_val;
         //debug(new_val,BIN);debug(" ");
-        Wire.write(new_val);
         }
       //debug();
     _end_trans();
@@ -452,11 +452,11 @@ TLC59116& TLC59116::pwm(byte led_num_start, byte ct, const byte values[]) {
 
   _begin_trans(addr, Auto_PWM, start_register); 
       //debug("  ");
+      Wire.write(values, ct); // maybe slightly better than individual writes 
       for(byte i=0; i < ct; i++) {
         byte new_val = values[i];
         //debug(new_val); debug(" ");
         shadow_registers[ start_register + i ] = new_val;
-        Wire.write(new_val);
         }
   _end_trans();
   //debug(F("Done pwm values"));debug();
