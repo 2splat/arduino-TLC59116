@@ -21,16 +21,19 @@ inline void printf0(byte v) { // 3 digits
     }
 
 int TLC59116::reset() {
+  // It may appear that a reset looks like Auto_PWM ^ PWMx_Register(3) = 0x5a. But Reset_addr is a special mode.
   Wire.beginTransmission(Reset_Addr);
     Wire.write(0xA5);
     Wire.write(0x5A);
   int rez = _end_trans();
+
   if (DEBUG) { 
     debug("Reset "); 
     if (rez)  { debug("Failed with "); debug(rez); } else { debug("worked!"); } 
     debug();
     }
   // does not "reset" the error_detect
+  return rez;
   }
 
 byte TLC59116::address() {
@@ -86,30 +89,31 @@ void TLC59116::describe_channels() {
         switch (state_bits) {
 
             // Digital
-            case 0b00:
+            case LEDOUT_DigitalOff:
                 Serial.print("D-  ");
                 break;
-            case 0b01:
+            case LEDOUT_DigitalOn:
                 Serial.print("D+  ");
                 break;
 
             // PWM
-            case 0b10:
+            case LEDOUT_PWM:
                 pwm_value = control_register(PWM0_Register + led_num);
                 printf0(pwm_value);
                 Serial.print(" ");
                 break;
             // GPWM
-            case 0b11:
+            case LEDOUT_GRPPWM:
                 Serial.print("G");
+                pwm_value = control_register(PWM0_Register + led_num);
                 printf0(pwm_value);
                 break;
             }
 
         // Groups of 4 per line
         if ((led_num % 4) == 3) {
-            Serial.println(); 
-            if (led_num != 15) Serial.print("        ");
+            Serial.print(" via ");Serial.print(led_state,BIN);Serial.println(); 
+            if (led_num != 15) Serial.print(F("        "));
         } else {
             Serial.print(" ");
         }
@@ -178,11 +182,6 @@ TLC59116& TLC59116::describe() {
   Serial.print(addr);Serial.print("(");Serial.print(addr-Base_Addr);Serial.print(")");
   Serial.println();
 
-  byte *s = this->shadow_registers;
-  byte *b = &this->bracket;
-  Serial.print("Start   0x");Serial.println((unsigned long int)s,HEX);
-  Serial.print("Bracket 0x");Serial.println((unsigned long int)b,HEX);
-
   // We could get all the registers at once, and pass each value into describe_x's
   // But, efficiency isn't exactly important here. (We Serial.print!)
   // Not in register # order, but...
@@ -241,8 +240,8 @@ void TLC59116::control_register(byte register_num, byte data) {
       }
     return;
     }
-    Wire.beginTransmission(address());
-      Wire.write(register_num); 
+    // debug(F("set R "));debug(register_num,HEX);debug("=");debug(data,BIN);debug();
+    _begin_trans(this->address(), register_num); 
       Wire.write(data);
     _end_trans();
   }
@@ -258,8 +257,7 @@ byte TLC59116::control_register(byte register_num) {
     }
     byte addr = address();
 
-    Wire.beginTransmission(addr);
-      Wire.write(register_num); 
+    _begin_trans(addr, register_num); 
     int stat = _end_trans();
 
     int data = 0; // is 0xFF to signal fail better?
@@ -273,21 +271,19 @@ byte TLC59116::control_register(byte register_num) {
 
 void TLC59116::modify_control_register(byte register_num, byte value) {
   shadow_registers[register_num] = value;
+  // debug("CR...");debug();
   control_register(register_num, value);
   }
 
 void TLC59116::modify_control_register(byte register_num, byte mask, byte bits) {
-  byte to_change = mask & bits; // sanity
-  byte unchanged = ~mask & shadow_registers[register_num]; // the bits of interest are 0 here
-  byte new_value = unchanged ^ to_change;
+  byte new_value = set_with_mask(bits, mask, shadow_registers[register_num]);
   /* if (register_num < PWM0_Register || register_num > 0x17) {
-    debug("Modify R");debug(register_num,HEX);debug();
-    debug("       =");debug(shadow_registers[register_num],BIN);debug();
-    debug("       M");debug(mask,BIN);debug();
-    debug("       V");debug(bits,BIN);debug();
-    debug("       =");debug(new_value,BIN);debug();
-    }
-  */
+    debug(F("Modify R"));debug(register_num,HEX);debug();
+    debug(F("       ="));debug(shadow_registers[register_num],BIN);debug();
+    debug(F("       M"));debug(mask,BIN);debug();
+    debug(F("       V"));debug(bits,BIN);debug();
+    debug(F("       ="));debug(new_value,BIN);debug();
+    } */
   shadow_registers[register_num] = new_value;
   control_register(register_num, new_value);
   }
@@ -313,14 +309,14 @@ TLC59116& TLC59116::on(byte led_num, bool yes) {
       debug("  ");
         debug("R ");debug(LEDx_Register(led_num),HEX);
         debug(" M ");debug(LEDx_Register_mask(led_num),HEX);
-        debug(" V ");debug(yes ? LEDx_digital_on(led_num) : (byte) 0x0);
+        debug(" V ");debug(yes ? LEDx_digital_on_bits(led_num) : LEDx_digital_off_bits(led_num));
         debug();
       }
 
     modify_control_register(
       LEDx_Register(led_num),
       LEDx_Register_mask(led_num),
-      yes ? LEDx_digital_on(led_num) : (byte) 0x0
+      yes ? LEDx_digital_on_bits(led_num) : LEDx_digital_off_bits(led_num)
       );
     }
   else {
@@ -329,24 +325,141 @@ TLC59116& TLC59116::on(byte led_num, bool yes) {
   return *this;
   }
 
-TLC59116& TLC59116::g_pwm(byte led_num, byte value) {
-
+TLC59116& TLC59116::pwm(byte led_num, byte value) {
   // put us into pwm mode if we aren't
   byte led_register = LEDx_Register(led_num);
   byte mode_bits = LEDx_bits(led_num, shadow_registers[led_register]);
 
-  if (! (mode_bits == LEDx_pwm(led_num) || mode_bits == LEDx_gpwm(led_num))) {
-    // debug("Switch led to pwm: ");debug(led_num);debug();
+  if (! (mode_bits == LEDx_pwm_bits(led_num) || mode_bits == LEDx_gpwm_bits(led_num))) {
+    // debug(F("Switch led to pwm: "));debug(led_num); debug(" register ");debug(led_register, HEX);debug();
     modify_control_register(
       led_register,
       LEDx_Register_mask(led_num),
-      LEDx_pwm(led_num)
+      LEDx_pwm_bits(led_num)
       );
     }
 
   // we don't try to short-circuit the write based on shadow-registers[]
   // debug("Set ");debug(led_num);debug(" to pwm ");debug(value);debug();
   modify_control_register(PWMx_Register(led_num), value);
+  return *this;
+  }
+
+void TLC59116::update_ledx_registers(byte addr, byte to_what, byte led_start_i, byte led_end_i) {
+  // Update only the LEDx registers that need it
+  // Does wire.begin, write,...,end
+  // (_i = index of a led 0..15, _r is register_number)
+  const byte ledx_first_r = LEDx_Register(led_start_i);
+  const byte ledx_last_r = LEDx_Register(led_end_i);
+  //debug(F("Update control from #"));
+    //debug(led_start_i);debug(F("/C"));debug(ledx_first_r,HEX);
+    //debug(F(" to "));debug(led_end_i);debug(F("/C"));debug(ledx_last_r,HEX);
+    //debug();
+
+  // We need "was" and "new", to detect what changed, so leave shadow_registers alone, copy them
+  byte new_ledx[4]; // the new LEDx_Register values [_r - LEDOUT0_Register]
+
+  // don't necessarily need all 4, but efficient
+  *((unsigned long *) new_ledx) = *((unsigned long *) &(shadow_registers[LEDOUT0_Register])); // 4 bytes
+  //debug(F("Was       ")); for(byte i=0;i<4;i++){ debug(new_ledx[i],BIN); debug(" ");} debug();
+
+  // collect LEDx registers
+
+  // init for first loop
+  byte ledx_i = ledx_first_r - LEDOUT0_Register;
+
+  // accumulate new settings
+  for( byte doing_led_i = led_start_i; doing_led_i <= led_end_i; doing_led_i++) {
+    // ledx_i to track led#
+    ledx_i = LEDx_Register(doing_led_i) - LEDOUT0_Register;
+
+    // update the LEDOUTx bits for the led
+    new_ledx[ledx_i] = set_with_mask(LEDx_mode_bits(doing_led_i, to_what), LEDx_Register_mask(doing_led_i), new_ledx[ledx_i]);
+    }
+  //debug(F("Change to ")); for(byte i=0;i<4;i++){ debug(new_ledx[i],BIN); debug(" ");} debug();
+
+  // "new" is updated, now find the changed ones
+  // (all the following work to write only changed bytes instead of 4. 
+  //  best case is: begin, device addr, register, 1 byte, end
+  //  instead of  : begin, device addr, register, byte byte byte byte, end
+  //  which is a _possible_ savings of 3-bytes/24-bits out of 56-bits = 42%
+  //  so, pretty good
+  // )
+  byte change_first_r; // an LEDOUTx register num
+  bool has_change_first = false;
+
+  for (byte r = ledx_first_r; r <= ledx_last_r; r++) {
+    if (new_ledx[r - LEDOUT0_Register] != shadow_registers[r]) {
+      change_first_r = r;
+      has_change_first = true;
+      break; // done if we found one
+      }
+    }
+  // if (!has_change_first) {debug("No Diff");debug();}
+
+  // Write the data
+
+  if (has_change_first) { // might be "none changed"
+    //// DEBUG
+    //debug("Diff F... ");
+    //for(byte r = LEDOUT0_Register; r < change_first_r; r++) debug("           ");
+    //for(byte r = change_first_r; r < 4 + LEDOUT0_Register; r++) { debug(new_ledx[r - LEDOUT0_Register],BIN);debug(" "); }
+    //debug();
+    //// DEBUG
+  
+
+    byte change_last_r;
+
+    // Find last
+    for(byte r = ledx_last_r; ; r--) { // we know we'll hit change_first_r
+      if (new_ledx[r - LEDOUT0_Register] != shadow_registers[r]) {
+        change_last_r = r;
+        break; // done if we found one. it might be change_first_r
+        }
+      }
+    //// DEBUG
+    //debug("Diff      ");
+    //for(byte r = LEDOUT0_Register; r < change_first_r; r++) debug("           ");
+    //for(byte r = change_first_r; r <= change_last_r; r++) { debug(new_ledx[r - LEDOUT0_Register],BIN);debug(" "); }
+    //debug();
+    //// DEBUG
+
+    // We have a first..last, so write them
+    //debug(F("Write ")); debug(change_last_r - change_first_r +1); debug(F(" bytes of data")); debug();
+    _begin_trans(addr, Auto_All, change_first_r);
+      //debug("  ");
+      for(; change_first_r <= change_last_r; change_first_r++) {
+        byte new_val = new_ledx[ change_first_r - LEDOUT0_Register ];
+        shadow_registers[ change_first_r ] = new_val;
+        //debug(new_val,BIN);debug(" ");
+        Wire.write(new_val);
+        }
+      //debug();
+    _end_trans();
+    }
+  }
+
+TLC59116& TLC59116::pwm(byte led_num_start, byte ct, const byte values[]) {
+  byte start_register = PWMx_Register(led_num_start);
+
+  byte addr = this->address(); // force lazy
+
+  //debug(F("For PWM @")); debug(led_num_start); debug(" ");for(byte i=0;i<ct;i++){ debug(values[0]); debug(" ");} debug();
+
+  //debug(F("Start update registers"));debug();
+  update_ledx_registers(addr, LEDOUT_PWM, led_num_start, led_num_start + ct -1);
+  //debug(F("Done update registers"));debug();
+
+  _begin_trans(addr, Auto_PWM, start_register); 
+      //debug("  ");
+      for(byte i=0; i < ct; i++) {
+        byte new_val = values[i];
+        //debug(new_val); debug(" ");
+        shadow_registers[ start_register + i ] = new_val;
+        Wire.write(new_val);
+        }
+  _end_trans();
+  //debug(F("Done pwm values"));debug();
   }
 
 TLC59116& TLC59116::reset_shadow_registers() {

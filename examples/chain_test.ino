@@ -23,6 +23,7 @@ TLC59116::Group1 tlc_group1; // everybody-at-once who is on SUBADR1
 
 // a little sequential state machine
 // start_sequence sequence(#, fn(), delay)... end_sequence
+#define do_sequence_till_input while (Serial.available() == 0) { start_sequence
 #define start_sequence { \
   static byte sequence_i = 0; \
   static unsigned long sequence_next = 0; \
@@ -35,9 +36,10 @@ TLC59116::Group1 tlc_group1; // everybody-at-once who is on SUBADR1
 #define end_sequence \
       default: sequence_i=0; /* wrap i */ \
       } \
-    /* Serial.print(F("Next seq in "));Serial.println(sequence_next - millis()); */ \
+    /* Serial.print(F("Next seq "); Serial.print(sequence_i); Serial.print(F(" in "));Serial.println(sequence_next - millis()); */ \
     } \
   }
+#define end_do_sequence end_sequence }
 
 void setup() {
   // For debugging output:
@@ -59,9 +61,11 @@ void setup() {
   Serial.print("Send '?' for menu of actions.");
 }
 
+const byte hump_values[] = { 0,10,80,255,80,10,0 };
+const unsigned long hump_speed = 50; // time between changing. actually "slowness"
 
 void loop() {
-  static char test_num = 'i'; // idle pattern
+  static char test_num = 'w'; // idle pattern
   switch (test_num) {
 
     case 0xff: // prompt
@@ -114,7 +118,19 @@ void loop() {
       next_hump_state();
       break;
 
-    case 'S':
+    case 'W': // same as 'w' but using bulk
+      // TLC59116::reset();
+      // tlc_first.reset_shadow_registers();
+      tlc_first.enable_outputs(); // before reset_shadow!
+      {
+      byte i;
+      do_sequence_till_input
+        sequence(0, tlc_first.pwm(i++ % 16, sizeof(hump_values), hump_values), hump_speed)
+      end_do_sequence
+      }
+      break;
+
+    case 'S': // dump shadow
       for (byte i=0; i <= TLC59116::Control_Register_Max; i++) {
         Serial.print("@");Serial.print(i);Serial.print(" 0x");Serial.println(tlc_first.shadow_registers[i],HEX);
         }
@@ -122,9 +138,7 @@ void loop() {
       break;
 
     case 'o':
-      for (byte i=0; i< 16;i++) {
-        tlc_first.pwm(i, 50);
-        }
+      all_on_dim();
       test_num = 0xff;
       break;
 
@@ -138,6 +152,41 @@ void loop() {
         sequence(5, on1(), 250)
         sequence(6, off1(), 250)
       end_sequence
+      break;
+
+    case 'B' : // global blink using enable_outputs (OSC)
+      TLC59116::reset();
+      tlc_first.reset_shadow_registers();
+      tlc_first.enable_outputs(); // before reset_shadow!
+      all_on_dim();
+      do_sequence_till_input
+        sequence(0, tlc_first.enable_outputs(), 500)
+        sequence(1, tlc_first.enable_outputs(false), 500)
+      end_do_sequence
+      test_num = 0xff;
+      break;
+    
+    case 'x' :
+      tlc_first.pwm(0,50);
+      test_num = 0xff;
+      break;
+
+    case 'P' : // "bulk" pwm
+      TLC59116::debug("Try bin ");TLC59116::debug(0b10101010,BIN);TLC59116::debug();
+      // TLC59116::reset();
+      // tlc_first.reset_shadow_registers();
+      tlc_first.enable_outputs(); // before reset_shadow!
+      do_sequence_till_input
+        sequence(0, tlc_first.pwm(0,4,(byte[]) {100,100,100,100}), 500);
+        sequence(1, tlc_first.pwm(8,4,(byte[]) {100,100,100,100}), 500);
+        sequence(2, tlc_first.pwm(4,4,(byte[]) {100,100,100,100}), 500);
+        sequence(3, tlc_first.pwm(12,4,(byte[]) {100,100,100,100}), 500);
+        sequence(4, tlc_first.pwm(0,4,(byte[]) {0,0,0,0}), 500);
+        sequence(5, tlc_first.pwm(8,4,(byte[]) {0,0,0,0}), 500);
+        sequence(6, tlc_first.pwm(4,4,(byte[]) {0,0,0,0}), 500);
+        sequence(7, tlc_first.pwm(12,4,(byte[]) {0,0,0,0}), 500);
+      end_do_sequence
+      test_num = 0xff;
       break;
 
   /*
@@ -268,8 +317,11 @@ void loop() {
       Serial.println(F("r Reset all TCL59116 to power up"));
       Serial.println(F("b Blink led 0 of first TLC59116 a few times"));
       Serial.println(F("w Wave chased around."));
+      Serial.println(F("W Same using bulk write"));
+      Serial.println(F("P PWM of groups using bulk write"));
       Serial.println(F("o all On (dim)"));
       Serial.println(F("f Flicker test (bug)"));
+      Serial.println(F("B Global blink"));
 
       Serial.println(F("? Prompt again"));
       test_num = 0xFF; // prompt
@@ -318,28 +370,28 @@ void next_idle_state() {
 
 void next_hump_state() {
   // 6 leds 80,160,240,160,80 that chase around
-  const unsigned long speed = 50; // time between changing. actually "slowness"
   static unsigned long last_time = 0;
   static byte chase_i = 0;
-  static const byte hump[] = { 0,10,80,255,80,10,0 };
 
   // time for next ?
   unsigned long now = millis();
-  if (now > last_time + speed) {
+  if (now > last_time + hump_speed) {
     // Serial.print("at ");Serial.print((chase_i+3) % 16);Serial.print(" ");
-    tlc_first.g_start();
     for (char i = -3; i <= 3; i++) {
       byte led_num = (chase_i + 3 + i) % 16;
-      byte pwm =  hump[i + 3];
+      byte pwm =  hump_values[i + 3];
       // Serial.print(pwm);Serial.print(" ");
-      tlc_first.g_pwm(led_num, pwm);
+      tlc_first.pwm(led_num, pwm);
       }
     // Serial.println("Doit");
-    tlc_first.g_doit();
     chase_i = (chase_i + 1) % 16; // 0..15
     last_time = now;
     }
   }
 
 
-
+void all_on_dim() {
+  for (byte i=0; i< 16;i++) {
+    tlc_first.pwm(i, 50);
+    }
+  }

@@ -6,8 +6,12 @@
     Wire.begin();
     Serial.init(nnnnn); // if you do DEBUG=1, or use any of the describes
 
-  FIXME: the g_pwm should do .write w/o start/end in control_register(..)
-
+  FIXME: bulk pwm needs to deal with modulus 16 for LEDOUTx
+  FIXME: rewrite whole thing:
+    singleton TLC
+      tracks all, maybe pointers? 14 bytes vs 56, but easier to do id?
+    an each {:addr=>x} using the singleton
+    so reset does right thing, and other global state
   ?? Does LEDx=GRP+PWM do PWMx * GRPPWM ?
   ?? What does blinkduty do
   ?? What does a read on AllCall get?
@@ -39,8 +43,17 @@ class TLC59116 {
     template <typename T> static void debug(T msg) { if (TLC59116::DEBUG) Serial.print(msg);} // and inlined
     template <typename T> static void debug(T msg, int format) { // and inlined
       if (TLC59116::DEBUG) {
-        if (format == HEX) Serial.print("0x"); // so tired
-        Serial.print(msg, format); 
+        if (format == BIN) {
+          Serial.print(F("0b")); // so tired
+          for(byte i=0; i < 8; i++) {
+            Serial.print( (msg & (0b10000000)) ? "1" : "0");
+            msg = msg << 1;
+            }
+          }
+        else {
+          if (format == HEX) Serial.print(F("0x")); // so tired
+          Serial.print(msg, format); 
+          }
         }
       } 
     static void debug() { if (TLC59116::DEBUG) Serial.println();}
@@ -63,6 +76,14 @@ class TLC59116 {
     static const byte SUBADR3      = Base_Addr + 0x0C; // +0b1100 Programmable Disabled at on/reset
     //                                         + 0x0D  // Unassigned at on/reset
 
+    // Auto-increment mode bits
+    // default is Auto_none, same register can be written to multiple times
+    static const byte Auto_All = 0b10000000; // 0..Control_Register_Max
+    static const byte Auto_PWM = 0b10100000; // PWM0_Register .. +(Channels-1)
+    static const byte Auto_GRP = 0b11000000; // GRPPWM..GRPFREQ
+    static const byte Auto_PWM_GRP = 0b11100000; // PWM0_Register..n, GRPPWM..GRPFREQ
+    // It may appear that a reset looks like Auto_PWM ^ PWMx_Register(3) = 0x5a. But Reset_addr is a special mode.
+
     // Control Registers
     static const byte Control_Register_Min = 0;
     static const byte Control_Register_Max = 0x1E; // NB, no 0x1F !
@@ -70,6 +91,7 @@ class TLC59116 {
     static const byte MODE1_OSC_mask = 0b10000;
     static const byte MODE2_Register = 0x01;
     static const byte PWM0_Register = 0x02;
+    static const byte LEDOUT0_Register = 0x14;
     static const byte SUBADR1_Register = 0x18;
     // for LEDx_Register, see Register_Led_State
     static const byte EFLAG_Register = 0x1d;
@@ -105,24 +127,33 @@ class TLC59116 {
         : address
         ;
       }
+    static byte set_with_mask(byte new_bits, byte mask, byte was) {
+      byte to_change = mask & new_bits; // sanity
+      byte unchanged = ~mask & was; // the bits of interest are 0 here
+      byte new_value = unchanged ^ to_change;
+      return new_value;
+      }
+
     static byte LEDx_Register(byte led_num) {
       // 4 leds per register, 2 bits per led
-      // 0b00 = digital off
-      // 0b01 = digital on
-      // 0b10 = PWM
-      // 0b11 = PWM + GRPPWM
+      // See LEDx_pwm _gpwm _digital... below
       // registers are: {0x14, 0x15, 0x16, 0x17}; 
-      return (byte)0x14 + (led_num >> 2); // int(led_num/4)
+      return LEDOUT0_Register + (led_num >> 2); // int(led_num/4)
       }
     static byte PWMx_Register(byte led_num) { return PWM0_Register + led_num; }
 
     // LED register bits
+    const static byte LEDOUT_PWM = 0b10;
+    const static byte LEDOUT_GRPPWM = 0b11;
+    const static byte LEDOUT_DigitalOn = 0b01;
+    const static byte LEDOUT_DigitalOff = 0b00;
     static byte LEDx_Register_mask(byte led_num) { return 0b11 << (2 * (led_num % 4)); }
     static byte LEDx_bits(byte led_num, byte register_value) {  return register_value & (0b11 << ((led_num % 4)* 2)); }
-    static byte LEDx_pwm(byte led_num) {return 0b10 << (2 * (led_num % 4));} // the 2 bits in the LEDx_Register
-    static byte LEDx_gpwm(byte led_num) {return 0b11 << (2 * (led_num % 4));} // the 2 bits in the LEDx_Register
-    static byte LEDx_digital_off(byte led_num) { return 0; }; // no calc needed
-    static byte LEDx_digital_on(byte led_num) {  return 0b01 << (2 * (led_num % 4)); }
+    static byte LEDx_mode_bits(byte led_num, byte out_mode) { return out_mode << (2 * (led_num % 4));} // 2 bits in a LEDx_Register
+    static byte LEDx_pwm_bits(byte led_num) {return LEDx_mode_bits(led_num, LEDOUT_PWM);}
+    static byte LEDx_gpwm_bits(byte led_num) {return LEDx_mode_bits(led_num, LEDOUT_GRPPWM);}
+    static byte LEDx_digital_off_bits(byte led_num) { return 0; }; // no calc needed (cheating)
+    static byte LEDx_digital_on_bits(byte led_num) {  return LEDx_mode_bits(led_num, LEDOUT_DigitalOn);}
 
     // Constructors (plus ::Each, ::Broadcast)
     // NB: The initial state is "outputs off"
@@ -140,6 +171,7 @@ class TLC59116 {
 
     // reset all TLC59116's to power-up values. 
     // 0 means it worked, 2 means nobody there, others?
+    // You probably want to .reset_shadow_registers() & .enable_outputs() on all objects!
     static int reset(); 
 
     TLC59116& describe();
@@ -147,23 +179,10 @@ class TLC59116 {
 
     TLC59116& on(byte led_num, bool yes = true); // turns the led on, false turns it off
     TLC59116& off(byte led_num) { return on(led_num, false); } // convenience
-    TLC59116& pwm(byte led_num, byte value) { 
-      Wire.beginTransmission(this->address());
-      g_pwm(led_num, value);
-      _end_trans();
-      return *this;
-      }
+    TLC59116& pwm(byte led_num, byte value); 
+    TLC59116& pwm(byte led_num_start, byte ct, const byte* values); // bulk set
 
     TLC59116& delay(int msec) { ::delay(msec); return *this;} // convenience
-
-    // "grouped" versions. End a group with g_doit();
-    // Less overhead for communication. 
-    // All of the commands take effect at doit() time, if "latch on stop".
-    TLC59116& g_start() {Wire.beginTransmission(this->address()); return *this;}
-    TLC59116& g_pwm(byte led_num, byte value); // 0..255
-    TLC59116& g_on(byte led_num, bool yes = true); // turns the led on, false turns it off
-    int g_doit() {return _end_trans();} // returns 0 for success
-
 
     TLC59116& reset_shadow_registers(); // reset to the power up values
     byte address(); // does a lazy init thing for "first"
@@ -178,20 +197,18 @@ class TLC59116 {
     // Low Level interface: writes bash the whole register
     byte control_register(byte register_num); // get. Failure returns 0, set DEBUG=1 and check monitor
     void control_register(byte register_num, byte data); // set
-    void get_control_registers(byte count, const byte *register_num, byte *data); // get a bunch (more efficient)
-    void set_control_registers(byte count, const byte *register_num, const byte *data); // set a bunch
+    void control_register(byte count, const byte *register_num, const byte data[]); // set a bunch FIXME not using...
+    void get_control_registers(byte count, const byte *register_num, byte data[]); // get a bunch (more efficient)
 
-    byte shadow_registers[Control_Register_Max + 1];  // FIXME: dumping them, maybe a method?
-  private:
-    byte _address; // use the accessor (cf. lazy first)
-    byte bracket;
+    static void _begin_trans(byte addr, byte register_num) {
+      Wire.beginTransmission(addr);
+      Wire.write(register_num);
+      }
+    static void _begin_trans(byte addr, byte auto_mode, byte register_num) { // with auto-mode
+      // debug(F("Trans starting at ")); debug(register_num,HEX); debug(F(" mode ")); debug(auto_mode,BIN); debug();
+      _begin_trans(addr, auto_mode ^ register_num); 
+      }
 
-    void describe_mode1();
-    void describe_addresses();
-    void describe_mode2();
-    void describe_channels();
-    void describe_iref();
-    void describe_error_flag();
     static int _end_trans() {
       int stat = Wire.endTransmission();
 
@@ -202,6 +219,20 @@ class TLC59116 {
         }
       return stat;
       }
+
+    byte shadow_registers[Control_Register_Max + 1];  // FIXME: dumping them, maybe a method?
+
+  private:
+    byte _address; // use the accessor (cf. lazy first)
+
+    void describe_mode1();
+    void describe_addresses();
+    void describe_mode2();
+    void describe_channels();
+    void describe_iref();
+    void describe_error_flag();
+
+    void update_ledx_registers(byte addr, byte to_what, byte led_start_i, byte led_end_i);
 
   public:
     class Scan {
@@ -238,7 +269,7 @@ class TLC59116 {
           }
 
         byte found; // number of addresses found
-        byte addresses[14];
+        byte addresses[14]; // reset/all are excluded, so only 16 possible
     };
 
     class Broadcast {
@@ -252,7 +283,6 @@ class TLC59116 {
     class Each { // Broadcast doesn't work for read?
       Scan *scanner; // just use the scanner list
       };
-      
 };
 
 
