@@ -190,42 +190,7 @@ void loop() {
       break;
 
     case 't' :
-      {
-      unsigned long from;
-      unsigned long elapsed;
-
-      Serial.print(F("             "));
-      for(byte ct = 1; ct<=16; ct++) { Serial.print(ct); Serial.print(ct<10 ? " " : "" ); } Serial.println();
-
-      for(byte digital=0; digital<2; digital++) {
-        if(digital) { for(byte i=0; i<16; i++) tlc_first.off(i); }
-        Serial.print(F("Singular pwm "));
-        for(byte ct = 1; ct<=16; ct++) {
-          from = millis();
-          for(byte i=0;i<ct;i++) {
-            tlc_first.pwm(i,80);
-            }
-          elapsed = millis() - from;
-          Serial.print(elapsed);Serial.print(" ");
-          }
-        Serial.print(F("millis"));
-        if (digital) Serial.print(F(" from digital"));
-        Serial.println();
-
-        if(digital) { for(byte i=0; i<16; i++) tlc_first.off(i); }
-        Serial.print(F("Bulk     pwm "));
-        for(byte ct = 1; ct<=16; ct++) {
-          from = millis();
-          tlc_first.pwm(0,ct,(byte[]) {20,30,40,50,60,70,80,90,20,30,40,50,60,70,80,90});
-          elapsed = millis() - from;
-          Serial.print(elapsed);Serial.print(" ");
-          }
-        Serial.print(F("millis"));
-        if (digital) Serial.print(F(" from digital"));
-        Serial.println();
-
-        }
-      }
+      time_each_vs_bulk_pwm();
       test_num = 0xff;
       break;
   /*
@@ -434,3 +399,40 @@ void all_on_dim() {
     tlc_first.pwm(i, 50);
     }
   }
+
+void time_each_vs_bulk_pwm() {
+      unsigned long from;
+      unsigned long elapsed;
+
+      Serial.print(F("             "));
+      for(byte ct = 1; ct<=16; ct++) { Serial.print(ct); Serial.print(ct<10 ? " " : "" ); } Serial.println();
+
+      for(byte digital=0; digital<2; digital++) {
+        if(digital) { for(byte i=0; i<16; i++) tlc_first.off(i); }
+        Serial.print(F("Singular pwm "));
+        for(byte ct = 1; ct<=16; ct++) {
+          from = millis();
+          for(byte i=0;i<ct;i++) {
+            tlc_first.pwm(i,80);
+            }
+          elapsed = millis() - from;
+          Serial.print(elapsed);Serial.print(" ");
+          }
+        Serial.print(F("millis"));
+        if (digital) Serial.print(F(" from digital"));
+        Serial.println();
+
+        if(digital) { for(byte i=0; i<16; i++) tlc_first.off(i); }
+        Serial.print(F("Bulk     pwm "));
+        for(byte ct = 1; ct<=16; ct++) {
+          from = millis();
+          tlc_first.pwm(0,ct,(byte[]) {20,30,40,50,60,70,80,90,20,30,40,50,60,70,80,90});
+          elapsed = millis() - from;
+          Serial.print(elapsed);Serial.print(" ");
+          }
+        Serial.print(F("millis"));
+        if (digital) Serial.print(F(" from digital"));
+        Serial.println();
+
+        }
+      }
