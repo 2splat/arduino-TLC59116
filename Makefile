@@ -6,7 +6,7 @@ arduino_inc_dir := $(arduino_dir)/hardware
 # a=`which arduino` && b=`realpath $$a` && echo `dirname $$b`/hardware
 
 .PHONY : all
-all : build_dir README.md arduino_$(Device).zip
+all : build_dir README.md ../arduino_$(Device).zip
 
 .PHONY : clean
 clean : build_dir
@@ -45,20 +45,10 @@ zip : ../arduino_$(Device).zip
 	mv build/arduino_$(Device).zip $@
 
 keywords.txt : $(Device).h
-ifndef arduino_dir
-	@echo WARNING: Couldn\'t rebuild $@ because couldn\'t find arduino command
-else ifeq ($(shell which gccxml),)
-	@echo WARNING: Couldn\'t rebuild $@ because couldn\'t find gccxml command
-else ifeq ($(shell which xsltproc),)
-	@echo WARNING: Couldn\'t rebuild $@ because couldn\'t find xsltproc command
+ifeq ($(shell which clang),)
+	@echo WARNING: Couldn\'t rebuild $@ because couldn\'t find clang command
 else
-	echo "-D __COMPILING_AVR_LIBC__=1" > build/$(Device).inc
-	find $(arduino_inc_dir) -name '*.h' | xargs -n 1 dirname |  sort -u | awk '{print "-I"$$0}' >> build/$(Device).inc
-	find $(arduino_dir)/libraries -name '*.h' | xargs -n 1 dirname |  sort -u | awk '{print "-I"$$0}' >> build/$(Device).inc
-	echo $(arduino_dir)/hardware/arduino/cores/arduino/USBAPI.h >> build/$(Device).inc
 	ln -s -f `pwd`/$< build/$(Device).hpp
-	# oh yea, baby, 0bnnn is supposedly good in gcc 4.6, but I guess somebody lied
-	perl -i -p -e 's/(0b[\d+])/oct($$1)/eg' build/$(Device).hpp
-	gccxml --gccxml-gcc-options build/$(Device).inc build/$(Device).hpp -fxml=build/$(Device).h.xml
-	xsltproc --stringparam help_page http://2splat.com/dandelion/reference/arduino-$(Device).html --stringparam class_name $(Device) make_keywords.xsl build/$(Device).h.xml | sort -u > $@
+	clang -cc1 -ast-dump build/$(Device).hpp | perl -n build_tools/keyword_make.pm | sort > $@
+	# Ignore .h not found errors
 endif
