@@ -76,20 +76,18 @@ void loop() {
     case NULL: // means "done with last, do nothing"
       break; // do it
 
-    case 's':
+    case 's': // Scan for addresses
       // Find out that TLC59116's are hooked up and working (and the broadcast addresses).
       TLC59116::scan().print();
       test_num = 0xff; // prompt;
       break;
 
-    case 'd':
-      // Describe first tlc
+    case 'd': // Describe first TLC59116
       tlc_first.describe();
       test_num = 0xff;
       break;
 
-    case 'r':
-      // Reset all
+    case 'r': // Reset all TCL59116 to power up
       TLC59116::reset();
       Serial.println("Reset'd");
 
@@ -98,8 +96,7 @@ void loop() {
       test_num = 0xff;
       break;
 
-    case 'b':
-      // blink led 0 a couple of times
+    case 'b': // Blink led 0 of first TLC59116 a few times
       for(int i =0; i < 4; i++) {
         tlc_first.on(0).delay(100)
         .off(0).delay(200)
@@ -110,15 +107,15 @@ void loop() {
       test_num = 0xff;
       break;
 
-    case 'i':
+    case 'c': // Chase pattern (not pwm)
       next_idle_state();
       break;
 
-    case 'w':
+    case 'w': // Wave chase pattern (pwm)
       next_hump_state();
       break;
 
-    case 'W': // same as 'w' but using bulk
+    case 'W': // Same using bulk write
       // TLC59116::reset();
       // tlc_first.reset_shadow_registers();
       tlc_first.enable_outputs(); // before reset_shadow!
@@ -130,19 +127,19 @@ void loop() {
       }
       break;
 
-    case 'S': // dump shadow
+    case 'S': // dump Shadow registers of first
       for (byte i=0; i <= TLC59116::Control_Register_Max; i++) {
         Serial.print("@");Serial.print(i);Serial.print(" 0x");Serial.println(tlc_first.shadow_registers[i],HEX);
         }
       test_num = 0xff;
       break;
 
-    case 'o':
+    case 'o': // all On (dim)
       all_on_dim();
       test_num = 0xff;
       break;
 
-    case 'f' :
+    case 'f' : // Flicker test (bug)
       start_sequence
         sequence(0, flicker_test_reset(), 0)
         sequence(1, on1(), 250)
@@ -154,7 +151,7 @@ void loop() {
       end_sequence
       break;
 
-    case 'B' : // global blink using enable_outputs (OSC)
+    case 'B' : // Global blink (osc)
       TLC59116::reset();
       tlc_first.reset_shadow_registers();
       tlc_first.enable_outputs(); // before reset_shadow!
@@ -166,12 +163,7 @@ void loop() {
       test_num = 0xff;
       break;
     
-    case 'x' :
-      tlc_first.pwm(0,50);
-      test_num = 0xff;
-      break;
-
-    case 'P' : // "bulk" pwm
+    case 'P' : // Pwm, 4 at a time using bulk
       TLC59116::debug("Try bin ");TLC59116::debug(0b10101010,BIN);TLC59116::debug();
       // TLC59116::reset();
       // tlc_first.reset_shadow_registers();
@@ -189,7 +181,7 @@ void loop() {
       test_num = 0xff;
       break;
 
-    case 't' :
+    case 't' : // Time one-at-a-time vs. bulk, pwm
       time_each_vs_bulk_pwm();
       test_num = 0xff;
       break;
@@ -313,19 +305,21 @@ void loop() {
 
     default:
       Serial.println();
-      Serial.println(F("Do something:"));
-      Serial.println(F("i example blinking (Idle)"));
-      Serial.println(F("s Scan for addresses"));
-      Serial.println(F("d Describe first TLC59116"));
-      Serial.println(F("S dump Shadow registers of first"));
-      Serial.println(F("r Reset all TCL59116 to power up"));
-      Serial.println(F("b Blink led 0 of first TLC59116 a few times"));
-      Serial.println(F("w Wave chased around."));
-      Serial.println(F("W Same using bulk write"));
-      Serial.println(F("P PWM of groups using bulk write"));
-      Serial.println(F("o all On (dim)"));
-      Serial.println(F("f Flicker test (bug)"));
-      Serial.println(F("B Global blink"));
+      // menu made by: make examples/chain_test.ino.menu
+      Serial.println(F("s  Scan for addresses"));
+      Serial.println(F("d  Describe first TLC59116"));
+      Serial.println(F("r  Reset all TCL59116 to power up"));
+      Serial.println(F("b  Blink led 0 of first TLC59116 a few times"));
+      Serial.println(F("c  Chase pattern (not pwm)"));
+      Serial.println(F("w  Wave chase pattern (pwm)"));
+      Serial.println(F("W  Same using bulk write"));
+      Serial.println(F("S  dump Shadow registers of first"));
+      Serial.println(F("o  all On (dim)"));
+      Serial.println(F("f  Flicker test (bug)"));
+      Serial.println(F("B  Global blink (osc)"));
+      Serial.println(F("P  Pwm, 4 at a time using bulk"));
+      Serial.println(F("t  Time one-at-a-time vs. bulk, pwm"));
+            // end-menu
 
       Serial.println(F("? Prompt again"));
       test_num = 0xFF; // prompt
