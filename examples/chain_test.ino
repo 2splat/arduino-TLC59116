@@ -184,6 +184,11 @@ void loop() {
       test_num = 0xff;
       break;
 
+    case 'p' : // Pwm full range
+      pwm_full_range();
+      test_num = 0xff;
+      break;
+
     case 't' : // Time one-at-a-time vs. bulk, pwm
       time_each_vs_bulk_pwm();
       test_num = 0xff;
@@ -433,3 +438,33 @@ void time_each_vs_bulk_pwm() {
 
         }
       }
+
+void pwm_full_range() {
+  // while 0..7 goes up, 8..15 goes down & vice versa
+  const byte size1 = 8;
+  byte direction;
+  byte values[16];
+  unsigned long timer = millis();
+
+  // init
+  for(byte i=0; i < size1; i++) { values[i] = 0; }
+  for(byte i=size1; i<=15; i++) { values[i] = 255; }
+
+  // vary
+  while (Serial.available() == 0) {
+    // Serial.print("Set 0..15 ");for(byte i=0; i<16; i++) {Serial.print(values[i]);Serial.print(" ");}
+    tlc_first.pwm(0,16, values);
+    // Serial.print(" next ");Serial.print(direction);Serial.println();
+
+    if (values[0] >= 255) { direction = -1; }
+    else if (values[0] <= 0) { 
+      Serial.print("Elapsed ");Serial.print(millis()-timer);Serial.println();
+      timer = millis();
+      direction = +1; 
+      }
+
+    for(byte i=0; i < size1; i++) { values[i] += direction; }
+    for(byte i=size1; i<=15; i++) { values[i] -= direction; }
+    
+    }
+  }
