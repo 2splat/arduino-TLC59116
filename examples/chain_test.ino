@@ -168,14 +168,18 @@ void loop() {
       // tlc_first.reset_shadow_registers();
       tlc_first.enable_outputs(); // before reset_shadow!
       do_sequence_till_input
-        sequence(0, tlc_first.pwm(0,4,(byte[]) {100,100,100,100}), 500);
-        sequence(1, tlc_first.pwm(8,4,(byte[]) {100,100,100,100}), 500);
-        sequence(2, tlc_first.pwm(4,4,(byte[]) {100,100,100,100}), 500);
-        sequence(3, tlc_first.pwm(12,4,(byte[]) {100,100,100,100}), 500);
-        sequence(4, tlc_first.pwm(0,4,(byte[]) {0,0,0,0}), 500);
-        sequence(5, tlc_first.pwm(8,4,(byte[]) {0,0,0,0}), 500);
-        sequence(6, tlc_first.pwm(4,4,(byte[]) {0,0,0,0}), 500);
-        sequence(7, tlc_first.pwm(12,4,(byte[]) {0,0,0,0}), 500);
+        sequence(0, tlc_first.pwm(0,4,(byte[]) {100,100,100,100}), 250);
+        sequence(1, tlc_first.pwm(0,4,(byte[]) {25,25,25,25}), 250);
+        sequence(2, tlc_first.pwm(8,4,(byte[]) {100,100,100,100}), 250);
+        sequence(3, tlc_first.pwm(8,4,(byte[]) {25,25,25,25}), 250);
+        sequence(4, tlc_first.pwm(4,4,(byte[]) {100,100,100,100}), 250);
+        sequence(5, tlc_first.pwm(4,4,(byte[]) {25,25,25,25}), 250);
+        sequence(6, tlc_first.pwm(12,4,(byte[]) {100,100,100,100}), 250);
+        sequence(7, tlc_first.pwm(12,4,(byte[]) {25,25,25,25}), 250);
+        sequence(8, tlc_first.pwm(0,4,(byte[]) {0,0,0,0}), 250);
+        sequence(9, tlc_first.pwm(8,4,(byte[]) {0,0,0,0}), 250);
+        sequence(10, tlc_first.pwm(4,4,(byte[]) {0,0,0,0}), 250);
+        sequence(11, tlc_first.pwm(12,4,(byte[]) {0,0,0,0}), 250);
       end_do_sequence
       test_num = 0xff;
       break;
