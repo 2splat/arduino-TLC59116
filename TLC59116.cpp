@@ -300,6 +300,11 @@ TLC59116& TLC59116::enable_outputs(bool yes) {
   return *this;
   }
 
+TLC59116& TLC59116::pattern(unsigned long bit_pattern, unsigned long which_mask) {
+  // FIXME
+  debug("FIXME");debug();
+  }
+
 TLC59116& TLC59116::on(byte led_num, bool yes) {
   // we don't try to optimize "don't send data if shadow is alredy in that state"
 

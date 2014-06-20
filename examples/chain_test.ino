@@ -164,7 +164,6 @@ void loop() {
       break;
     
     case 'P' : // Pwm, 4 at a time using bulk
-      TLC59116::debug("Try bin ");TLC59116::debug(0b10101010,BIN);TLC59116::debug();
       // TLC59116::reset();
       // tlc_first.reset_shadow_registers();
       tlc_first.enable_outputs(); // before reset_shadow!
@@ -185,21 +184,23 @@ void loop() {
       time_each_vs_bulk_pwm();
       test_num = 0xff;
       break;
+    
+    case 'O' : // On/off, 4 at a time (bulk)
+      tlc_first.enable_outputs(); // before reset_shadow!
+      do_sequence_till_input
+        sequence(0, tlc_first.pattern(0x000fL,0x000fL), 500);
+        sequence(1, tlc_first.pattern(0x0f00L,0x0f00L), 500);
+        sequence(2, tlc_first.pattern(0x00f0L,0x00f0L), 500);
+        sequence(3, tlc_first.pattern(0xf000L,0xf000L), 500);
+        sequence(4, tlc_first.pattern(0,0x000fL), 500);
+        sequence(5, tlc_first.pattern(0,0x0f00L), 500);
+        sequence(6, tlc_first.pattern(0,0x00f0L), 500);
+        sequence(7, tlc_first.pattern(0,0xf000L), 500);
+      end_do_sequence
+      test_num = 0xff;
+      break;
   /*
 
-      // LE test - Should have NO flicker
-    case 4:
-      tlc.all(LOW)->delay(500);
-      for (int i=0; i<CHAIN_CT; i++) {
-        tlc.shift(0xFFFF); // no flicker here
-      }
-      tlc.delay(400);
-      tlc.latch_pulse();
-      tlc.delay(500);
-      break;
-
-      // SDO test, only 1 shift-register -- Check the serial monitor to confirm
-      // Blinks while reading the SDO
     case 5:
       {
         tlc.on();
@@ -299,8 +300,6 @@ void loop() {
       tlc.config(0,0,0)->on()->all(HIGH)->delay(400);
       break;
       
-    case 10:
-       break;
   */
 
     default:
