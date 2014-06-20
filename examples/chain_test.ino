@@ -139,7 +139,7 @@ void loop() {
       test_num = 0xff;
       break;
 
-    case 'f' : // Flicker test (bug)
+    case 'f' : // Flicker test (current test)
       start_sequence
         sequence(0, flicker_test_reset(), 0)
         sequence(1, on1(), 250)
@@ -352,8 +352,8 @@ void flicker_test_reset() {
   pwm_number = (pwm_number - 1 ) % 16;
   }
 
-void on1() { tlc_first.on(1); }
-void off1() { tlc_first.off(1); }
+void on1() { tlc_first.on(0); }
+void off1() { tlc_first.off(0); }
   
 void next_idle_state() {
   // progress through the idle blinky pattern
