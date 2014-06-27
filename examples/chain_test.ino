@@ -58,9 +58,24 @@ void setup() {
   // Outputs are off at power up
   tlc_first.enable_outputs();
 
-  Serial.print("Send '?' for menu of actions.");
+  Serial.print(F("Free memory "));Serial.println(get_free_memory());
+  Serial.print(F("Send '?' for menu of actions."));
 }
 
+extern int __bss_end;
+extern void *__brkval;
+
+int get_free_memory()
+{
+  int free_memory;
+
+  if((int)__brkval == 0)
+    free_memory = ((int)&free_memory) - ((int)&__bss_end);
+  else
+    free_memory = ((int)&free_memory) - ((int)__brkval);
+
+  return free_memory;
+}
 const byte hump_values[] = { 0,10,80,255,80,10,0 };
 const unsigned long hump_speed = 50; // time between changing. actually "slowness"
 
@@ -69,12 +84,17 @@ void loop() {
   switch (test_num) {
 
     case 0xff: // prompt
-      Serial.print("Choose (? for help): ");
+      Serial.print(F("Choose (? for help): "));
       test_num = NULL;
       break;
 
     case NULL: // means "done with last, do nothing"
       break; // do it
+
+    case 'm': // free Memory
+      Serial.print(F("Free memory "));Serial.println(get_free_memory());
+      test_num = 0xff;
+      break;
 
     case 's': // Scan for addresses
       // Find out that TLC59116's are hooked up and working (and the broadcast addresses).
@@ -89,7 +109,7 @@ void loop() {
 
     case 'r': // Reset all TCL59116 to power up
       TLC59116::reset();
-      Serial.println("Reset'd");
+      Serial.println(F("Reset'd"));
 
       tlc_first.reset_shadow_registers();
       tlc_first.enable_outputs(); // before reset_shadow!
@@ -103,7 +123,7 @@ void loop() {
         ;
         }
 
-      Serial.print("Blinked LED 0 of device # ");Serial.println(TLC59116::Base_Addr - tlc_first.address());
+      Serial.print(F("Blinked LED 0 of device # "));Serial.println(TLC59116::Base_Addr - tlc_first.address());
       test_num = 0xff;
       break;
 
@@ -197,14 +217,14 @@ void loop() {
     case 'O' : // On/off, 4 at a time (bulk)
       tlc_first.enable_outputs(); // before reset_shadow!
       do_sequence_till_input
-        sequence(0, tlc_first.pattern(0x000fL,0x000fL), 500);
-        sequence(1, tlc_first.pattern(0x0f00L,0x0f00L), 500);
-        sequence(2, tlc_first.pattern(0x00f0L,0x00f0L), 500);
-        sequence(3, tlc_first.pattern(0xf000L,0xf000L), 500);
-        sequence(4, tlc_first.pattern(0,0x000fL), 500);
-        sequence(5, tlc_first.pattern(0,0x0f00L), 500);
-        sequence(6, tlc_first.pattern(0,0x00f0L), 500);
-        sequence(7, tlc_first.pattern(0,0xf000L), 500);
+        sequence(0, tlc_first.pattern(0x000f,0x000f), 500);
+        sequence(1, tlc_first.pattern(0x0f00,0x0f00), 500);
+        sequence(2, tlc_first.pattern(0x00f0,0x00f0), 500);
+        sequence(3, tlc_first.pattern(0xf000,0xf000), 500);
+        sequence(4, tlc_first.pattern(0,0x000f), 500);
+        sequence(5, tlc_first.pattern(0,0x0f00), 500);
+        sequence(6, tlc_first.pattern(0,0x00f0), 500);
+        sequence(7, tlc_first.pattern(0,0xf000), 500);
       end_do_sequence
       test_num = 0xff;
       break;
@@ -217,9 +237,9 @@ void loop() {
         pattern = 0b0011000111001101;
         tlc.send(pattern); // prime it, SDO is 0 (MSB)
 
-        Serial.println("Want");
-        Serial.println("| Saw");
-        Serial.println("| | Good?");
+        Serial.println(F("Want"));
+        Serial.println(F("| Saw"));
+        Serial.println(F("| | Good?"));
 
         int fill = 1;
         for(int i=0; i<16; i++) {
@@ -246,7 +266,7 @@ void loop() {
         int status;
         if (first) tlc.all(HIGH)->on()->delay(300);
         status = tlc.error_detect();
-        Serial.print("Error Status: ");
+        Serial.print(F("Error Status: "));
         Serial.println(status,BIN);
         tlc.all(HIGH)->on()->delay(10000);
       }
@@ -255,16 +275,16 @@ void loop() {
       // Use the current-gain-multiplier to set the range down
       // Does a bunch of blinking to confirm mode switch
     case 7:
-      Serial.println("On Max");
+      Serial.println(F("On Max"));
       tlc.config(1,1,127);
       tlc.all(HIGH)->on()->delay(1000);
 
-      Serial.println("On Min");
+      Serial.println(F("On Min"));
       tlc.config(0,0,0);
       tlc.all(HIGH)->on()->delay(1000);
 
       // This confirms that we are back in normal mode
-      Serial.println("shifting");
+      Serial.println(F("shifting"));
       tlc.all(LOW)->delay(300);
       tlc.all(HIGH)->delay(300);
       tlc.all(LOW)->delay(300);
@@ -313,20 +333,23 @@ void loop() {
 
     default:
       Serial.println();
-      // menu made by: make examples/chain_test.ino.menu
-      Serial.println(F("s  Scan for addresses"));
-      Serial.println(F("d  Describe first TLC59116"));
-      Serial.println(F("r  Reset all TCL59116 to power up"));
-      Serial.println(F("b  Blink led 0 of first TLC59116 a few times"));
-      Serial.println(F("c  Chase pattern (not pwm)"));
-      Serial.println(F("w  Wave chase pattern (pwm)"));
-      Serial.println(F("W  Same using bulk write"));
-      Serial.println(F("S  dump Shadow registers of first"));
-      Serial.println(F("o  all On (dim)"));
-      Serial.println(F("f  Flicker test (bug)"));
-      Serial.println(F("B  Global blink (osc)"));
-      Serial.println(F("P  Pwm, 4 at a time using bulk"));
-      Serial.println(F("t  Time one-at-a-time vs. bulk, pwm"));
+      // menu made by: make examples/.chain_test.ino.menu
+Serial.println(F("m  free Memory"));
+Serial.println(F("s  Scan for addresses"));
+Serial.println(F("d  Describe first TLC59116"));
+Serial.println(F("r  Reset all TCL59116 to power up"));
+Serial.println(F("b  Blink led 0 of first TLC59116 a few times"));
+Serial.println(F("c  Chase pattern (not pwm)"));
+Serial.println(F("w  Wave chase pattern (pwm)"));
+Serial.println(F("W  Same using bulk write"));
+Serial.println(F("S  dump Shadow registers of first"));
+Serial.println(F("o  all On (dim)"));
+Serial.println(F("f  Flicker test (current test)"));
+Serial.println(F("B  Global blink (osc)"));
+Serial.println(F("P  Pwm, 4 at a time using bulk"));
+Serial.println(F("p  Pwm full range"));
+Serial.println(F("t  Time one-at-a-time vs. bulk, pwm"));
+Serial.println(F("O  On/off, 4 at a time (bulk)"));
             // end-menu
 
       Serial.println(F("? Prompt again"));
@@ -361,7 +384,7 @@ void next_idle_state() {
   static unsigned long last_time = 0;
   static byte chase_i = 0;
 
-  if (last_time == 0) Serial.println("Idling...");
+  if (last_time == 0) Serial.println(F("Idling..."));
 
   // time for next ?
   unsigned long now = millis();
@@ -389,7 +412,7 @@ void next_hump_state() {
       // Serial.print(pwm);Serial.print(" ");
       tlc_first.pwm(led_num, pwm);
       }
-    // Serial.println("Doit");
+    // Serial.println(F("Doit"));
     chase_i = (chase_i + 1) % 16; // 0..15
     last_time = now;
     }
@@ -406,19 +429,22 @@ void time_each_vs_bulk_pwm() {
       unsigned long from;
       unsigned long elapsed;
 
+      Serial.print(F("10 times each"));
       Serial.print(F("             "));
-      for(byte ct = 1; ct<=16; ct++) { Serial.print(ct); Serial.print(ct<10 ? " " : "" ); } Serial.println();
+      for(byte ct = 1; ct<=16; ct++) { Serial.print(ct); Serial.print(ct<10 ? "  " : " " ); } Serial.println();
 
       for(byte digital=0; digital<2; digital++) {
         if(digital) { for(byte i=0; i<16; i++) tlc_first.off(i); }
         Serial.print(F("Singular pwm "));
         for(byte ct = 1; ct<=16; ct++) {
           from = millis();
-          for(byte i=0;i<ct;i++) {
-            tlc_first.pwm(i,80);
+          for(byte avg=0; avg<10; avg++) {
+            for(byte i=0;i<ct;i++) {
+              tlc_first.pwm(i,80);
+              }
             }
           elapsed = millis() - from;
-          Serial.print(elapsed);Serial.print(" ");
+          if (elapsed<10) Serial.print(" "); Serial.print(elapsed);Serial.print(" ");
           }
         Serial.print(F("millis"));
         if (digital) Serial.print(F(" from digital"));
@@ -428,9 +454,11 @@ void time_each_vs_bulk_pwm() {
         Serial.print(F("Bulk     pwm "));
         for(byte ct = 1; ct<=16; ct++) {
           from = millis();
-          tlc_first.pwm(0,ct,(byte[]) {20,30,40,50,60,70,80,90,20,30,40,50,60,70,80,90});
+          for(byte avg=0; avg<10; avg++) {
+            tlc_first.pwm(0,ct,(byte[]) {20,30,40,50,60,70,80,90,20,30,40,50,60,70,80,90});
+            }
           elapsed = millis() - from;
-          Serial.print(elapsed);Serial.print(" ");
+          if (elapsed<10) Serial.print(" "); Serial.print(elapsed);Serial.print(" ");
           }
         Serial.print(F("millis"));
         if (digital) Serial.print(F(" from digital"));
@@ -452,13 +480,13 @@ void pwm_full_range() {
 
   // vary
   while (Serial.available() == 0) {
-    // Serial.print("Set 0..15 ");for(byte i=0; i<16; i++) {Serial.print(values[i]);Serial.print(" ");}
+    // Serial.print(F("Set 0..15 "));for(byte i=0; i<16; i++) {Serial.print(values[i]);Serial.print(" ");}
     tlc_first.pwm(0,16, values);
-    // Serial.print(" next ");Serial.print(direction);Serial.println();
+    // Serial.print(F(" next "));Serial.print(direction);Serial.println();
 
     if (values[0] >= 255) { direction = -1; }
     else if (values[0] <= 0) { 
-      Serial.print("Elapsed ");Serial.print(millis()-timer);Serial.println();
+      Serial.print(F("Elapsed "));Serial.print(millis()-timer);Serial.println();
       timer = millis();
       direction = +1; 
       }

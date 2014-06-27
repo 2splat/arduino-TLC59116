@@ -20,10 +20,9 @@
       GRPFREQ of n seems to reduce the range by setting (256/(n+1)) = 99% duty cycle
   !! erratic flashes seen when using GRPPWM and decreasing it over time
       claimed to happen at same point every time (speed dependant I think)
-  !! I see flickering when: many LEDsi (14) are pwm on fairly dim (20), and I on/off blink another LED.
+  !! I see flickering when: many LEDs (14) are pwm on fairly dim (20), and I on/off blink another LED.
       adjustng Vext seems to improve the situation (so, current?)
       need to try g_pwm & g_on/off (fix them!)
-
 */
 
 #include <Arduino.h>
@@ -45,9 +44,9 @@ class TLC59116 {
       if (TLC59116::DEBUG) {
         if (format == BIN) {
           Serial.print(F("0b")); // so tired
-          for(byte i=0; i < 8; i++) {
-            Serial.print( (msg & (0b10000000)) ? "1" : "0");
-            msg = msg << 1;
+          for(byte i=0; i < (sizeof(msg) * 8); i++) {
+            Serial.print( (msg & ((T)1 << (sizeof(msg) * 8 - 1))) ? "1" : "0");
+            msg <<= 1;
             }
           }
         else {
@@ -178,7 +177,7 @@ class TLC59116 {
     TLC59116& enable_outputs(bool yes = true); // enables w/o arg, use false for disable
 
     TLC59116& on(byte led_num, bool yes = true); // turns the led on, false turns it off
-    TLC59116& pattern(unsigned long bit_pattern, unsigned long which_mask = 0xFFFF);
+    TLC59116& pattern(word bit_pattern, word which_mask = 0xFFFF);
     TLC59116& off(byte led_num) { return on(led_num, false); } // convenience
     TLC59116& pwm(byte led_num, byte value); 
     // timings give 1/2..2mitllis for bulk, vs. 1..6millis for one-at-time (proportional to ct)
@@ -238,6 +237,7 @@ class TLC59116 {
     void describe_error_flag();
 
     void update_ledx_registers(byte addr, byte to_what, byte led_start_i, byte led_end_i);
+    void update_ledx_registers(byte addr, const byte* want_ledx /* [4] */, byte led_start_i, byte led_end_i);
 
   public:
     class Scan {
@@ -248,6 +248,8 @@ class TLC59116 {
         Scan& print(); 
 
         bool is_any() { return found > 0; }
+        byte count() { return found; }
+        const byte* device_addresses() { return addresses; } // FIXME: I want the contents to be const
         byte first_addr() { // debug message and 0xff if none 
           // return a good address or fall through
           for(byte i=0; i<found; i++) {
