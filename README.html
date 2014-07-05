@@ -1,286 +1,32 @@
-<h1>include <TLC59116.h></h1>
+<h1>define TLC59116_h</h1>
 
-<h1>include <Wire.h></h1>
+<p>/*
+  Pins: SDA and SCL of I2C
+UNO: A4:SDA, A5:SCL
+mega: as marked
+teensy: ...</p>
 
-<p>// The convenience method sometlc.delay(x) hides the normal delay. Use ::delay(...)</p>
+<p>In your setup():
+Wire.begin();
+Serial.init(nnnnn); // if you do DEBUG=1, or use any of the describes
+// Run the I2C faster (default is 100000L):
+const long want<em>freq = 340000L; // 100000L; .. 340000L for 1, not termination
+TWBR = ((F</em>CPU / want<em>freq) - 16) / 2; // aka want</em>freq = F<em>CPU/(2*TWBR +16). F</em>CPU is supplied by arduino-ide</p>
 
-<p>bool TLC59116::DEBUG = 0;
-const char* TLC59116::Device = "TLC59116";</p>
-
-<p>// NB. You must use the accessor address() to take care of lazy initialization of the address!
-// (e.g., the "first" case)</p>
-
-<p>inline void printf0(byte v) { // 3 digits
-Serial.print(v / 100);
-v = v % 100;
-Serial.print(v/10);
-v = v % 10;
-Serial.print(v);
-}</p>
-
-<p>int TLC59116::reset() {
-  // It may appear that a reset looks like Auto<em>PWM ^ PWMx</em>Register(3) = 0x5a. But Reset<em>addr is a special mode.
-  Wire.beginTransmission(Reset</em>Addr);
-Wire.write(0xA5);
-Wire.write(0x5A);
-  int rez = <em>end</em>trans();</p>
-
-<p>if (DEBUG) { 
-debug("Reset "); 
-if (rez)  { debug("Failed with "); debug(rez); } else { debug("worked!"); } 
-debug();
-}
-  // does not "reset" the error_detect
-  return rez;
-  }</p>
-
-<p>byte TLC59116::address() {
-  // The plain constructor implies "first"
-  // And we have to delay scanner() till after Wire.begin.
-  if (this-><em>address == NULL) {
-debug("Lazy init for first");debug();
-this-></em>address = Scan::scanner().first<em>addr();
-}
-  return this-></em>address;
-  }</p>
-
-<p>void TLC59116::describe_channels() {
-byte addr = address();</p>
-
-<p>// General/Group
-byte grppwm = control<em>register(0x12);
-byte mode1 = control</em>register(MODE1<em>Register);
-byte mode2 = control</em>register(MODE2<em>Register);
-bool is</em>blink = (mode2 &amp;&amp; 0b10000); // DMBLNK</p>
-
-<p>// note: if MODE2[GRP/DMBLNK] then GRPPWM is PWM, GRPFREQ is blink 24Hz to .1hz
-// note: if !MODE2[GRP/DMBLNK] then GRPPWM is PWM, GRPFREQ ignored, and PWMx is * GRPPWM
-Serial.print("GRP[");
-Serial.print(is_blink ? "BlinkDuty" : "PWM"); // what does blinkduty do?
-Serial.print("]=");Serial.print(grppwm);Serial.print("/256 ");</p>
-
-<p>byte grpfreq = control<em>register(0x12);
-float blink</em>len = ((float)grpfreq + 1.0) / 24.0; // docs say max 10.73 secs, but math says 10.66 secs
-Serial.print("GRPFREQ=");
-// Aren't we nice:
-if (blink<em>len &lt;= 1) {
-  Serial.print(1.0/blink</em>len);Serial.print("Hz blink");
-  }
-else {
-  Serial.print(blink<em>len);Serial.print(" second blink");
-  }
-Serial.print(is</em>blink ? "" : "(ignored):");</p>
-
-<p>Serial.println(" for outputs that are Gnnn");</p>
-
-<p>Serial.print("Outputs ");
-Serial.print( (mode1 &amp; 0b10) ? "OFF" : "ON"); // nb. reverse, "OSC"
-Serial.println();
-Serial.print("        ");</p>
-
-<p>for(byte led<em>num=0; led</em>num &lt; Channels; led<em>num++) {
-    byte led</em>state = control<em>register(LEDx</em>Register(led<em>num));
-    // The led state is groups of 4
-    byte state</em>bits = (led<em>state >> ((led</em>num % 4) * 2)) &amp; 0b11; // right shifted to lsb's location</p>
-
-<pre><code>byte pwm_value;
-switch (state_bits) {
-
-    // Digital
-    case LEDOUT_DigitalOff:
-        Serial.print("D-  ");
-        break;
-    case LEDOUT_DigitalOn:
-        Serial.print("D+  ");
-        break;
-
-    // PWM
-    case LEDOUT_PWM:
-        pwm_value = control_register(PWM0_Register + led_num);
-        printf0(pwm_value);
-        Serial.print(" ");
-        break;
-    // GPWM
-    case LEDOUT_GRPPWM:
-        Serial.print("G");
-        pwm_value = control_register(PWM0_Register + led_num);
-        printf0(pwm_value);
-        break;
-    }
-
-// Groups of 4 per line
-if ((led_num % 4) == 3) {
-    Serial.print(" via ");Serial.print(led_state,BIN);Serial.println(); 
-    if (led_num != 15) Serial.print(F("        "));
-} else {
-    Serial.print(" ");
-}
-</code></pre>
-
-<p>}
-}</p>
-
-<p>void TLC59116::describe<em>addresses() {
-  byte mode1 = control</em>register(MODE1<em>Register);
-  byte the</em>addr;</p>
-
-<p>the<em>addr = control</em>register(0x1B);
-  // Internal addresses are 7:1, with bit 0=r/w
-  Serial.print(mode1 &amp; 0b01 ? "+" : "-");
-  Serial.print("AllCall(0x");Serial.print(the_addr >> 1,HEX);Serial.print(") ");</p>
-
-<p>for(byte i = 0; i&lt;3; i++) {
-  the<em>addr = control</em>register(SUBADR1<em>Register + i);
-  // mode bit is 2,4,8 for enable
-  Serial.print(mode1 &amp; (2&lt;&lt;1) ? "+" : "-");
-  Serial.print("SUBADR"); Serial.print(i+1); Serial.print("(0x");
-  Serial.print(the</em>addr >> 1, HEX); Serial.print(") ");
-  }
-  Serial.println();
-  }</p>
-
-<p>void TLC59116::describe<em>iref() {
-byte value = control</em>register(0x1C);
-word current_multiplier = value &amp; 0x1F; // 5 bits</p>
-
-<p>// FIXME: do the math, and explain
-Serial.print("IREF: ");
-Serial.print("CM=0x");Serial.print(current_multiplier,HEX);
-Serial.print(" HC=");Serial.print( (value &amp; 0x40) ? "1" : "0");
-Serial.print( (value &amp; 0x80) ? " Hi" : " Lo");
-Serial.println();
-}</p>
-
-<p>void TLC59116::describe<em>error</em>flag() {
-byte mode2 = control<em>register(MODE2</em>Register);
-byte value;
-// format same as channels</p>
-
-<p>Serial.print("Errors: ");
-Serial.print((mode2 &amp; 0x80) ? "clear" : "enabled"); // EFCLR
-Serial.println();
-Serial.print("        ");</p>
-
-<p>// 8 channels per register
-for(byte i=0;i&lt;=1;i++) {
-    value = control<em>register(EFLAG</em>Register + i);
-    // Each bit is a channel
-    for(byte bit<em>num=0; bit</em>num&lt;=7; bit<em>num++) {
-        Serial.print( (value &amp; (1&lt;<bit</em>num)) ? "1    " : "0    ");
-        // format
-        if (bit<em>num % 4 == 3 &amp;&amp; !(bit</em>num==7 &amp;&amp; i==1)) {Serial.println(); Serial.print("        ");}
-        }
-    }
-Serial.println();
-}</p>
-
-<p>TLC59116&amp; TLC59116::describe() {
-  const byte addr = address(); // just less typing</p>
-
-<p>Serial.print("Describe ");
-  Serial.print(Device);Serial.print(" 0x");Serial.print(addr,HEX);Serial.print("/");
-  Serial.print(addr);Serial.print("(");Serial.print(addr-Base_Addr);Serial.print(")");
-  Serial.println();</p>
-
-<p>// We could get all the registers at once, and pass each value into describe<em>x's
-  // But, efficiency isn't exactly important here. (We Serial.print!)
-  // Not in register # order, but...
-  describe</em>iref();
-  describe<em>mode1(); // FIXME: collapse into describe</em>addresses(), + osc=on/off &amp; autoincrement mode
-  describe<em>addresses();
-  describe</em>mode2();
-  describe<em>channels();
-  describe</em>error_flag();</p>
-
-<p>return *this;
-  }</p>
-
-<p>void TLC59116::describe<em>mode1() {
-byte value = control</em>register(MODE1_Register);</p>
-
-<p>// Let describe_addresses() do the addr enable bits</p>
-
-<p>// Serial.print("MODE1");Serial.print(" 0x");Serial.print(value,HEX);Serial.print(" ");</p>
-
-<p>if (value &amp; 0x80) {
-    Serial.print(" +AutoIncrement ");
-    switch (value &amp; 0xE0) {
-        case 0x80:
-            break;
-        case 0xA0:
-            Serial.print("(PWM 0x02..0x11)");
-            break;
-        case 0x0C:
-            Serial.print("(GRP-PWM/FREQ)");
-        case 0xE0:
-            Serial.print("(PWM+GRP 0x02..0x13)");
-            break;
-        }
-} else {
-    Serial.print(" -AutoIncrement");
-    }</p>
-
-<p>Serial.println();
-}</p>
-
-<p>void TLC59116::describe<em>mode2() {
-byte value = control</em>register(MODE2_Register);</p>
-
-<p>// Serial.print("MODE2");Serial.print(" 0x");Serial.print(value,HEX);Serial.print(" ");
-Serial.print("Latch on ");Serial.print((value &amp; 0b0100) ? "ACK" : "Stop"); // OCH
-Serial.println();
-}</p>
-
-<p>void TLC59116::control<em>register(byte register</em>num, byte data) {
-  // set
-  if (!is<em>control</em>register(register<em>num)) {
-if (DEBUG) {
-  debug("Not a ");debug(Device);debug(" control register #:0x");debug(register</em>num,HEX);
-  debug(". Set to 0x");debug(data,HEX);debug("is ignored.");
-  }
-return;
-}
-// debug(F("set R "));debug(register<em>num,HEX);debug("=");debug(data,BIN);debug();
-_begin</em>trans(this->address(), register<em>num); 
-  Wire.write(data);
-_end</em>trans();
-  }</p>
-
-<p>byte TLC59116::control<em>register(byte register</em>num) {
-  // get
-  if (!is<em>control</em>register(register<em>num)) {
-if (DEBUG) {
-  debug("Not a ");debug(Device);debug(" control register #:0x");debug(register</em>num,HEX);
-  debug(". Get is ignored.");
-  }
-return 0; // is 0xFF better?
-}
-byte addr = address();</p>
-
-<p><em>begin</em>trans(addr, register<em>num); 
-int stat = _end</em>trans();</p>
-
-<p>int data = 0; // is 0xFF to signal fail better?
-if (stat == 0) {
-  int avail = Wire.requestFrom(addr,(byte)1); // not checking avail
-  data = Wire.read();
-  shadow_registers[addr] = data;
-  }
-return data;
-  }</p>
-
-<p>void TLC59116::modify<em>control</em>register(byte register<em>num, byte value) {
-  shadow</em>registers[register<em>num] = value;
-  // debug("CR...");debug();
-  control</em>register(register_num, value);
-  }</p>
-
-<p>void TLC59116::modify<em>control</em>register(byte register<em>num, byte mask, byte bits) {
-  byte new</em>value = set<em>with</em>mask(bits, mask, shadow<em>registers[register</em>num]);
-  /* if (register<em>num &lt; PWM0</em>Register || register<em>num > 0x17) {
-debug(F("Modify R"));debug(register</em>num,HEX);debug();
-debug(F("       ="));debug(shadow<em>registers[register</em>num],BIN);debug();
-debug(F("       M"));debug(mask,BIN);debug();
-debug(F("       V"));debug(bits,BIN);debug();
-debug(F("       ="));debug(new_value,BIN);debug();
-} */</p>
+<p>FIXME: rewrite whole thing:
+singleton TLC
+  tracks all, maybe pointers? 14 bytes vs 56, but easier to do id?
+an each {:addr=>x} using the singleton
+so reset does right thing, and other global state
+layer
+  tlc[1].dmblnk = 1, ...
+  ?? What does a read on AllCall get?
+  The TLC59108 is supposedly the same except only 8 channels.
+  * Change to group_blink(ratio, hz, pwm values)
+low level is blink-bit-mask
+highlevel is leds-are:x blink/on-off/pwm/grppwm
+  !! erratic flashes seen when using GRPPWM and decreasing it over time
+  claimed to happen at same point every time (speed dependant I think)
+  !! I see flickering when: many LEDs (14) are pwm on fairly dim (20), and I on/off blink another LED.
+  adjustng Vext seems to improve the situation (so, current?)
+  !! This stuff appears to work in a timer-service-routine, but you must (re-)enable interrupts in the isr: sei();</p>

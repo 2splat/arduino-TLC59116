@@ -50,18 +50,18 @@ void TLC59116::describe_channels() {
     byte addr = address();
     
     // General/Group
-    byte grppwm = control_register(0x12);
+    byte grppwm = control_register(GRPPWM_Register);
     byte mode1 = control_register(MODE1_Register);
     byte mode2 = control_register(MODE2_Register);
-    bool is_blink = (mode2 && 0b10000); // DMBLNK
+    bool is_blink = (mode2 && MODE2_DMBLNK);
 
     // note: if MODE2[GRP/DMBLNK] then GRPPWM is PWM, GRPFREQ is blink 24Hz to .1hz
     // note: if !MODE2[GRP/DMBLNK] then GRPPWM is PWM, GRPFREQ ignored, and PWMx is * GRPPWM
     Serial.print(F("GRP["));
-    Serial.print(is_blink ? "BlinkDuty" : "PWM"); // what does blinkduty do?
-    Serial.print(F("]="));Serial.print(grppwm);Serial.print(F("/256 "));
+    Serial.print(is_blink ? "Blink" : "PWM*");
+    Serial.print(F("]="));Serial.print(grppwm);Serial.print(F("/256 on ratio "));
 
-    byte grpfreq = control_register(0x12);
+    byte grpfreq = control_register(GRPFREQ_Register);
     float blink_len = ((float)grpfreq + 1.0) / 24.0; // docs say max 10.73 secs, but math says 10.66 secs
     Serial.print(F("GRPFREQ="));
     // Aren't we nice:
@@ -73,7 +73,7 @@ void TLC59116::describe_channels() {
       }
     Serial.print(is_blink ? "" : "(ignored):");
 
-    Serial.println(F(" for outputs that are Gnnn"));
+    Serial.print(F(" for outputs that are "));Serial.print(is_blink ? "B" : "G"); Serial.println(F("nnn"));
     
     Serial.print(F("Outputs "));
     Serial.print( (mode1 & 0b10) ? "OFF" : "ON"); // nb. reverse, "OSC"
@@ -104,9 +104,13 @@ void TLC59116::describe_channels() {
                 break;
             // GPWM
             case LEDOUT_GRPPWM:
-                Serial.print("G");
-                pwm_value = control_register(PWM0_Register + led_num);
-                printf0(pwm_value);
+                if (is_blink) {
+                  pwm_value = control_register(PWM0_Register + led_num);
+                  Serial.print("B");printf0(pwm_value);
+                  }
+                else {
+                  Serial.print("G???"); // FIXME: calculate the pwm
+                  }
                 break;
             }
 
@@ -157,7 +161,7 @@ void TLC59116::describe_error_flag() {
     // format same as channels
 
     Serial.print(F("Errors: "));
-    Serial.print((mode2 & 0x80) ? "clear" : "enabled"); // EFCLR
+    Serial.print((mode2 & MODE2_EFCLR) ? "clear" : "enabled"); // EFCLR
     Serial.println();
     Serial.print(F("        "));
 
@@ -326,6 +330,32 @@ TLC59116& TLC59116::pattern(word bit_pattern, word which_mask) {
   update_ledx_registers(addr, new_ledx, 0, 15);
   }
 
+void TLC59116::update_ledx_registers(byte addr, byte to_what, word bit_pattern) {
+
+  byte new_ledx[4];
+  // need all for later comparison
+  memcpy(new_ledx, &(this->shadow_registers[LEDOUT0_Register]), 4);
+  // debug(F("Change from ")); for(byte i=0;i<4;i++){ debug(new_ledx[i],BIN); debug(" ");} debug();
+
+  // count through LED nums, starting from max
+
+  for(byte ledx_r=15; ; ledx_r--) {
+    if (0x8000 & bit_pattern) {
+      new_ledx[ledx_r / 4] = set_with_mask(
+        LEDx_mode_bits(ledx_r, to_what),
+        LEDx_Register_mask(ledx_r),
+        new_ledx[ledx_r / 4]
+        );
+      }
+    bit_pattern <<= 1;
+
+    if (ledx_r==0) break;
+    }
+  // debug(F("Change to   ")); for(byte i=0;i<4;i++){ debug(new_ledx[i],BIN); debug(" ");} debug();
+
+  update_ledx_registers(addr, new_ledx, 0, 15);
+  }
+
 TLC59116& TLC59116::on(byte led_num, bool yes) {
   // we don't try to optimize "don't send data if shadow is already in that state"
 
@@ -369,6 +399,27 @@ TLC59116& TLC59116::pwm(byte led_num, byte value) {
   // debug("Set ");debug(led_num);debug(" to pwm ");debug(value);debug();
   modify_control_register(PWMx_Register(led_num), value);
   return *this;
+  }
+
+TLC59116& TLC59116::group_blink(word bit_pattern, byte ratio, byte blink_time) {
+  // this blinks the current pwm mode
+  // debug(F("DMBLNK mode"));
+  // FIXME: more efficient? Auto_GRP
+  modify_control_register(MODE2_Register, MODE2_DMBLNK, MODE2_DMBLNK);
+  // debug(F("Set some to grpblnk ratio "));debug(ratio);debug(F(" len "));debug(blink_time);debug();
+  modify_control_register(GRPPWM_Register, ratio);
+  modify_control_register(GRPFREQ_Register, blink_time);
+  update_ledx_registers(address(), LEDOUT_GRPPWM /* aka blink too */, bit_pattern);
+  return *this;
+  }
+
+TLC59116& TLC59116::group_pwm(word bit_pattern, byte brightness) {
+  modify_control_register(MODE2_Register, 0, MODE2_DMBLNK);
+  modify_control_register(GRPPWM_Register, brightness);
+  // GRPFREQ not actually "don't care", effectively an anti-range for brightness
+  // range = (256/(n+1))
+  modify_control_register(GRPFREQ_Register, 0x00);
+  update_ledx_registers(address(), LEDOUT_GRPPWM /* aka blink too */, bit_pattern);
   }
 
 void TLC59116::update_ledx_registers(byte addr, byte to_what, byte led_start_i, byte led_end_i) {
@@ -459,14 +510,14 @@ void TLC59116::update_ledx_registers(byte addr, const byte* new_ledx /* [4] */, 
     //// DEBUG
 
     // We have a first..last, so write them
-    //debug(F("Write ")); debug(change_last_r - change_first_r +1); debug(F(" bytes of data")); debug();
+    // debug(F("Write @ register ")); debug(change_first_r,HEX); debug(" "); debug(change_last_r - change_first_r +1); debug(F(" bytes of data")); debug();
     _begin_trans(addr, Auto_All, change_first_r);
-      //debug("  ");
+      // debug("  ");
       Wire.write(&new_ledx[ change_first_r - LEDOUT0_Register ], change_last_r-change_first_r+1);
       for(; change_first_r <= change_last_r; change_first_r++) {
         byte new_val = new_ledx[ change_first_r - LEDOUT0_Register ];
         shadow_registers[ change_first_r ] = new_val;
-        //debug(new_val,BIN);debug(" ");
+        // debug(new_val,BIN);debug(" ");
         }
       //debug();
     _end_trans();

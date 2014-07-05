@@ -2,27 +2,37 @@
 #define TLC59116_h
 
 /*
+  Pins: SDA and SCL of I2C
+    UNO: A4:SDA, A5:SCL
+    mega: as marked
+    teensy: ...
+
   In your setup():
     Wire.begin();
     Serial.init(nnnnn); // if you do DEBUG=1, or use any of the describes
+    // Run the I2C faster (default is 100000L):
+    const long want_freq = 340000L; // 100000L; .. 340000L for 1, not termination
+    TWBR = ((F_CPU / want_freq) - 16) / 2; // aka want_freq = F_CPU/(2*TWBR +16). F_CPU is supplied by arduino-ide
 
-  FIXME: bulk pwm needs to deal with modulus 16 for LEDOUTx
+
   FIXME: rewrite whole thing:
     singleton TLC
       tracks all, maybe pointers? 14 bytes vs 56, but easier to do id?
     an each {:addr=>x} using the singleton
     so reset does right thing, and other global state
-  ?? Does LEDx=GRP+PWM do PWMx * GRPPWM ?
-  ?? What does blinkduty do
+    layer
+      tlc[1].dmblnk = 1, ...
   ?? What does a read on AllCall get?
   The TLC59108 is supposedly the same except only 8 channels.
-  !! GRPFREQ has to be programmed to 00h when DMBLNK = 0 (for group pwm)
-      GRPFREQ of n seems to reduce the range by setting (256/(n+1)) = 99% duty cycle
+  * Change to group_blink(ratio, hz, pwm values)
+    low level is blink-bit-mask
+    highlevel is leds-are:x blink/on-off/pwm/grppwm
   !! erratic flashes seen when using GRPPWM and decreasing it over time
       claimed to happen at same point every time (speed dependant I think)
   !! I see flickering when: many LEDs (14) are pwm on fairly dim (20), and I on/off blink another LED.
       adjustng Vext seems to improve the situation (so, current?)
-      need to try g_pwm & g_on/off (fix them!)
+  !! This stuff appears to work in a timer-service-routine, but you must (re-)enable interrupts in the isr: sei();
+
 */
 
 #include <Arduino.h>
@@ -90,6 +100,8 @@ class TLC59116 {
     static const byte MODE1_OSC_mask = 0b10000;
     static const byte MODE2_Register = 0x01;
     static const byte PWM0_Register = 0x02;
+    static const byte GRPPWM_Register = 0x12; // aka blink-duty-cycle-register
+    static const byte GRPFREQ_Register = 0x13; // aka blink-length 0=~24hz, 255=~10sec
     static const byte LEDOUT0_Register = 0x14;
     static const byte SUBADR1_Register = 0x18;
     // for LEDx_Register, see Register_Led_State
@@ -143,7 +155,7 @@ class TLC59116 {
 
     // LED register bits
     const static byte LEDOUT_PWM = 0b10;
-    const static byte LEDOUT_GRPPWM = 0b11;
+    const static byte LEDOUT_GRPPWM = 0b11; // also "group blink" when mode2[dmblnk] = 1
     const static byte LEDOUT_DigitalOn = 0b01;
     const static byte LEDOUT_DigitalOff = 0b00;
     static byte LEDx_Register_mask(byte led_num) { return 0b11 << (2 * (led_num % 4)); }
@@ -153,6 +165,10 @@ class TLC59116 {
     static byte LEDx_gpwm_bits(byte led_num) {return LEDx_mode_bits(led_num, LEDOUT_GRPPWM);}
     static byte LEDx_digital_off_bits(byte led_num) { return 0; }; // no calc needed (cheating)
     static byte LEDx_digital_on_bits(byte led_num) {  return LEDx_mode_bits(led_num, LEDOUT_DigitalOn);}
+
+    // Other register bits
+    const static byte MODE2_DMBLNK = 0b100000;
+    const static byte MODE2_EFCLR = 0x80; // '1' is clear.
 
     // Constructors (plus ::Each, ::Broadcast)
     // NB: The initial state is "outputs off"
@@ -177,7 +193,7 @@ class TLC59116 {
     TLC59116& enable_outputs(bool yes = true); // enables w/o arg, use false for disable
 
     TLC59116& on(byte led_num, bool yes = true); // turns the led on, false turns it off
-    TLC59116& pattern(word bit_pattern, word which_mask = 0xFFFF);
+    TLC59116& pattern(word bit_pattern, word which_mask = 0xFFFF); // "bulk" on, by bitmask pattern, msb=15
     TLC59116& off(byte led_num) { return on(led_num, false); } // convenience
     TLC59116& pwm(byte led_num, byte value); 
     // timings give 1/2..2mitllis for bulk, vs. 1..6millis for one-at-time (proportional to ct)
@@ -185,6 +201,21 @@ class TLC59116 {
     //  and about 1/8 millis for bulk.
     // Seeing quite a bit of variance, first time is slowest (seems to be the "monitor" communications)
     TLC59116& pwm(byte led_num_start, byte ct, const byte* values); // bulk set
+    TLC59116& pwm(const byte* values) { return pwm(0,16, values); }
+
+    // Blink the LEDs, at their current PWM setting
+    TLC59116& group_blink(word bit_pattern, byte ratio, byte blink_time); // 0%..99.61%, 0=10sec..255=24hz
+    TLC59116& group_blink(word bit_pattern, float on_percent, float hz) { // convenience % & hz
+      // on_percent is 05..99.61%, hz is 24.00384hz to .09375 (10sec long) in steps of .04166hz (blink time 0..255)
+      return group_blink((word)bit_pattern, (byte) int(on_percent * 256.0), 
+      (byte) int( 24.0 / hz) - 1); 
+      }
+    TLC59116& group_blink(unsigned int bit_pattern, double on_percent, double hz) { // convenience: % & hz in default literal datatype
+      return group_blink((word) bit_pattern, (float) on_percent, (float) hz); 
+      }
+
+    // Superpose group-pwm on current pwm setting (but, current should be 255 for best results)
+    TLC59116& group_pwm(word bit_pattern, byte brightness);
 
     TLC59116& delay(int msec) { ::delay(msec); return *this;} // convenience
 
@@ -238,6 +269,7 @@ class TLC59116 {
 
     void update_ledx_registers(byte addr, byte to_what, byte led_start_i, byte led_end_i);
     void update_ledx_registers(byte addr, const byte* want_ledx /* [4] */, byte led_start_i, byte led_end_i);
+    void update_ledx_registers(byte addr, byte to_what, word bit_pattern);
 
   public:
     class Scan {

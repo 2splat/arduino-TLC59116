@@ -25,7 +25,7 @@ examples/.chain_test.ino.menu : examples/chain_test.ino
 
 # documentation, section 1, is in .cpp
 # the first /* ... */ as markdown
-README.md : $(Device).cpp
+README.md : $(Device).h
 	awk 'FNR==2,/*\// {if ($$0 != "*/") {print}}' $< | sed 's/^    //' > $@
 	echo >> $@
 	awk '/\/* Use:/,/*\// {if ($$0 == "*/") {next}; sub(/^\/\*/, ""); print}' $< | sed 's/^ //' >> $@

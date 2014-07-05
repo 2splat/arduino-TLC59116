@@ -2,8 +2,6 @@
 
  Test n chained TLC59116 shift-registers.
  
- Set the test
- 
  */
 
 #include <Wire.h>
@@ -48,9 +46,15 @@ void setup() {
   // This example has the arduino ask you what to do,
   // (open the serial monitor window).
   Serial.begin(115200);
+  Serial.print(F("Serial initialized, cpu is hz "));Serial.println(F_CPU);
 
   // Must do this for TLC59116 stuff
+  Serial.println(F("wire..."));
   Wire.begin();
+  const long want_freq = 340000L; // 100000L; .. 340000L for 1, not termination
+  TWBR = ((F_CPU / want_freq) - 16) / 2;
+  // TWBR=20;
+  Serial.print(F("Wire initialized at "));Serial.print(TWBR);Serial.println(F(" twbr, reset..."));
 
   // Reset to power-up defaults. Known state, fix weirdness.
   TLC59116::reset(); 
@@ -100,6 +104,19 @@ void loop() {
       // Find out that TLC59116's are hooked up and working (and the broadcast addresses).
       TLC59116::scan().print();
       test_num = 0xff; // prompt;
+      break;
+
+    case 'C': // Do all min/max for trimpot calibration
+      TLC59116::reset();
+      tlc_first.reset_shadow_registers();
+      tlc_first.enable_outputs(); // before reset_shadow!
+
+      do_sequence_till_input
+        sequence(0, tlc_first.pattern(0xffff), 400)
+        // sequence(1, tlc_first.pattern(0x0), 400)
+        sequence(1, tlc_first.pwm((byte[]) {0x1,0x1,0x1,0x1,0x1,0x1,0x1,0x1,0x1,0x1,0x1,0x1,0x1,0x1,0x1,0x1}), 600)
+      end_do_sequence
+      test_num = 0xff;
       break;
 
     case 'd': // Describe first TLC59116
@@ -171,7 +188,7 @@ void loop() {
       end_sequence
       break;
 
-    case 'B' : // Global blink (osc)
+    case 'B' : // Global blink (osc) bogus brightness sometimes
       TLC59116::reset();
       tlc_first.reset_shadow_registers();
       tlc_first.enable_outputs(); // before reset_shadow!
@@ -228,38 +245,49 @@ void loop() {
       end_do_sequence
       test_num = 0xff;
       break;
-  /*
 
-    case 5:
-      {
-        tlc.on();
-        unsigned int pattern;
-        pattern = 0b0011000111001101;
-        tlc.send(pattern); // prime it, SDO is 0 (MSB)
+  case 'g': // group blink test
+    tlc_first.pwm((byte[]){0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff});
+    tlc_first.group_blink(0xffff, .25, 2.0);
+    // tlc_first.group_pwm(0xffff, 129);
+    while (Serial.available() <= 0) {}
+    tlc_first.pattern(0x0);
+    test_num = 0xff;
+    break;
 
-        Serial.println(F("Want"));
-        Serial.println(F("| Saw"));
-        Serial.println(F("| | Good?"));
-
-        int fill = 1;
-        for(int i=0; i<16; i++) {
-          int want = bitRead(pattern, 15-i); // SDO shows MSB
-          pattern >> 1;
-          int val = tlc.read_sdo();
-          Serial.print(want); 
-          Serial.print(" ");
-          Serial.print(val); 
-          Serial.print(" ");
-          Serial.println(val == want ? 1 : 0);
-
-          // we'll fill w/ 1010..., slow enough to see
-          tlc.send_bits(1,fill, 100);
-          fill = fill ? 0 : 1;
+  case 'G': // group pwm test (cycle) flicker bug sometimes
+    {
+      // at 340000hz TWBR, with no delay(), up-down takes about 81msec. that's about 6 updates/msec!
+      unsigned long elapsed;
+      unsigned const slowness = 1;
+      tlc_first.pwm((byte[]){0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff});
+      tlc_first.group_pwm(0xffff, 0xff);
+      while (Serial.available() <= 0) {
+        // Serial.print("Down... ");
+        elapsed = millis();
+        for(byte i=255; ;i--) {
+          // Serial.print(i);
+          tlc_first.modify_control_register(TLC59116::GRPPWM_Register, i);
+          if (slowness) delay(slowness);
+          if (i==0) break;
+          }
+        // Serial.println("Up...");
+        if (Serial.available() > 0) break;
+        for(byte i=0; ;i++) {
+          tlc_first.modify_control_register(TLC59116::GRPPWM_Register, i);
+          if (slowness) delay(slowness);
+          if (i==255) break;
+          }
+        Serial.print(F("Elapsed "));Serial.println(millis()-elapsed);
         }
-        tlc.all(HIGH)->delay(400)->flash()->delay(400);
-      }
-      break;
+    }
+    // tlc_first.pattern(0x0);
+    test_num = 0xff;
+    break;
 
+    
+
+  /*
       // error-detect - short 1 pin, load 1 pin, leave 1 pin open
     case 6:
       {
@@ -272,62 +300,6 @@ void loop() {
       }
       break;
 
-      // Use the current-gain-multiplier to set the range down
-      // Does a bunch of blinking to confirm mode switch
-    case 7:
-      Serial.println(F("On Max"));
-      tlc.config(1,1,127);
-      tlc.all(HIGH)->on()->delay(1000);
-
-      Serial.println(F("On Min"));
-      tlc.config(0,0,0);
-      tlc.all(HIGH)->on()->delay(1000);
-
-      // This confirms that we are back in normal mode
-      Serial.println(F("shifting"));
-      tlc.all(LOW)->delay(300);
-      tlc.all(HIGH)->delay(300);
-      tlc.all(LOW)->delay(300);
-      tlc.all(HIGH)->delay(300);
-      tlc.all(LOW)->delay(300);
-      tlc.all(HIGH)->delay(300);
-      tlc.all(LOW)->delay(300);
-
-      break;
-
-    // Assuming config() test above works,
-    // This shows what it looks like to set config
-    // without delays,
-    // And the full-range effect
-    // Set tlc.debug(0): should be smooth (no flash)
-    case 8:
-      if (first) {Serial.println("FIRST"); tlc.debug(0); tlc.all(HIGH)->on(); }
-      Serial.println("Segment ends");
-      tlc.config(1,1,127)->on()->all(HIGH)->delay(200);
-      tlc.config(0,1,127)->on()->all(HIGH)->delay(200);
-      tlc.config(1,0,127)->on()->all(HIGH)->delay(200);
-      tlc.config(0,0,127)->on()->all(HIGH)->delay(200);
-      tlc.flash();
-      
-      // Full range
-      Serial.println("Full range");
-      for (int cm=1; cm>=0; cm--) {
-        for (int vb=1; vb>=0; vb--) {
-          for (int vg=127; vg>=0; vg -=16) {
-            tlc.config(cm,vb,vg)->on()->all(HIGH)->delay(200);
-          }
-        }
-      }
-      break;
-    
-    // Calibrate the trim-pot vs. current-gain
-    // Does Max-mid-min so you can see what effect trimpot has
-    case 9:
-      if (first) tlc.all(HIGH)->on();
-      tlc.config(1,1,127)->on()->all(HIGH)->delay(400);
-      tlc.config(1,0,0)->on()->all(HIGH)->delay(400);
-      tlc.config(0,0,0)->on()->all(HIGH)->delay(400);
-      break;
       
   */
 
@@ -336,6 +308,7 @@ void loop() {
       // menu made by: make examples/.chain_test.ino.menu
 Serial.println(F("m  free Memory"));
 Serial.println(F("s  Scan for addresses"));
+Serial.println(F("C  Do all min/max for trimpot calibration"));
 Serial.println(F("d  Describe first TLC59116"));
 Serial.println(F("r  Reset all TCL59116 to power up"));
 Serial.println(F("b  Blink led 0 of first TLC59116 a few times"));
@@ -345,12 +318,14 @@ Serial.println(F("W  Same using bulk write"));
 Serial.println(F("S  dump Shadow registers of first"));
 Serial.println(F("o  all On (dim)"));
 Serial.println(F("f  Flicker test (current test)"));
-Serial.println(F("B  Global blink (osc)"));
+Serial.println(F("B  Global blink (osc) bogus brightness sometimes"));
 Serial.println(F("P  Pwm, 4 at a time using bulk"));
 Serial.println(F("p  Pwm full range"));
 Serial.println(F("t  Time one-at-a-time vs. bulk, pwm"));
 Serial.println(F("O  On/off, 4 at a time (bulk)"));
-            // end-menu
+Serial.println(F("g  group blink test"));
+Serial.println(F("G  group pwm test (cycle) flicker bug sometimes"));
+      // end-menu
 
       Serial.println(F("? Prompt again"));
       test_num = 0xFF; // prompt
@@ -429,7 +404,7 @@ void time_each_vs_bulk_pwm() {
       unsigned long from;
       unsigned long elapsed;
 
-      Serial.print(F("10 times each"));
+      Serial.println(F("10 times each"));
       Serial.print(F("             "));
       for(byte ct = 1; ct<=16; ct++) { Serial.print(ct); Serial.print(ct<10 ? "  " : " " ); } Serial.println();
 
