@@ -2,7 +2,8 @@
 #define TLC59116_h
 
 /*
-  Pins: SDA and SCL of I2C
+  Pins:
+    TLC59116: 27:SDA, 26:SCL
     UNO: A4:SDA, A5:SCL
     mega: as marked
     teensy: ...
@@ -105,7 +106,8 @@ class TLC59116 {
     static const byte LEDOUT0_Register = 0x14;
     static const byte SUBADR1_Register = 0x18;
     // for LEDx_Register, see Register_Led_State
-    static const byte EFLAG_Register = 0x1d;
+    static const byte EFLAG1_Register = 0x1d;
+    static const byte EFLAG2_Register = EFLAG1_Register + 1;
 
     static const byte LEDx_Max = 15; // 0..15
 
@@ -202,6 +204,12 @@ class TLC59116 {
     // Seeing quite a bit of variance, first time is slowest (seems to be the "monitor" communications)
     TLC59116& pwm(byte led_num_start, byte ct, const byte* values); // bulk set
     TLC59116& pwm(const byte* values) { return pwm(0,16, values); }
+
+    // Error detect bits, msb=15
+    unsigned int error_detect(bool do_overtemp = false);
+    unsigned int open_detect() { return error_detect(); } // convenience, 0=open, 1=loaded
+    unsigned int overtemp_detect() { return error_detect(true); } // convenience. bitvalues: 0=overtemp, 1=normal
+      // overtemp is not likely to last long
 
     // Blink the LEDs, at their current PWM setting
     TLC59116& group_blink(word bit_pattern, byte ratio, byte blink_time); // 0%..99.61%, 0=10sec..255=24hz

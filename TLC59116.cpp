@@ -155,6 +155,24 @@ void TLC59116::describe_iref() {
     Serial.println();
     }
 
+unsigned int TLC59116::error_detect(bool do_overtemp) {
+  // reset over-temp
+  control_register(MODE2_Register, 
+    set_with_mask(MODE2_EFCLR, MODE2_EFCLR, shadow_registers[MODE2_Register])
+    );
+  if (do_overtemp) {
+    // enable temp detection
+    control_register(MODE2_Register, 
+      set_with_mask(0, MODE2_EFCLR, shadow_registers[MODE2_Register])
+      );
+    }
+  pattern(0xFFFF);
+  unsigned int eflags = control_register(EFLAG1_Register);
+  eflags ^= control_register(EFLAG2_Register) << 8;
+  return eflags;
+  }
+
+
 void TLC59116::describe_error_flag() {
     byte mode2 = control_register(MODE2_Register);
     byte value;
@@ -167,7 +185,7 @@ void TLC59116::describe_error_flag() {
 
     // 8 channels per register
     for(byte i=0;i<=1;i++) {
-        value = control_register(EFLAG_Register + i);
+        value = control_register(EFLAG1_Register + i);
         // Each bit is a channel
         for(byte bit_num=0; bit_num<=7; bit_num++) {
             Serial.print( (value & (1<<bit_num)) ? "1    " : "0    ");
@@ -252,6 +270,7 @@ void TLC59116::control_register(byte register_num, byte data) {
 
 byte TLC59116::control_register(byte register_num) {
   // get
+  // Does "work" for allcall: for 1 device, you get the value you expect
   if (!is_control_register(register_num)) {
     if (DEBUG) {
       debug(F("Not a "));debug(Device);debug(F(" control register #:"));debug(register_num,HEX);
@@ -267,6 +286,9 @@ byte TLC59116::control_register(byte register_num) {
     int data = 0; // is 0xFF to signal fail better?
     if (stat == 0) {
       int avail = Wire.requestFrom(addr,(byte)1); // not checking avail
+      if (DEBUG) {
+        if (avail > 1 || avail==0) { debug(F("Expected 1 byte, saw "));debug(avail);debug(); }
+        }
       data = Wire.read();
       shadow_registers[addr] = data;
       }

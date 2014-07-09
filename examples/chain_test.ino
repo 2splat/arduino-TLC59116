@@ -124,7 +124,7 @@ void loop() {
       test_num = 0xff;
       break;
 
-    case 'r': // Reset all TCL59116 to power up
+    case 'r': // Reset all TLC59116 to power up
       TLC59116::reset();
       Serial.println(F("Reset'd"));
 
@@ -285,23 +285,59 @@ void loop() {
     test_num = 0xff;
     break;
 
-    
+  case 'A' : // try an Allcall read
+    // Works if there is a single TLC59116, you get the value you expect
+    { 
+    TLC59116::reset();
+    TLC59116 allcall(TLC59116::AllCall_Addr);
+    allcall.enable_outputs();
+    Serial.println(F("reset, on in .5"));
+    delay(500);
+    Serial.println(F("Alt pattern to prove allcall can write"));
+    for(int i=0; i< 4;i++) {
+      Serial.print(F("10 "));
+      allcall.pattern(0xAAAA).delay(500);
+      Serial.print(F("01 "));
+      allcall.pattern(0x5555).delay(500);
+      }
 
-  /*
-      // error-detect - short 1 pin, load 1 pin, leave 1 pin open
-    case 6:
-      {
-        int status;
-        if (first) tlc.all(HIGH)->on()->delay(300);
-        status = tlc.error_detect();
-        Serial.print(F("Error Status: "));
-        Serial.println(status,BIN);
-        tlc.all(HIGH)->on()->delay(10000);
+    Serial.print(F("Try a read of LEDOUT0, which should be 010001: "));
+    Serial.println(allcall.control_register(TLC59116::LEDOUT0_Register),BIN);
+    }
+    Serial.println();
+
+    Serial.println(F("Describe"));
+    tlc_first.describe();
+
+    TLC59116::reset();
+    tlc_first.enable_outputs();
+    tlc_first.reset_shadow_registers();
+    Serial.println(F("Done"));
+    test_num = 0xff;
+    break;
+
+    // error-detect - short 1 pin, load 1 pin, leave 1 pin open
+    case 'e':
+      while (Serial.available() <= 0) {
+        Serial.println(F("Channels  0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15"));
+
+        unsigned int error_bits = tlc_first.open_detect();
+        Serial.print(F(  "Open      "));
+        for(byte i=0; i < (sizeof(error_bits) * 8); i++) {
+          Serial.print( (error_bits & (1U << (sizeof(error_bits) * 8 - 1))) ? "O  " : "-  ");
+          error_bits <<= 1;
+          }
+        Serial.println();
+
+        error_bits = tlc_first.overtemp_detect();
+        Serial.print(F(  "Over Temp "));
+        for(byte i=0; i < (sizeof(error_bits) * 8); i++) {
+          Serial.print( (error_bits & (1U << (sizeof(error_bits) * 8 - 1))) ? "-  " : "+  ");
+          error_bits <<= 1;
+          }
+        Serial.println();
       }
       break;
-
-      
-  */
 
     default:
       Serial.println();
@@ -310,7 +346,7 @@ Serial.println(F("m  free Memory"));
 Serial.println(F("s  Scan for addresses"));
 Serial.println(F("C  Do all min/max for trimpot calibration"));
 Serial.println(F("d  Describe first TLC59116"));
-Serial.println(F("r  Reset all TCL59116 to power up"));
+Serial.println(F("r  Reset all TLC59116 to power up"));
 Serial.println(F("b  Blink led 0 of first TLC59116 a few times"));
 Serial.println(F("c  Chase pattern (not pwm)"));
 Serial.println(F("w  Wave chase pattern (pwm)"));
