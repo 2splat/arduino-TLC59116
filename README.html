@@ -1,7 +1,8 @@
 <h1>define TLC59116_h</h1>
 
 <p>/*
-  Pins: SDA and SCL of I2C
+  Pins:
+TLC59116: 27:SDA, 26:SCL
 UNO: A4:SDA, A5:SCL
 mega: as marked
 teensy: ...</p>
@@ -21,7 +22,12 @@ so reset does right thing, and other global state
 layer
   tlc[1].dmblnk = 1, ...
   ?? What does a read on AllCall get?
-  The TLC59108 is supposedly the same except only 8 channels.
+  TLC59108 is supposedly the same except only 8 channels.
+8 output channels
+64 addresses : quad-value pins A0,A1,A2 (see datasheet)
+  16..47,80..103,112..119</p>
+
+<p>TLC59208F : 4channel, similar, pin changes, up to 64 devices, etc.
   * Change to group_blink(ratio, hz, pwm values)
 low level is blink-bit-mask
 highlevel is leds-are:x blink/on-off/pwm/grppwm

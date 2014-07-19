@@ -15,8 +15,10 @@ delay KEYWORD2
 describe KEYWORD2
 device_addresses KEYWORD2
 Device KEYWORD2
-EFLAG_Register KEYWORD2
+EFLAG1_Register KEYWORD2
+EFLAG2_Register KEYWORD2
 enable_outputs KEYWORD2
+error_detect KEYWORD2
 first_addr KEYWORD2
 get_control_registers KEYWORD2
 group_blink KEYWORD2
@@ -54,6 +56,8 @@ modify_control_register KEYWORD2
 normalize_address KEYWORD2
 off KEYWORD2
 on KEYWORD2
+open_detect KEYWORD2
+overtemp_detect KEYWORD2
 pattern KEYWORD2
 print KEYWORD2
 PWM0_Register KEYWORD2
