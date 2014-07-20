@@ -13,7 +13,7 @@
 // NB: 0x69, 0x6A (10), and 0x6C (12) are the default group-addresses (disabled at power-up)
 TLC59116 tlc_first;  // Lowest address found by a scan: auto!
 TLC59116 tlc(0); // device whose address pins set to 0
-TLC59116 tlc4(4); // device whose address pins set to 4
+TLC59116 tlc_allcall(TLC59116::AllCall_Addr); // all devices at once
 TLC59116 tlc5(0x65); // device whose address pins set to 5
 TLC59116::Each tlcs; // each from scanning, but not broadcast
 TLC59116::Broadcast tlc_broadcast; // everybody-at-once (AllCall), no reading
@@ -51,7 +51,7 @@ void setup() {
   // Must do this for TLC59116 stuff
   Serial.println(F("wire..."));
   Wire.begin();
-  const long want_freq = 340000L; // 100000L; .. 340000L for 1, not termination
+  const long want_freq = 150000L; // 100000L; .. 340000L for 1, not termination
   TWBR = ((F_CPU / want_freq) - 16) / 2;
   // TWBR=20;
   Serial.print(F("Wire initialized at "));Serial.print(TWBR);Serial.println(F(" twbr, reset..."));
@@ -100,11 +100,18 @@ void loop() {
       test_num = 0xff;
       break;
 
-    case 's': // Scan for addresses
+    case 's': // Scan (cached) for addresses
       // Find out that TLC59116's are hooked up and working (and the broadcast addresses).
       TLC59116::scan().print();
       test_num = 0xff; // prompt;
       break;
+
+    case 'S': // Scan (no cache) for addresses
+      // Find out that TLC59116's are hooked up and working (and the broadcast addresses).
+      TLC59116::Scan::scanner().rescan().print();
+      test_num = 0xff; // prompt;
+      break;
+
 
     case 'C': // Do all min/max for trimpot calibration
       TLC59116::reset();
@@ -140,7 +147,7 @@ void loop() {
         ;
         }
 
-      Serial.print(F("Blinked LED 0 of device # "));Serial.println(TLC59116::Base_Addr - tlc_first.address());
+      Serial.print(F("Blinked LED 0 of device # "));Serial.println(tlc_first.address() - TLC59116::Base_Addr);
       test_num = 0xff;
       break;
 
@@ -155,8 +162,8 @@ void loop() {
     case 'W': // Same using bulk write
       // TLC59116::reset();
       // tlc_first.reset_shadow_registers();
-      tlc_first.enable_outputs(); // before reset_shadow!
       {
+      tlc_first.enable_outputs(); // before reset_shadow!
       byte i;
       do_sequence_till_input
         sequence(0, tlc_first.pwm(i++ % 16, sizeof(hump_values), hump_values), hump_speed)
@@ -164,7 +171,7 @@ void loop() {
       }
       break;
 
-    case 'S': // dump Shadow registers of first
+    case 'D': // dump Shadow registers of first
       for (byte i=0; i <= TLC59116::Control_Register_Max; i++) {
         Serial.print("@");Serial.print(i);Serial.print(" 0x");Serial.println(tlc_first.shadow_registers[i],HEX);
         }
@@ -221,8 +228,19 @@ void loop() {
       test_num = 0xff;
       break;
 
+    case 'a' : // pwm full range using Allcall
+      TLC59116::reset();
+      tlc_first.enable_outputs(); // before reset_shadow!
+      tlc_allcall.enable_outputs(); // before reset_shadow!
+      pwm_full_range(tlc_allcall);
+      TLC59116::reset();
+      tlc_first.enable_outputs(); // before reset_shadow!
+      tlc_first.reset_shadow_registers();
+      test_num = 0xff;
+      break;
+
     case 'p' : // Pwm full range
-      pwm_full_range();
+      pwm_full_range(tlc_first);
       test_num = 0xff;
       break;
 
@@ -289,20 +307,20 @@ void loop() {
     // Works if there is a single TLC59116, you get the value you expect
     { 
     TLC59116::reset();
-    TLC59116 allcall(TLC59116::AllCall_Addr);
-    allcall.enable_outputs();
+    tlc_allcall.enable_outputs();
     Serial.println(F("reset, on in .5"));
     delay(500);
     Serial.println(F("Alt pattern to prove allcall can write"));
     for(int i=0; i< 4;i++) {
       Serial.print(F("10 "));
-      allcall.pattern(0xAAAA).delay(500);
+      tlc_allcall.pattern(0xAAAA).delay(500);
       Serial.print(F("01 "));
-      allcall.pattern(0x5555).delay(500);
+      tlc_allcall.pattern(0x5555).delay(500);
       }
 
+    Serial.println();
     Serial.print(F("Try a read of LEDOUT0, which should be 010001: "));
-    Serial.println(allcall.control_register(TLC59116::LEDOUT0_Register),BIN);
+    Serial.println(tlc_allcall.control_register(TLC59116::LEDOUT0_Register),BIN);
     }
     Serial.println();
 
@@ -316,34 +334,16 @@ void loop() {
     test_num = 0xff;
     break;
 
-    // error-detect - short 1 pin, load 1 pin, leave 1 pin open
-    case 'e':
-      while (Serial.available() <= 0) {
-        Serial.println(F("Channels  0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15"));
-
-        unsigned int error_bits = tlc_first.open_detect();
-        Serial.print(F(  "Open      "));
-        for(byte i=0; i < (sizeof(error_bits) * 8); i++) {
-          Serial.print( (error_bits & (1U << (sizeof(error_bits) * 8 - 1))) ? "O  " : "-  ");
-          error_bits <<= 1;
-          }
-        Serial.println();
-
-        error_bits = tlc_first.overtemp_detect();
-        Serial.print(F(  "Over Temp "));
-        for(byte i=0; i < (sizeof(error_bits) * 8); i++) {
-          Serial.print( (error_bits & (1U << (sizeof(error_bits) * 8 - 1))) ? "-  " : "+  ");
-          error_bits <<= 1;
-          }
-        Serial.println();
-      }
+    case 'e': // try to detect changes in the error_detect feature
+      display_error_detect(true);
       break;
 
     default:
       Serial.println();
       // menu made by: make examples/.chain_test.ino.menu
 Serial.println(F("m  free Memory"));
-Serial.println(F("s  Scan for addresses"));
+Serial.println(F("s  Scan (cached) for addresses"));
+Serial.println(F("S  Scan (no cache) for addresses"));
 Serial.println(F("C  Do all min/max for trimpot calibration"));
 Serial.println(F("d  Describe first TLC59116"));
 Serial.println(F("r  Reset all TLC59116 to power up"));
@@ -351,16 +351,18 @@ Serial.println(F("b  Blink led 0 of first TLC59116 a few times"));
 Serial.println(F("c  Chase pattern (not pwm)"));
 Serial.println(F("w  Wave chase pattern (pwm)"));
 Serial.println(F("W  Same using bulk write"));
-Serial.println(F("S  dump Shadow registers of first"));
+Serial.println(F("D  dump Shadow registers of first"));
 Serial.println(F("o  all On (dim)"));
 Serial.println(F("f  Flicker test (current test)"));
 Serial.println(F("B  Global blink (osc) bogus brightness sometimes"));
 Serial.println(F("P  Pwm, 4 at a time using bulk"));
+Serial.println(F("a  pwm full range using Allcall"));
 Serial.println(F("p  Pwm full range"));
 Serial.println(F("t  Time one-at-a-time vs. bulk, pwm"));
 Serial.println(F("O  On/off, 4 at a time (bulk)"));
 Serial.println(F("g  group blink test"));
 Serial.println(F("G  group pwm test (cycle) flicker bug sometimes"));
+Serial.println(F("A  try an Allcall read"));
       // end-menu
 
       Serial.println(F("? Prompt again"));
@@ -478,7 +480,7 @@ void time_each_vs_bulk_pwm() {
         }
       }
 
-void pwm_full_range() {
+void pwm_full_range(TLC59116 &tlc) {
   // while 0..7 goes up, 8..15 goes down & vice versa
   const byte size1 = 8;
   byte direction;
@@ -492,7 +494,7 @@ void pwm_full_range() {
   // vary
   while (Serial.available() == 0) {
     // Serial.print(F("Set 0..15 "));for(byte i=0; i<16; i++) {Serial.print(values[i]);Serial.print(" ");}
-    tlc_first.pwm(0,16, values);
+    tlc.pwm(0,16, values);
     // Serial.print(F(" next "));Serial.print(direction);Serial.println();
 
     if (values[0] >= 255) { direction = -1; }
@@ -507,3 +509,37 @@ void pwm_full_range() {
     
     }
   }
+
+void display_error_detect(bool doovertemp) {
+  unsigned long last_error_bits = 0xffff0000; // for first time
+  byte out_ct = 10;
+
+  while (Serial.available() <= 0) {
+    unsigned int error_bits = tlc_first.error_detect(doovertemp);
+    // error_bits |= random(2);
+
+    if (last_error_bits != error_bits) {
+      if (!(out_ct % 10)) {
+        Serial.println(F("Channels  0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15"));
+        }
+      out_ct++;
+      last_error_bits = error_bits;
+
+      if (doovertemp)
+        Serial.print(F(  "Over Temp "));
+      else
+        Serial.print(F(  "Open      "));
+
+      for(byte i=0; i < (sizeof(error_bits) * 8); i++) {
+        if(doovertemp)
+          Serial.print( (error_bits & (1U << (sizeof(error_bits) * 8 - 1))) ? ">  " : "-  ");
+        else
+          Serial.print( (error_bits & (1U << (sizeof(error_bits) * 8 - 1))) ? "O  " : "-  ");
+        error_bits <<= 1;
+        }
+      Serial.println();
+      }
+
+    }
+  }
+

@@ -611,6 +611,7 @@ TLC59116::Scan& TLC59116::Scan::rescan() {
 
   byte debug_tried = 0;
 
+  this->found = 0;
   for (byte addr = Base_Addr; addr <= Max_Addr; addr++)
   {
     debug_tried++;

@@ -76,7 +76,7 @@ class TLC59116 {
     // 8 addresses are unassigned, +3 more if SUBADR's aren't used
     // these are defined by the device (datasheet)
     static const byte Base_Addr    = 0x60; // 0b110xxxx
-    static const byte Max_Addr     = Base_Addr + 13;   // +0b1101 +0x0D. 14 of 'em
+    static const byte Max_Addr     = Base_Addr + 15;   // +0b1111 +0x0F. 14 of 'em (16- reset & allcall)
     //                                         + 0x00  // Unassigned at on/reset
     //                                     ... + 0x07  // Unassigned at on/reset
     static const byte AllCall_Addr = Base_Addr + 0x08; // +0b1000 Programmable
@@ -84,7 +84,7 @@ class TLC59116 {
     static const byte SUBADR2      = Base_Addr + 0x0A; // +0b1010 Programmable Disabled at on/reset
     static const byte Reset_Addr   = Base_Addr + 0x0B; // +0b1011
     static const byte SUBADR3      = Base_Addr + 0x0C; // +0b1100 Programmable Disabled at on/reset
-    //                                         + 0x0D  // Unassigned at on/reset
+    //                                         + 0x0D .. 0x0F  // Unassigned at on/reset
 
     // Auto-increment mode bits
     // default is Auto_none, same register can be written to multiple times
@@ -135,7 +135,7 @@ class TLC59116 {
     // utility
     static byte normalize_address(byte address) { 
       return 
-        (address <= (Max_Addr-Base_Addr))  // 0..13 shorthand for 0x60..0x6D
+        (address <= (Max_Addr-Base_Addr)) // shorthand: 0..15
         ? (Base_Addr+address) 
         : address
         ;
@@ -316,7 +316,7 @@ class TLC59116 {
           }
 
         byte found; // number of addresses found
-        byte addresses[14]; // reset/all are excluded, so only 16 possible
+        byte addresses[Max_Addr - Base_Addr - 2]; // reset/all are excluded, so only 14 possible
     };
 
     class Broadcast {
