@@ -2,6 +2,7 @@ Device := TLC59116
 lib_files := $(shell find -type f -not -path './build/*' -a \( -name '*.cpp' -o -name '*.h' -o -name 'keywords.txt' -o -name '*.ino' -o -name 'README*' \) )
 arduino_dir := $(shell which arduino | xargs --no-run-if-empty realpath | xargs --no-run-if-empty dirname)
 arduino_inc_dir := $(arduino_dir)/hardware
+ino_link := $(shell basename `/bin/pwd`).ino
 
 # a=`which arduino` && b=`realpath $$a` && echo `dirname $$b`/hardware
 
@@ -20,8 +21,11 @@ build_dir :
 	@mkdir -p build
 	@rm -rf build/*
 
-examples/.chain_test.ino.menu : examples/chain_test.ino
-	perl -n -e '/case ('"'"'([a-z])'"'"'|([0-9]))\s*:\s*\/\/(.+)/i && do {print "Serial.println(F(\"$$2$$3 $$4\"));\n"}' $< > $@
+# makes this directory work as an .ino
+.PHONY : inoify
+inoify : $(ino_link)
+$(ino_link) : $(shell /bin/ls -1 examples/*.ino)
+	ln -s $< $@
 
 # documentation, section 1, is in .cpp
 # the first /* ... */ as markdown
