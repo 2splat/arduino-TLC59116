@@ -334,13 +334,22 @@ void loop() {
     test_num = 0xff;
     break;
 
-    case 'e': // try to detect changes in the error_detect feature
-      display_error_detect(true);
-      break;
+  case 'e': // try to detect changes in the error_detect feature
+    display_error_detect(tlc_first, true, false);
+    break;
 
-    default:
-      Serial.println();
-      // menu made by: make examples/.chain_test.ino.menu
+  case 'E' : // error detect each device
+    for(byte i=0; i<TLC59116::Scan::scanner().count(); i++) {
+      TLC59116 tlc(TLC59116::Scan::scanner().device_addresses()[i]);
+      Serial.println(tlc.address(),HEX);
+      display_error_detect(tlc, false, true);
+      }
+  test_num = 0xff;
+  break;
+
+  default:
+    Serial.println();
+    // menu made by: make examples/.chain_test.ino.menu
 Serial.println(F("m  free Memory"));
 Serial.println(F("s  Scan (cached) for addresses"));
 Serial.println(F("S  Scan (no cache) for addresses"));
@@ -363,11 +372,13 @@ Serial.println(F("O  On/off, 4 at a time (bulk)"));
 Serial.println(F("g  group blink test"));
 Serial.println(F("G  group pwm test (cycle) flicker bug sometimes"));
 Serial.println(F("A  try an Allcall read"));
-      // end-menu
+Serial.println(F("e  try to detect changes in the error_detect feature"));
+Serial.println(F("E  error detect each device"));
+    // end-menu
 
-      Serial.println(F("? Prompt again"));
-      test_num = 0xFF; // prompt
-    }
+    Serial.println(F("? Prompt again"));
+    test_num = 0xFF; // prompt
+  }
 
   // Change test_num?
   if (Serial.available() > 0) {
@@ -510,12 +521,12 @@ void pwm_full_range(TLC59116 &tlc) {
     }
   }
 
-void display_error_detect(bool doovertemp) {
+void display_error_detect(TLC59116 &tlc, bool doovertemp, bool once) {
   unsigned long last_error_bits = 0xffff0000; // for first time
   byte out_ct = 10;
 
   while (Serial.available() <= 0) {
-    unsigned int error_bits = tlc_first.error_detect(doovertemp);
+    unsigned int error_bits = tlc.error_detect(doovertemp);
     // error_bits |= random(2);
 
     if (last_error_bits != error_bits) {
@@ -540,6 +551,7 @@ void display_error_detect(bool doovertemp) {
       Serial.println();
       }
 
+    if (once) break;
     }
   }
 
