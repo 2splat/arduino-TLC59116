@@ -1,6 +1,6 @@
 // FIXME: make things final
 
-#include <TLC59116.h>
+#include "TLC59116.h"
 #include <Wire.h>
 
 // The convenience method sometlc.delay(x) hides the normal delay. Use ::delay(...)

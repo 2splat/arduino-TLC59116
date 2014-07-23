@@ -5,7 +5,7 @@
  */
 
 #include <Wire.h>
-#include <TLC59116.h>
+#include "TLC59116.h"
 
 // Addresses can be 0x60..0x6D (96..109), or the shorthand 0..13
 // NB: 0x6B (11) is always the Reset_Addr
@@ -349,7 +349,7 @@ void loop() {
 
   default:
     Serial.println();
-    // menu made by: make examples/.chain_test.ino.menu
+    // menu made by: make (in examples/, then insert here)
 Serial.println(F("m  free Memory"));
 Serial.println(F("s  Scan (cached) for addresses"));
 Serial.println(F("S  Scan (no cache) for addresses"));
