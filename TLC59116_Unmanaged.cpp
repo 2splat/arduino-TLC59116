@@ -1,12 +1,11 @@
 // FIXME: make things final
 
-#include <TLC59116.h>
+#include "TLC59116_Unmanaged.h"
 #include <Wire.h>
 
 // The convenience method sometlc.delay(x) hides the normal delay. Use ::delay(...)
 
-bool TLC59116::DEBUG = 0;
-const char* TLC59116::Device = "TLC59116";
+const char* TLC59116_Unmanaged::Device = "TLC59116";
 
 
 // NB. You must use the accessor address() to take care of lazy initialization of the address!
@@ -20,33 +19,22 @@ inline void printf0(byte v) { // 3 digits
     Serial.print(v);
     }
 
-int TLC59116::reset() {
+int TLC59116_Unmanaged::reset() {
   // It may appear that a reset looks like Auto_PWM ^ PWMx_Register(3) = 0x5a. But Reset_addr is a special mode.
   Wire.beginTransmission(Reset_Addr);
     Wire.write(0xA5);
     Wire.write(0x5A);
   int rez = _end_trans();
 
-  if (DEBUG) { 
-    debug(F("Reset ")); 
-    if (rez)  { debug(F("Failed with ")); debug(rez); } else { debug(F("worked!")); } 
-    debug();
-    }
+  TLC59116Warn(F("Reset ")); 
+  if (rez)  { TLC59116Warn(F("Failed with ")); TLC59116Warn(rez); } else { TLC59116Warn(F("worked!")); } 
+  TLC59116Warn();
+
   // does not "reset" the error_detect
   return rez;
   }
 
-byte TLC59116::address() {
-  // The plain constructor implies "first"
-  // And we have to delay scanner() till after Wire.begin.
-  if (this->_address == NULL) {
-    debug(F("Lazy init for first"));debug();
-    this->_address = Scan::scanner().first_addr();
-    }
-  return this->_address;
-  }
-
-void TLC59116::describe_channels() {
+void TLC59116_Unmanaged::describe_channels() {
     byte addr = address();
     
     // General/Group
@@ -124,7 +112,7 @@ void TLC59116::describe_channels() {
        }
     }
 
-void TLC59116::describe_addresses() {
+void TLC59116_Unmanaged::describe_addresses() {
   byte mode1 = control_register(MODE1_Register);
   byte the_addr;
 
@@ -143,7 +131,7 @@ void TLC59116::describe_addresses() {
   Serial.println();
   }
 
-void TLC59116::describe_iref() {
+void TLC59116_Unmanaged::describe_iref() {
     byte value = control_register(0x1C);
     word current_multiplier = value & 0x1F; // 5 bits
 
@@ -155,7 +143,7 @@ void TLC59116::describe_iref() {
     Serial.println();
     }
 
-unsigned int TLC59116::error_detect(bool do_overtemp) {
+unsigned int TLC59116_Unmanaged::error_detect(bool do_overtemp) {
   // on, clr, reset-for-over, read
   // on, clr, pause, read
   pattern(0xFFFF);
@@ -177,7 +165,7 @@ unsigned int TLC59116::error_detect(bool do_overtemp) {
   }
 
 
-void TLC59116::describe_error_flag() {
+void TLC59116_Unmanaged::describe_error_flag() {
     byte mode2 = control_register(MODE2_Register);
     byte value;
     // format same as channels
@@ -200,7 +188,7 @@ void TLC59116::describe_error_flag() {
     Serial.println();
     }
 
-TLC59116& TLC59116::describe() {
+TLC59116_Unmanaged& TLC59116_Unmanaged::describe() {
   const byte addr = address(); // just less typing
 
   Serial.print(F("Describe "));
@@ -221,7 +209,7 @@ TLC59116& TLC59116::describe() {
   return *this;
   }
 
-void TLC59116::describe_mode1() {
+void TLC59116_Unmanaged::describe_mode1() {
     byte value = control_register(MODE1_Register);
     
     // Let describe_addresses() do the addr enable bits
@@ -249,7 +237,7 @@ void TLC59116::describe_mode1() {
     Serial.println();
     }
 
-void TLC59116::describe_mode2() {
+void TLC59116_Unmanaged::describe_mode2() {
     byte value = control_register(MODE2_Register);
     
     // Serial.print("MODE2");Serial.print(" 0x");Serial.print(value,HEX);Serial.print(" ");
@@ -257,29 +245,25 @@ void TLC59116::describe_mode2() {
     Serial.println();
     }
 
-void TLC59116::control_register(byte register_num, byte data) {
+void TLC59116_Unmanaged::control_register(byte register_num, byte data) {
   // set
   if (!is_control_register(register_num)) {
-    if (DEBUG) {
-      debug(F("Not a "));debug(Device);debug(F(" control register #:0x"));debug(register_num,HEX);
-      debug(F(". Set to 0x"));debug(data,HEX);debug(F("is ignored."));
-      }
+    TLC59116Warn(F("Not a "));TLC59116Warn(Device);TLC59116Warn(F(" control register #:"));TLC59116Warn(register_num,HEX);
+    TLC59116Warn(F(". Set to "));TLC59116Warn(data,HEX);TLC59116Warn(F("is ignored."));
     return;
     }
-    // debug(F("set R "));debug(register_num,HEX);debug("=");debug(data,BIN);debug();
+    // TLC59116Warn(F("set R "));TLC59116Warn(register_num,HEX);TLC59116Warn("=");TLC59116Warn(data,BIN);TLC59116Warn();
     _begin_trans(this->address(), register_num); 
       Wire.write(data);
     _end_trans();
   }
 
-byte TLC59116::control_register(byte register_num) {
+byte TLC59116_Unmanaged::control_register(byte register_num) {
   // get
   // Does "work" for allcall: for 1 device, you get the value you expect
   if (!is_control_register(register_num)) {
-    if (DEBUG) {
-      debug(F("Not a "));debug(Device);debug(F(" control register #:"));debug(register_num,HEX);
-      debug(F(". Get is ignored."));
-      }
+    TLC59116Warn(F("Not a "));TLC59116Warn(Device);TLC59116Warn(F(" control register #:"));TLC59116Warn(register_num,HEX);
+    TLC59116Warn(F(". Get is ignored."));
     return 0; // is 0xFF better?
     }
     byte addr = address();
@@ -290,35 +274,33 @@ byte TLC59116::control_register(byte register_num) {
     int data = 0; // is 0xFF to signal fail better?
     if (stat == 0) {
       int avail = Wire.requestFrom(addr,(byte)1); // not checking avail
-      if (DEBUG) {
-        if (avail > 1 || avail==0) { debug(F("Expected 1 byte, saw "));debug(avail);debug(); }
-        }
+      if (avail > 1 || avail==0) { TLC59116Warn(F("Expected 1 byte, saw "));TLC59116Warn(avail);TLC59116Warn(); }
       data = Wire.read();
       shadow_registers[addr] = data;
       }
     return data;
   }
 
-void TLC59116::modify_control_register(byte register_num, byte value) {
+void TLC59116_Unmanaged::modify_control_register(byte register_num, byte value) {
   shadow_registers[register_num] = value;
-  // debug("CR...");debug();
+  // TLC59116Warn("CR...");TLC59116Warn();
   control_register(register_num, value);
   }
 
-void TLC59116::modify_control_register(byte register_num, byte mask, byte bits) {
+void TLC59116_Unmanaged::modify_control_register(byte register_num, byte mask, byte bits) {
   byte new_value = set_with_mask(bits, mask, shadow_registers[register_num]);
   /* if (register_num < PWM0_Register || register_num > 0x17) {
-    debug(F("Modify R"));debug(register_num,HEX);debug();
-    debug(F("       ="));debug(shadow_registers[register_num],BIN);debug();
-    debug(F("       M"));debug(mask,BIN);debug();
-    debug(F("       V"));debug(bits,BIN);debug();
-    debug(F("       ="));debug(new_value,BIN);debug();
+    TLC59116Warn(F("Modify R"));TLC59116Warn(register_num,HEX);TLC59116Warn();
+    TLC59116Warn(F("       ="));TLC59116Warn(shadow_registers[register_num],BIN);TLC59116Warn();
+    TLC59116Warn(F("       M"));TLC59116Warn(mask,BIN);TLC59116Warn();
+    TLC59116Warn(F("       V"));TLC59116Warn(bits,BIN);TLC59116Warn();
+    TLC59116Warn(F("       ="));TLC59116Warn(new_value,BIN);TLC59116Warn();
     } */
   shadow_registers[register_num] = new_value;
   control_register(register_num, new_value);
   }
 
-TLC59116& TLC59116::enable_outputs(bool yes) {
+TLC59116_Unmanaged& TLC59116_Unmanaged::enable_outputs(bool yes) {
   if (yes) {
     modify_control_register(MODE1_Register,MODE1_OSC_mask, 0x00); // bits off is osc on
     delayMicroseconds(500); // would be nice to be smarter about when to do this
@@ -330,7 +312,7 @@ TLC59116& TLC59116::enable_outputs(bool yes) {
   return *this;
   }
 
-TLC59116& TLC59116::pattern(word bit_pattern, word which_mask) {
+TLC59116_Unmanaged& TLC59116_Unmanaged::pattern(word bit_pattern, word which_mask) {
   byte addr = this->address(); // force lazy
 
   byte new_ledx[4];
@@ -356,12 +338,12 @@ TLC59116& TLC59116::pattern(word bit_pattern, word which_mask) {
   update_ledx_registers(addr, new_ledx, 0, 15);
   }
 
-void TLC59116::update_ledx_registers(byte addr, byte to_what, word bit_pattern) {
+void TLC59116_Unmanaged::update_ledx_registers(byte addr, byte to_what, word bit_pattern) {
 
   byte new_ledx[4];
   // need all for later comparison
   memcpy(new_ledx, &(this->shadow_registers[LEDOUT0_Register]), 4);
-  // debug(F("Change from ")); for(byte i=0;i<4;i++){ debug(new_ledx[i],BIN); debug(" ");} debug();
+  // TLC59116Warn(F("Change from ")); for(byte i=0;i<4;i++){ TLC59116Warn(new_ledx[i],BIN); TLC59116Warn(" ");} TLC59116Warn();
 
   // count through LED nums, starting from max
 
@@ -377,22 +359,22 @@ void TLC59116::update_ledx_registers(byte addr, byte to_what, word bit_pattern) 
 
     if (ledx_r==0) break;
     }
-  // debug(F("Change to   ")); for(byte i=0;i<4;i++){ debug(new_ledx[i],BIN); debug(" ");} debug();
+  // TLC59116Warn(F("Change to   ")); for(byte i=0;i<4;i++){ TLC59116Warn(new_ledx[i],BIN); TLC59116Warn(" ");} TLC59116Warn();
 
   update_ledx_registers(addr, new_ledx, 0, 15);
   }
 
-TLC59116& TLC59116::on(byte led_num, bool yes) {
+TLC59116_Unmanaged& TLC59116_Unmanaged::on(byte led_num, bool yes) {
   // we don't try to optimize "don't send data if shadow is already in that state"
 
   if (is_valid_led(led_num)) {
     if (DEBUG == 2) {
-      debug(F("LED set "));debug(_address,HEX);debug("[");debug(led_num);debug("] ");debug(yes ? "on" : "off");debug();
-      debug("  ");
-        debug("R ");debug(LEDx_Register(led_num),HEX);
-        debug(" M ");debug(LEDx_Register_mask(led_num),HEX);
-        debug(" V ");debug(yes ? LEDx_digital_on_bits(led_num) : LEDx_digital_off_bits(led_num));
-        debug();
+      TLC59116Warn(F("LED set "));TLC59116Warn(this->address(),HEX);TLC59116Warn("[");TLC59116Warn(led_num);TLC59116Warn("] ");TLC59116Warn(yes ? "on" : "off");TLC59116Warn();
+      TLC59116Warn("  ");
+        TLC59116Warn("R ");TLC59116Warn(LEDx_Register(led_num),HEX);
+        TLC59116Warn(" M ");TLC59116Warn(LEDx_Register_mask(led_num),HEX);
+        TLC59116Warn(" V ");TLC59116Warn(yes ? LEDx_digital_on_bits(led_num) : LEDx_digital_off_bits(led_num));
+        TLC59116Warn();
       }
 
     modify_control_register(
@@ -402,18 +384,18 @@ TLC59116& TLC59116::on(byte led_num, bool yes) {
       );
     }
   else {
-    debug(F("Bad led_num "));debug(led_num);debug(F(" on device "));debug(_address,HEX);debug();
+    TLC59116Warn(F("Bad led_num "));TLC59116Warn(led_num);TLC59116Warn(F(" on device "));TLC59116Warn(this->address(),HEX);TLC59116Warn();
     }
   return *this;
   }
 
-TLC59116& TLC59116::pwm(byte led_num, byte value) {
+TLC59116_Unmanaged& TLC59116_Unmanaged::pwm(byte led_num, byte value) {
   // put us into pwm mode if we aren't
   byte led_register = LEDx_Register(led_num);
   byte mode_bits = LEDx_bits(led_num, shadow_registers[led_register]);
 
   if (! (mode_bits == LEDx_pwm_bits(led_num) || mode_bits == LEDx_gpwm_bits(led_num))) {
-    // debug(F("Switch led to pwm: "));debug(led_num); debug(" register ");debug(led_register, HEX);debug();
+    // TLC59116Warn(F("Switch led to pwm: "));TLC59116Warn(led_num); TLC59116Warn(" register ");TLC59116Warn(led_register, HEX);TLC59116Warn();
     modify_control_register(
       led_register,
       LEDx_Register_mask(led_num),
@@ -422,24 +404,24 @@ TLC59116& TLC59116::pwm(byte led_num, byte value) {
     }
 
   // we don't try to short-circuit the write based on shadow-registers[]
-  // debug("Set ");debug(led_num);debug(" to pwm ");debug(value);debug();
+  // TLC59116Warn("Set ");TLC59116Warn(led_num);TLC59116Warn(" to pwm ");TLC59116Warn(value);TLC59116Warn();
   modify_control_register(PWMx_Register(led_num), value);
   return *this;
   }
 
-TLC59116& TLC59116::group_blink(word bit_pattern, byte ratio, byte blink_time) {
+TLC59116_Unmanaged& TLC59116_Unmanaged::group_blink(word bit_pattern, byte ratio, byte blink_time) {
   // this blinks the current pwm mode
-  // debug(F("DMBLNK mode"));
+  // TLC59116Warn(F("DMBLNK mode"));
   // FIXME: more efficient? Auto_GRP
   modify_control_register(MODE2_Register, MODE2_DMBLNK, MODE2_DMBLNK);
-  // debug(F("Set some to grpblnk ratio "));debug(ratio);debug(F(" len "));debug(blink_time);debug();
+  // TLC59116Warn(F("Set some to grpblnk ratio "));TLC59116Warn(ratio);TLC59116Warn(F(" len "));TLC59116Warn(blink_time);TLC59116Warn();
   modify_control_register(GRPPWM_Register, ratio);
   modify_control_register(GRPFREQ_Register, blink_time);
   update_ledx_registers(address(), LEDOUT_GRPPWM /* aka blink too */, bit_pattern);
   return *this;
   }
 
-TLC59116& TLC59116::group_pwm(word bit_pattern, byte brightness) {
+TLC59116_Unmanaged& TLC59116_Unmanaged::group_pwm(word bit_pattern, byte brightness) {
   modify_control_register(MODE2_Register, 0, MODE2_DMBLNK);
   modify_control_register(GRPPWM_Register, brightness);
   // GRPFREQ not actually "don't care", effectively an anti-range for brightness
@@ -448,7 +430,7 @@ TLC59116& TLC59116::group_pwm(word bit_pattern, byte brightness) {
   update_ledx_registers(address(), LEDOUT_GRPPWM /* aka blink too */, bit_pattern);
   }
 
-void TLC59116::update_ledx_registers(byte addr, byte to_what, byte led_start_i, byte led_end_i) {
+void TLC59116_Unmanaged::update_ledx_registers(byte addr, byte to_what, byte led_start_i, byte led_end_i) {
   // Update the LEDx registers to PWM or GRPPWM, or even ON or OFF
   // But, all the same
   // For setting a pattern use the ...(addr, want_ledx[4],...) variant below
@@ -474,19 +456,19 @@ void TLC59116::update_ledx_registers(byte addr, byte to_what, byte led_start_i, 
   update_ledx_registers(addr, new_ledx, led_start_i, led_end_i);
   }
 
-void TLC59116::update_ledx_registers(byte addr, const byte* new_ledx /* [4] */, byte led_start_i, byte led_end_i) {
+void TLC59116_Unmanaged::update_ledx_registers(byte addr, const byte* new_ledx /* [4] */, byte led_start_i, byte led_end_i) {
   // Update only the LEDx registers that need it
   // new_ledx is shadow_registers & new settings
   // Does wire.begin, write,...,end
   // (_i = index of a led 0..15, _r is register_number)
   const byte ledx_first_r = LEDx_Register(led_start_i);
   const byte ledx_last_r = LEDx_Register(led_end_i);
-  //debug(F("Update control from #"));
-    //debug(led_start_i);debug(F("/C"));debug(ledx_first_r,HEX);
-    //debug(F(" to "));debug(led_end_i);debug(F("/C"));debug(ledx_last_r,HEX);
-    //debug();
+  //TLC59116Warn(F("Update control from #"));
+    //TLC59116Warn(led_start_i);TLC59116Warn(F("/C"));TLC59116Warn(ledx_first_r,HEX);
+    //TLC59116Warn(F(" to "));TLC59116Warn(led_end_i);TLC59116Warn(F("/C"));TLC59116Warn(ledx_last_r,HEX);
+    //TLC59116Warn();
 
-  //debug(F("Change to ")); for(byte i=0;i<4;i++){ debug(new_ledx[i],BIN); debug(" ");} debug();
+  //TLC59116Warn(F("Change to ")); for(byte i=0;i<4;i++){ TLC59116Warn(new_ledx[i],BIN); TLC59116Warn(" ");} TLC59116Warn();
 
   // "new" is updated, now find the changed ones
   // (all the following work to write only changed bytes instead of 4. 
@@ -506,16 +488,16 @@ void TLC59116::update_ledx_registers(byte addr, const byte* new_ledx /* [4] */, 
       break; // done if we found one
       }
     }
-  // if (!has_change_first) {debug(F("No Diff"));debug();}
+  // if (!has_change_first) {TLC59116Warn(F("No Diff"));TLC59116Warn();}
 
   // Write the data if any changed
 
   if (has_change_first) { // might be "none changed"
     //// DEBUG
-    //debug("Diff F... ");
-    //for(byte r = LEDOUT0_Register; r < change_first_r; r++) debug("           ");
-    //for(byte r = change_first_r; r < 4 + LEDOUT0_Register; r++) { debug(new_ledx[r - LEDOUT0_Register],BIN);debug(" "); }
-    //debug();
+    //TLC59116Warn("Diff F... ");
+    //for(byte r = LEDOUT0_Register; r < change_first_r; r++) TLC59116Warn("           ");
+    //for(byte r = change_first_r; r < 4 + LEDOUT0_Register; r++) { TLC59116Warn(new_ledx[r - LEDOUT0_Register],BIN);TLC59116Warn(" "); }
+    //TLC59116Warn();
     //// DEBUG
   
 
@@ -529,28 +511,28 @@ void TLC59116::update_ledx_registers(byte addr, const byte* new_ledx /* [4] */, 
         }
       }
     //// DEBUG
-    //debug("Diff      ");
-    //for(byte r = LEDOUT0_Register; r < change_first_r; r++) debug("           ");
-    //for(byte r = change_first_r; r <= change_last_r; r++) { debug(new_ledx[r - LEDOUT0_Register],BIN);debug(" "); }
-    //debug();
+    //TLC59116Warn("Diff      ");
+    //for(byte r = LEDOUT0_Register; r < change_first_r; r++) TLC59116Warn("           ");
+    //for(byte r = change_first_r; r <= change_last_r; r++) { TLC59116Warn(new_ledx[r - LEDOUT0_Register],BIN);TLC59116Warn(" "); }
+    //TLC59116Warn();
     //// DEBUG
 
     // We have a first..last, so write them
-    // debug(F("Write @ register ")); debug(change_first_r,HEX); debug(" "); debug(change_last_r - change_first_r +1); debug(F(" bytes of data")); debug();
+    // TLC59116Warn(F("Write @ register ")); TLC59116Warn(change_first_r,HEX); TLC59116Warn(" "); TLC59116Warn(change_last_r - change_first_r +1); TLC59116Warn(F(" bytes of data")); TLC59116Warn();
     _begin_trans(addr, Auto_All, change_first_r);
-      // debug("  ");
+      // TLC59116Warn("  ");
       Wire.write(&new_ledx[ change_first_r - LEDOUT0_Register ], change_last_r-change_first_r+1);
       for(; change_first_r <= change_last_r; change_first_r++) {
         byte new_val = new_ledx[ change_first_r - LEDOUT0_Register ];
         shadow_registers[ change_first_r ] = new_val;
-        // debug(new_val,BIN);debug(" ");
+        // TLC59116Warn(new_val,BIN);TLC59116Warn(" ");
         }
-      //debug();
+      //TLC59116Warn();
     _end_trans();
     }
   }
 
-TLC59116& TLC59116::pwm(byte led_num_start, byte ct, const byte values[]) {
+TLC59116_Unmanaged& TLC59116_Unmanaged::pwm(byte led_num_start, byte ct, const byte values[]) {
   // deal with start+ct wrapping past 15
   if (led_num_start + ct > LEDx_Max + 1) { // so start 15, ct 1 is ok
     byte first_ct = LEDx_Max - led_num_start + 1; // from start to max, +1 for a count
@@ -564,61 +546,42 @@ TLC59116& TLC59116::pwm(byte led_num_start, byte ct, const byte values[]) {
 
     byte addr = this->address(); // force lazy
 
-    //debug(F("For PWM @")); debug(led_num_start); debug(" ");for(byte i=0;i<ct;i++){ debug(values[0]); debug(" ");} debug();
+    //TLC59116Warn(F("For PWM @")); TLC59116Warn(led_num_start); TLC59116Warn(" ");for(byte i=0;i<ct;i++){ TLC59116Warn(values[0]); TLC59116Warn(" ");} TLC59116Warn();
 
-    //debug(F("Start update registers"));debug();
+    //TLC59116Warn(F("Start update registers"));TLC59116Warn();
     update_ledx_registers(addr, LEDOUT_PWM, led_num_start, led_num_start + ct -1);
-    //debug(F("Done update registers"));debug();
+    //TLC59116Warn(F("Done update registers"));TLC59116Warn();
 
     _begin_trans(addr, Auto_PWM, start_register); 
-        //debug("  ");
+        //TLC59116Warn("  ");
         Wire.write(values, ct); // maybe slightly better than individual writes 
         for(byte i=0; i < ct; i++) {
           byte new_val = values[i];
-          //debug(new_val); debug(" ");
+          //TLC59116Warn(new_val); TLC59116Warn(" ");
           shadow_registers[ start_register + i ] = new_val;
           }
     _end_trans();
-    //debug(F("Done pwm values"));debug();
+    //TLC59116Warn(F("Done pwm values"));TLC59116Warn();
     }
   }
 
-TLC59116& TLC59116::reset_shadow_registers() {
-  static const byte default_values[] = {
-    // as per datasheet 
-    0b00010001, // mode1: osc-off & all_call on
-    0b00000000, // mode2
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // PWM
-    0xff, // GRPPWM
-    0x00, // GRPFREQ
-    0,0,0,0, // LEDx (digital off)
-    (SUBADR1 << 1), (SUBADR2 << 1), (SUBADR2 << 1), // msb is r/w bit
-    (AllCall_Addr << 1),
-    0xFF // IREF
-    };
-
-  // NB: called by constructor, so Serial and Wire are not init'd yet!
-
-  memcpy(this->shadow_registers, default_values, Control_Register_Max + 1);
-  return *this;
-  }
 //
 // Scan
 //
 
-TLC59116::Scan& TLC59116::Scan::rescan() {
+TLC59116_Unmanaged::Scan& TLC59116_Unmanaged::Scan::rescan() {
   // this code lifted & adapted from Nick Gammon (written 20th April 2011)
   // http://www.gammon.com.au/forum/?id=10896&reply=6#reply6
   // Thanks Nick!
 
-  debug(F("I2C scanner. Scanning ..."));debug();
+  TLC59116Warn(F("I2C scanner. Scanning ..."));TLC59116Warn();
 
   byte debug_tried = 0;
 
   for (byte addr = Base_Addr; addr <= Max_Addr; addr++)
   {
     debug_tried++;
-    debug("Try ");debug(addr,HEX);
+    TLC59116Warn("Try ");TLC59116Warn(addr,HEX);
 
     // If we hang here, then you did not do a Wire.begin();
 
@@ -628,35 +591,35 @@ TLC59116::Scan& TLC59116::Scan::rescan() {
 
     if (stat == 0) {
       this->addresses[ this->found++ ] = addr;
-      debug(F(" got "));debug(addr,HEX);
+      TLC59116Warn(F(" got "));TLC59116Warn(addr,HEX);
 
       ::delay(10);  // maybe unneeded?
       } // end of good response
     else if (stat != 2) {
-      debug(F(" Unexpected stat(")); debug(stat); debug(F(") at address ")); debug(addr,HEX);
+      TLC59116Warn(F(" Unexpected stat(")); TLC59116Warn(stat); TLC59116Warn(F(") at address ")); TLC59116Warn(addr,HEX);
       }
 
-    debug();
+    TLC59116Warn();
 
   } // end of for loop
-  debug(F("Checked "));debug(debug_tried);
-  debug(F(" out of "));debug(Base_Addr,HEX); debug(".."); debug(Max_Addr,HEX);
-  debug();
+  TLC59116Warn(F("Checked "));TLC59116Warn(debug_tried);
+  TLC59116Warn(F(" out of "));TLC59116Warn(Base_Addr,HEX); TLC59116Warn(".."); TLC59116Warn(Max_Addr,HEX);
+  TLC59116Warn();
   
   if (this->found) {
-      debug(F("Found "));
-      debug(this->found);
-      debug(" ");debug(Device);debug(F(" address(es) that responded."));
-      debug();
+      TLC59116Warn(F("Found "));
+      TLC59116Warn(this->found);
+      TLC59116Warn(" ");TLC59116Warn(Device);TLC59116Warn(F(" address(es) that responded."));
+      TLC59116Warn();
     }
   else {
-    debug(F("None found!"));
+    TLC59116Warn(F("None found!"));
     }
 
   return *this;
 }
 
-TLC59116::Scan& TLC59116::Scan::print() {
+TLC59116_Unmanaged::Scan& TLC59116_Unmanaged::Scan::print() {
   bool has_reset = 0;
 
   Serial.print(F("Scanned 0x"));
@@ -682,7 +645,7 @@ TLC59116::Scan& TLC59116::Scan::print() {
   return *this;
   }
 
-bool TLC59116::Scan::is_AllCall_default() {
+bool TLC59116_Unmanaged::Scan::is_AllCall_default() {
   for(byte i=0; i<found; i++) {
     if (addresses[i] == AllCall_Addr) {return 1;}
     }

@@ -1,38 +1,117 @@
 <h1>define TLC59116_h</h1>
 
-<p>/*
-  Pins:
-TLC59116: 27:SDA, 26:SCL
-UNO: A4:SDA, A5:SCL
-mega: as marked
-teensy: ...</p>
+<p>// Shadow the devices state, take them into account for high-level operations
+// So you don't have to: less bugs, more convenience.
+// Less confusion by allowing "." instead of "->"
+// Useful "default" forms to get started easier.
+// Warnings/Info available</p>
 
-<p>In your setup():
-Wire.begin();
-Serial.init(nnnnn); // if you do DEBUG=1, or use any of the describes
-// Run the I2C faster (default is 100000L):
-const long want<em>freq = 340000L; // 100000L; .. 340000L for 1, not termination
-TWBR = ((F</em>CPU / want<em>freq) - 16) / 2; // aka want</em>freq = F<em>CPU/(2*TWBR +16). F</em>CPU is supplied by arduino-ide</p>
+<p>// Set this to 1/true to turn on Warnings &amp; info</p>
 
-<p>FIXME: rewrite whole thing:
-singleton TLC
-  tracks all, maybe pointers? 14 bytes vs 56, but easier to do id?
-an each {:addr=>x} using the singleton
-so reset does right thing, and other global state
-layer
-  tlc[1].dmblnk = 1, ...
-  ?? What does a read on AllCall get?
-  TLC59108 is supposedly the same except only 8 channels.
-8 output channels
-64 addresses : quad-value pins A0,A1,A2 (see datasheet)
-  16..47,80..103,112..119</p>
+<h1>ifndef TLC59116Manager_WARNINGS</h1>
 
-<p>TLC59208F : 4channel, similar, pin changes, up to 64 devices, etc.
-  * Change to group_blink(ratio, hz, pwm values)
-low level is blink-bit-mask
-highlevel is leds-are:x blink/on-off/pwm/grppwm
-  !! erratic flashes seen when using GRPPWM and decreasing it over time
-  claimed to happen at same point every time (speed dependant I think)
-  !! I see flickering when: many LEDs (14) are pwm on fairly dim (20), and I on/off blink another LED.
-  adjustng Vext seems to improve the situation (so, current?)
-  !! This stuff appears to work in a timer-service-routine, but you must (re-)enable interrupts in the isr: sei();</p>
+<p>#define TLC59116Manager_WARNINGS=0</p>
+
+<h1>endif</h1>
+
+<p>// Set this to enable group_pwm</p>
+
+<h1>ifndef TLC59116_UseGroupPWM</h1>
+
+<p>#define TLC59116_UseGroupPWM 0</p>
+
+<h1>endif</h1>
+
+<p>// Set this to 1/true to turn on lower-level development debugging</p>
+
+<h1>ifndef TLC59116Manager_DEV</h1>
+
+<p>#define TLC59116Manager_DEV=0</p>
+
+<h1>endif</h1>
+
+<h1>include <Arduino.h></h1>
+
+<h1>include <Wire.h></h1>
+
+<h1>include <TLC59116_Unmanaged.h></h1>
+
+<p>class TLC59116 {
+  // High level operations,
+  // Relieves you from having to track/manage the modes/state of each device.
+  // Get one from TLC59116_Manager x[]</p>
+
+<p>public:
+byte address() { return i2c_address; }</p>
+
+<p>// disabled because of bug</p>
+
+<h1>if TLC59116_UseGroupPWM</h1>
+
+<pre><code>TLC59116&amp; group_pwm();
+</code></pre>
+
+<h1>endif</h1>
+
+<p>private:
+// Manager has to track for reset, so factory
+TLC59116() :  address(byte i) {} // factory control, must get from manager
+TLC59116(const &amp;TLC59116); // singleton
+TLC59116&amp; operator=(const TLC59116&amp;); // singleton
+~TLC59116() {} // managed destructor....</p>
+
+<p>// our identity is the bus address (w/in a bus)
+byte i2c_address;
+// No link to the bus (yet)</p>
+
+<p>void reset_happened(); // reset affects the state of the devices</p>
+
+<p>// We have to shadow the state
+byte shadow<em>registers[TLC59116</em>Unmanaged::Control<em>Register</em>Max+1];
+void reset<em>shadow</em>registers() { for ... shadow<em>register[i] = known[x] }
+void sync</em>shadow_registers() { read device, for ... shadow=; }</p>
+
+<p>}</p>
+
+<p>class TLC59116Manager {
+  // Manager
+  // Holds all-devices (on one bus) because reset needs to affect them</p>
+
+<p>public:
+static const WireInit = 0b1;
+static const EnableOutputs = 0b10;
+static const Reset = 0b100;</p>
+
+<p>// specific I2C bus, because reset affects only 1 bus
+TLC59116Manager(TwoWire &amp;w, // Use the specified i2c bus (shouldn't allow 2 of these on same bus)
+  long frequency = 100000L // default to 100khz, it's the default for Wire
+    // turn-off pattern: 0xFF ^ X::EnableOutputs
+  byte dothings = WireInit | EnableOutputs | Reset, // do things by default
+  ) : bus(w);
+TLC59116Manager() : TLC59116Manager(Wire)  // convenience I2C bus using Wire, the standard I2C arduino pins
+// You'll have to write an adaptor for other interfaces</p>
+
+<p>// Get the 0th, 1st, 2nd, etc. device (index, not by i2c-address). In address order.
+// Can return null if index is out of range, or there are none!
+// Pattern: Blah::Blah&amp; first = manager[0]; // Note the '&amp;'
+// Pattern: manager[i].all<em>on(); // you can use "." notation
+// FIXME: can we do: BaseClass&amp; x = manager[0];
+TLC59116Manager&amp; operator<a href="byte index"></a> { if (index >= device</em>t) <debug>return null; return *(devices[index]); }
+byte device<em>count() { return device</em>ct; } // you can iterate</p>
+
+<p>reset(); // all devices on bus</p>
+
+<p>private:
+TLC59116Manager(&amp;TLC59116Manager); // undefined
+TLC59116Manager&amp; operator=(const TLC59116Manager&amp;); // undefined</p>
+
+<p>// Specific bus
+TwoWire &bus;</p>
+
+<p>// Need to track extant
+TLC59116* devices[MaxDevicesPerI2C]; // that's 420 bytes of ram
+byte device_ct;</p>
+
+<p>}</p>
+
+<h1>endif</h1>

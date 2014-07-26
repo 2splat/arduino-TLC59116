@@ -10,7 +10,7 @@
 
   In your setup():
     Wire.begin();
-    Serial.init(nnnnn); // if you do DEBUG=1, or use any of the describes
+    Serial.init(nnnnn); // if you do TLC59116_WARNINGS=1, or use any of the describes
     // Run the I2C faster (default is 100000L):
     const long want_freq = 340000L; // 100000L; .. 340000L for 1, not termination
     TWBR = ((F_CPU / want_freq) - 16) / 2; // aka want_freq = F_CPU/(2*TWBR +16). F_CPU is supplied by arduino-ide
@@ -41,6 +41,39 @@
 
 */
 
+
+// Set this to 1/true to turn on Warnings & info
+#ifndef TLC59116_WARNINGS
+  #define TLC59116_WARNINGS 0
+#endif
+
+// Set this to 1/true to turn on lower-level development debugging
+#ifndef TLC59116_DEV
+  #define TLC59116_DEV 0
+#endif
+
+// inline the Warn() function, when disabled, no code
+#if TLC59116_WARNINGS
+  template <typename T> void TLC59116Warn(T msg) {Serial.print(msg);}
+  template <typename T> void TLC59116Warn(T msg, int format) { // and inlined
+    if (format == BIN) {
+      Serial.print(F("0b")); // so tired
+      for(byte i=0; i < (sizeof(msg) * 8); i++) {
+        Serial.print( (msg & ((T)1 << (sizeof(msg) * 8 - 1))) ? "1" : "0");
+        msg <<= 1;
+        }
+      }
+    else {
+      if (format == HEX) Serial.print(F("0x")); // so tired
+      Serial.print(msg, format);
+      }
+    }
+  void TLC59116Warn() { Serial.println();}
+#else
+  template <typename T> void TLC59116Warn(T msg, int format=0) {}
+  void TLC59116Warn() {}
+#endif
+
 #include <Arduino.h>
 #include <Serial.h>
 
@@ -53,35 +86,13 @@ class TLC59116_Unmanaged {
   public:
     class Scan;
 
-    static bool DEBUG; // defaults to "off". Set to 1 to get debug output.
-
-    template <typename T> static void debug(T msg) { if (TLC59116_Unmanaged::DEBUG) Serial.print(msg);} // and inlined
-    template <typename T> static void debug(T msg, int format) { // and inlined
-      if (TLC59116_Unmanaged::DEBUG) {
-        if (format == BIN) {
-          Serial.print(F("0b")); // so tired
-          for(byte i=0; i < (sizeof(msg) * 8); i++) {
-            Serial.print( (msg & ((T)1 << (sizeof(msg) * 8 - 1))) ? "1" : "0");
-            msg <<= 1;
-            }
-          }
-        else {
-          if (format == HEX) Serial.print(F("0x")); // so tired
-          Serial.print(msg, format); 
-          }
-        }
-      } 
-    static void debug() { if (TLC59116_Unmanaged::DEBUG) Serial.println();}
-
-    static const char* Device; // "TLC59116" for printing
-
+  public: // constants
     static const byte Channels = 16; // number of channels
 
     // Addresses (7 bits, as per Wire library)
     // 8 addresses are unassigned, +3 more if SUBADR's aren't used
     // these are defined by the device (datasheet)
     static const byte Base_Addr    = 0x60; // 0b110xxxx
-    static const byte Max_Addr     = Base_Addr + 13;   // +0b1101 +0x0D. 14 of 'em
     //                                         + 0x00  // Unassigned at on/reset
     //                                     ... + 0x07  // Unassigned at on/reset
     static const byte AllCall_Addr = Base_Addr + 0x08; // +0b1000 Programmable
@@ -90,6 +101,7 @@ class TLC59116_Unmanaged {
     static const byte Reset_Addr   = Base_Addr + 0x0B; // +0b1011
     static const byte SUBADR3      = Base_Addr + 0x0C; // +0b1100 Programmable Disabled at on/reset
     //                                         + 0x0D  // Unassigned at on/reset
+    static const byte Max_Addr     = Base_Addr + 0xF;   // +0b1111, 14 typically available
 
     // Auto-increment mode bits
     // default is Auto_none, same register can be written to multiple times
@@ -104,22 +116,27 @@ class TLC59116_Unmanaged {
     static const byte Control_Register_Max = 0x1E; // NB, no 0x1F !
     static const byte MODE1_Register = 0x00;
     static const byte MODE1_OSC_mask = 0b10000;
+    static const byte MODE1_SUB1_mask = 0b1000;
+    static const byte MODE1_SUB2_mask = 0b100;
+    static const byte MODE1_SUB3_mask = 0b10;
+    static const byte MODE1_ALLCALL_mask = 0b1;
     static const byte MODE2_Register = 0x01;
     static const byte PWM0_Register = 0x02;
     static const byte GRPPWM_Register = 0x12; // aka blink-duty-cycle-register
     static const byte GRPFREQ_Register = 0x13; // aka blink-length 0=~24hz, 255=~10sec
     static const byte LEDOUT0_Register = 0x14;
     static const byte SUBADR1_Register = 0x18;
+    static const byte IREF_Register = 0x1d;
+    static const byte IREF_CM_mask = 1<<7;
+    static const byte IREF_HC_mask = 1<<6;
+    static const byte IREF_CC_mask = 0x1F; // 5 bits
     // for LEDx_Register, see Register_Led_State
     static const byte EFLAG1_Register = 0x1d;
     static const byte EFLAG2_Register = EFLAG1_Register + 1;
-
     static const byte LEDx_Max = 15; // 0..15
 
-
-    static Scan& scan(void) { // convenince, same as TLC59116::Scan::scanner();
-      return Scan::scanner();
-      };
+  public: // class
+    static const char* Device;
 
     // some tests
     static bool is_device_range_addr(byte address) { return address >= Base_Addr && address <= Max_Addr; } // inline
@@ -177,24 +194,14 @@ class TLC59116_Unmanaged {
     const static byte MODE2_DMBLNK = 0b100000;
     const static byte MODE2_EFCLR = 0x80; // '1' is clear.
 
+    // fixme: move up
     // Constructors (plus ::Each, ::Broadcast)
     // NB: The initial state is "outputs off"
-    TLC59116_Unmanaged() { reset_shadow_registers(); }; // Means first from scanner
-    TLC59116_Unmanaged(byte address) {
-      this->_address = normalize_address(address);
-      if (DEBUG) { 
-        if (_address == Reset_Addr) {
-          debug(F("You made a "));debug(Device);debug(F(" with the Reset address, "));
-          debug(Reset_Addr,HEX);debug(F(": that's not going to work."));debug();
-          }
-        }
-      reset_shadow_registers();
-      }
+    TLC59116_Unmanaged(byte address) : i2c_address(address) {}
+    TLC59116_Unmanaged(const TLC59116_Unmanaged&); // none
+    TLC59116_Unmanaged& operator=(const TLC59116_Unmanaged&); // none
+    ~TLC59116_Unmanaged() {} // managed destructor....
 
-    // reset all TLC59116's to power-up values. 
-    // 0 means it worked, 2 means nobody there, others?
-    // You probably want to .reset_shadow_registers() & .enable_outputs() on all objects!
-    static int reset(); 
 
     TLC59116_Unmanaged& describe();
     TLC59116_Unmanaged& enable_outputs(bool yes = true); // enables w/o arg, use false for disable
@@ -232,8 +239,7 @@ class TLC59116_Unmanaged {
 
     TLC59116_Unmanaged& delay(int msec) { ::delay(msec); return *this;} // convenience
 
-    TLC59116_Unmanaged& reset_shadow_registers(); // reset to the power up values
-    byte address(); // does a lazy init thing for "first"
+    byte address() { return i2c_address; } 
 
     // Low level interface: Modifies only those bits of interest
     // Keeps a "shadow" of the control registers.
@@ -243,7 +249,7 @@ class TLC59116_Unmanaged {
     void modify_control_register(byte register_num, byte value); // whole register
 
     // Low Level interface: writes bash the whole register
-    byte control_register(byte register_num); // get. Failure returns 0, set DEBUG=1 and check monitor
+    byte control_register(byte register_num); // get. Failure returns 0, set TLC59116_WARNINGS=1 and check monitor
     void control_register(byte register_num, byte data); // set
     void control_register(byte count, const byte *register_num, const byte data[]); // set a bunch FIXME not using...
     void get_control_registers(byte count, const byte *register_num, byte data[]); // get a bunch (more efficient)
@@ -253,17 +259,15 @@ class TLC59116_Unmanaged {
       Wire.write(register_num);
       }
     static void _begin_trans(byte addr, byte auto_mode, byte register_num) { // with auto-mode
-      // debug(F("Trans starting at ")); debug(register_num,HEX); debug(F(" mode ")); debug(auto_mode,BIN); debug();
+      // dev(F("Trans starting at ")); dev(register_num,HEX); dev(F(" mode ")); dev(auto_mode,BIN); dev();
       _begin_trans(addr, auto_mode ^ register_num); 
       }
 
     static int _end_trans() {
       int stat = Wire.endTransmission();
 
-      if (DEBUG) {
-        if (stat != 0) {
-          debug(F("endTransmission error, = "));debug(stat);debug();
-          }
+      if (stat != 0) {
+        TLC59116Warn(F("endTransmission error, = "));TLC59116Warn(stat);TLC59116Warn();
         }
       return stat;
       }
@@ -271,7 +275,12 @@ class TLC59116_Unmanaged {
     byte shadow_registers[Control_Register_Max + 1];  // FIXME: dumping them, maybe a method?
 
   private:
-    byte _address; // use the accessor (cf. lazy first)
+    TLC59116_Unmanaged(); // not allowed
+
+
+    // our identity is the bus address (w/in a bus)
+    // Addresses are 7 bits (lsb missing)
+    byte i2c_address;
 
     void describe_mode1();
     void describe_addresses();
@@ -301,9 +310,8 @@ class TLC59116_Unmanaged {
             if (is_single_device_addr(addresses[i])) return addresses[i]; 
             }
 
-          if (DEBUG) {
-            debug(F("Error: There is no first address for a "));debug(Device);debug();
-            }
+          TLC59116Warn(F("Error: There is no first address for a "));TLC59116Warn(Device);TLC59116Warn();
+
           return 0xff;
           }
         bool is_AllCall_default(); // is something at the default AllCall_Addr?
@@ -324,6 +332,10 @@ class TLC59116_Unmanaged {
         byte addresses[14]; // reset/all are excluded, so only 16 possible
     };
 
+    static Scan& scan(void) { // convenince, same as TLC59116::Scan::scanner();
+      return Scan::scanner();
+      };
+
     class Broadcast {
       byte dumy;
       };
@@ -332,9 +344,6 @@ class TLC59116_Unmanaged {
     class Group2 {byte dumy1;};
     class Group3 {byte dumy1;};
 
-    class Each { // Broadcast doesn't work for read?
-      Scan *scanner; // just use the scanner list
-      };
 };
 
 
