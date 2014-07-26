@@ -7,11 +7,6 @@
 // Useful "default" forms to get started easier.
 // Warnings/Info available
 
-// Set this to enable group_pwm
-#ifndef TLC59116_UseGroupPWM
-  #define TLC59116_UseGroupPWM 0
-#endif
-
 // Set this to 1/true to turn on lower-level development debugging
 #ifndef TLC59116_DEV
   #define TLC59116_DEV 0
@@ -34,12 +29,6 @@ class TLC59116 : TLC59116_Unmanaged {
 
   public:
 
-    // disabled because of bug
-    #if TLC59116_UseGroupPWM
-        TLC59116& group_pwm();
-    #endif
-  
-    TLC59116& delay(int msec) { ::delay(msec); return *this;} // convenience
 
   private:
     // Manager has to track for reset, so factory
@@ -104,6 +93,8 @@ class TLC59116Manager {
     byte device_count() { return device_ct; } // you can iterate
 
     void reset(); // all devices on bus
+
+    // consider: is_SUBADR(). has to track all devices subaddr settings (value & enabled)
 
   private:
     TLC59116Manager(const TLC59116Manager&); // undefined

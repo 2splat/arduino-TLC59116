@@ -69,7 +69,7 @@ void TLC59116_Unmanaged::describe_channels() {
     Serial.print(F("        "));
 
     for(byte led_num=0; led_num < Channels; led_num++) {
-        byte led_state = control_register(LEDx_Register(led_num));
+        byte led_state = control_register(LEDOUTx_Register(led_num));
         // The led state is groups of 4
         byte state_bits = (led_state >> ((led_num % 4) * 2)) & 0b11; // right shifted to lsb's location
 
@@ -149,12 +149,12 @@ unsigned int TLC59116_Unmanaged::error_detect(bool do_overtemp) {
   pattern(0xFFFF);
   // reset over-temp
   control_register(MODE2_Register, 
-    set_with_mask(MODE2_EFCLR, MODE2_EFCLR, shadow_registers[MODE2_Register])
+    set_with_mask(shadow_registers[MODE2_Register], MODE2_EFCLR, MODE2_EFCLR);
     );
   if (do_overtemp) {
     // enable temp detection
     control_register(MODE2_Register, 
-      set_with_mask(0, MODE2_EFCLR, shadow_registers[MODE2_Register])
+      set_with_mask(shadow_registers[MODE2_Register], MODE2_EFCLR, 0)
       );
     }
   // read
@@ -288,7 +288,7 @@ void TLC59116_Unmanaged::modify_control_register(byte register_num, byte value) 
   }
 
 void TLC59116_Unmanaged::modify_control_register(byte register_num, byte mask, byte bits) {
-  byte new_value = set_with_mask(bits, mask, shadow_registers[register_num]);
+  byte new_value = set_with_mask(shadow_registers[register_num], mask, bits);
   /* if (register_num < PWM0_Register || register_num > 0x17) {
     TLC59116Warn(F("Modify R"));TLC59116Warn(register_num,HEX);TLC59116Warn();
     TLC59116Warn(F("       ="));TLC59116Warn(shadow_registers[register_num],BIN);TLC59116Warn();
@@ -321,18 +321,18 @@ TLC59116_Unmanaged& TLC59116_Unmanaged::pattern(word bit_pattern, word which_mas
 
   // count through LED nums, starting from max
 
-  for(byte ledx_r=15; ; ledx_r--) {
+  for(byte ledx_i=15; ; ledx_i--) {
     if (0x8000 & which_mask) {
-      new_ledx[ledx_r / 4] = set_with_mask(
-        LEDx_mode_bits(ledx_r, (bit_pattern & 0x8000) ? LEDOUT_DigitalOn : LEDOUT_DigitalOff),
-        LEDx_Register_mask(ledx_r),
-        new_ledx[ledx_r / 4]
+      new_ledx[ledx_i / 4] = LEDX_set_mode(
+        new_ledx[ledx_i / 4], 
+        ledx_i, 
+        (bit_pattern & 0x8000) ? LEDOUT_DigitalOn : LEDOUT_DigitalOff
         );
       }
     bit_pattern <<= 1;
     which_mask <<= 1;
 
-    if (ledx_r==0) break;
+    if (ledx_i==0) break;
     }
 
   update_ledx_registers(addr, new_ledx, 0, 15);
@@ -347,17 +347,13 @@ void TLC59116_Unmanaged::update_ledx_registers(byte addr, byte to_what, word bit
 
   // count through LED nums, starting from max
 
-  for(byte ledx_r=15; ; ledx_r--) {
+  for(byte ledx_i=15; ; ledx_i--) {
     if (0x8000 & bit_pattern) {
-      new_ledx[ledx_r / 4] = set_with_mask(
-        LEDx_mode_bits(ledx_r, to_what),
-        LEDx_Register_mask(ledx_r),
-        new_ledx[ledx_r / 4]
-        );
+      new_ledx[ledx_i / 4] = LEDX_set_mode(new_ledx[ledx_i / 4], ledx_i, to_what);
       }
     bit_pattern <<= 1;
 
-    if (ledx_r==0) break;
+    if (ledx_i==0) break;
     }
   // TLC59116Warn(F("Change to   ")); for(byte i=0;i<4;i++){ TLC59116Warn(new_ledx[i],BIN); TLC59116Warn(" ");} TLC59116Warn();
 
@@ -371,14 +367,14 @@ TLC59116_Unmanaged& TLC59116_Unmanaged::on(byte led_num, bool yes) {
     if (DEBUG == 2) {
       TLC59116Warn(F("LED set "));TLC59116Warn(this->address(),HEX);TLC59116Warn("[");TLC59116Warn(led_num);TLC59116Warn("] ");TLC59116Warn(yes ? "on" : "off");TLC59116Warn();
       TLC59116Warn("  ");
-        TLC59116Warn("R ");TLC59116Warn(LEDx_Register(led_num),HEX);
+        TLC59116Warn("R ");TLC59116Warn(LEDOUTx_Register(led_num),HEX);
         TLC59116Warn(" M ");TLC59116Warn(LEDx_Register_mask(led_num),HEX);
         TLC59116Warn(" V ");TLC59116Warn(yes ? LEDx_digital_on_bits(led_num) : LEDx_digital_off_bits(led_num));
         TLC59116Warn();
       }
 
     modify_control_register(
-      LEDx_Register(led_num),
+      LEDOUTx_Register(led_num),
       LEDx_Register_mask(led_num),
       yes ? LEDx_digital_on_bits(led_num) : LEDx_digital_off_bits(led_num)
       );
@@ -391,8 +387,8 @@ TLC59116_Unmanaged& TLC59116_Unmanaged::on(byte led_num, bool yes) {
 
 TLC59116_Unmanaged& TLC59116_Unmanaged::pwm(byte led_num, byte value) {
   // put us into pwm mode if we aren't
-  byte led_register = LEDx_Register(led_num);
-  byte mode_bits = LEDx_bits(led_num, shadow_registers[led_register]);
+  byte led_register = LEDOUTx_Register(led_num);
+  byte mode_bits = LEDx_Register_bits(led_num, shadow_registers[led_register]);
 
   if (! (mode_bits == LEDx_pwm_bits(led_num) || mode_bits == LEDx_gpwm_bits(led_num))) {
     // TLC59116Warn(F("Switch led to pwm: "));TLC59116Warn(led_num); TLC59116Warn(" register ");TLC59116Warn(led_register, HEX);TLC59116Warn();
@@ -439,18 +435,10 @@ void TLC59116_Unmanaged::update_ledx_registers(byte addr, byte to_what, byte led
   // need all for later comparison
   memcpy(new_ledx, &(this->shadow_registers[LEDOUT0_Register]), 4);
 
-  byte ledx_i;
   // new settings, ignoring < start > end
   for( byte doing_led_i = led_start_i; doing_led_i <= led_end_i; doing_led_i++) {
-    // ledx_i to track led#
-    ledx_i = LEDx_Register(doing_led_i) - LEDOUT0_Register;
-
     // set the LEDOUTx bits for the led
-    new_ledx[ledx_i] = set_with_mask(
-      LEDx_mode_bits(doing_led_i, to_what),
-      LEDx_Register_mask(doing_led_i),
-      new_ledx[ledx_i]
-      );
+    new_ledx[doing_led_i / 4] = LEDX_set_mode(new_ledx[doing_led_i / 4], doing_led_i, to_what);
     }
 
   update_ledx_registers(addr, new_ledx, led_start_i, led_end_i);
@@ -461,8 +449,8 @@ void TLC59116_Unmanaged::update_ledx_registers(byte addr, const byte* new_ledx /
   // new_ledx is shadow_registers & new settings
   // Does wire.begin, write,...,end
   // (_i = index of a led 0..15, _r is register_number)
-  const byte ledx_first_r = LEDx_Register(led_start_i);
-  const byte ledx_last_r = LEDx_Register(led_end_i);
+  const byte ledx_first_r = LEDOUTx_Register(led_start_i);
+  const byte ledx_last_r = LEDOUTx_Register(led_end_i);
   //TLC59116Warn(F("Update control from #"));
     //TLC59116Warn(led_start_i);TLC59116Warn(F("/C"));TLC59116Warn(ledx_first_r,HEX);
     //TLC59116Warn(F(" to "));TLC59116Warn(led_end_i);TLC59116Warn(F("/C"));TLC59116Warn(ledx_last_r,HEX);

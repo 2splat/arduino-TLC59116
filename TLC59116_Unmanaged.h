@@ -16,13 +16,6 @@
     TWBR = ((F_CPU / want_freq) - 16) / 2; // aka want_freq = F_CPU/(2*TWBR +16). F_CPU is supplied by arduino-ide
 
 
-  FIXME: rewrite whole thing:
-    singleton TLC
-      tracks all, maybe pointers? 14 bytes vs 56, but easier to do id?
-    an each {:addr=>x} using the singleton
-    so reset does right thing, and other global state
-    layer
-      tlc[1].dmblnk = 1, ...
   ?? What does a read on AllCall get?
   TLC59108 is supposedly the same except only 8 channels.
     8 output channels
@@ -30,9 +23,7 @@
       16..47,80..103,112..119
 
   TLC59208F : 4channel, similar, pin changes, up to 64 devices, etc.
-  * Change to group_blink(ratio, hz, pwm values)
-    low level is blink-bit-mask
-    highlevel is leds-are:x blink/on-off/pwm/grppwm
+
   !! erratic flashes seen when using GRPPWM and decreasing it over time
       claimed to happen at same point every time (speed dependant I think)
   !! I see flickering when: many LEDs (14) are pwm on fairly dim (20), and I on/off blink another LED.
@@ -42,14 +33,18 @@
 */
 
 
-// Set this to 1/true to turn on Warnings & info
-#ifndef TLC59116_WARNINGS
-  #define TLC59116_WARNINGS 0
-#endif
-
 // Set this to 1/true to turn on lower-level development debugging
 #ifndef TLC59116_DEV
   #define TLC59116_DEV 0
+#endif
+
+// Set this to 1/true to turn on Warnings & info
+#ifndef TLC59116_WARNINGS
+  #if TLC59116_DEV
+    #define TLC59116_WARNINGS 1
+  #else
+    #define TLC59116_WARNINGS 0
+  #end
 #endif
 
 // inline the Warn() function, when disabled, no code
@@ -74,11 +69,20 @@
   void TLC59116Warn() {}
 #endif
 
+template <typename T> void TLC59116Dev(T msg) {TLC59116Warn(msg);}
+template <typename T> void TLC59116Dev(T msg, int format) {TLC59116Warn(msg, format);}
+void TLC59116Dev() {TLC59116Warn();}
+
+#ifndef TLC59116_UseGroupPWM
+  // Set this to enable group_pwm
+  #define TLC59116_UseGroupPWM 0
+#endif
+
 #include <Arduino.h>
 #include <Serial.h>
 
 // for .c
-#include <Wire.h> // does nothing inthe .h
+#include <Wire.h> // does nothing in the .h
 extern TwoWire Wire;
 
 class TLC59116_Unmanaged {
@@ -90,109 +94,133 @@ class TLC59116_Unmanaged {
     static const byte Channels = 16; // number of channels
 
     // Addresses (7 bits, as per Wire library)
-    // 8 addresses are unassigned, +3 more if SUBADR's aren't used
     // these are defined by the device (datasheet)
+    // 11 are Unassigned, 14 available, at power up; 1 more if allcall is disabled.
     static const byte Base_Addr    = 0x60; // 0b110xxxx
-    //                                         + 0x00  // Unassigned at on/reset
-    //                                     ... + 0x07  // Unassigned at on/reset
-    static const byte AllCall_Addr = Base_Addr + 0x08; // +0b1000 Programmable
+    //                                         + 0x00 .. 0x07 // Unassigned at on/reset
+    static const byte AllCall_Addr = Base_Addr + 0x08; // +0b1000 Programmable Enabled at on/reset
     static const byte SUBADR1      = Base_Addr + 0x09; // +0b1001 Programmable Disabled at on/reset
     static const byte SUBADR2      = Base_Addr + 0x0A; // +0b1010 Programmable Disabled at on/reset
     static const byte Reset_Addr   = Base_Addr + 0x0B; // +0b1011
     static const byte SUBADR3      = Base_Addr + 0x0C; // +0b1100 Programmable Disabled at on/reset
-    //                                         + 0x0D  // Unassigned at on/reset
-    static const byte Max_Addr     = Base_Addr + 0xF;   // +0b1111, 14 typically available
+    //                                         + 0x0D .. 0x0F // Unassigned at on/reset
+    static const byte Max_Addr     = Base_Addr + 0xF;   // 14 typically available
+      static bool is_device_range_addr(byte address) { return address >= Base_Addr && address <= Max_Addr; } // inline
 
+      // Does not take into account changed/enabled
+      static bool is_default_SUBADR(byte address) { return address == SUBADR1 || address == SUBADR2 || address == SUBADR3; }
+      // Is a single device: not AllCall,Reset,or SUBADRx
+      // does not take into account programmable addresses, nor whether they are enabled
+      static bool is_default_single_addr(byte address) {
+        return is_device_range_addr(address) && address != Reset_Addr && address != AllCall_Addr && !is_default_SUBADR(address);
+        }
+
+  public: // Low-Level constants
     // Auto-increment mode bits
     // default is Auto_none, same register can be written to multiple times
     static const byte Auto_All = 0b10000000; // 0..Control_Register_Max
-    static const byte Auto_PWM = 0b10100000; // PWM0_Register .. +(Channels-1)
+    static const byte Auto_PWM = 0b10100000; // PWM0_Register .. (Channels-1)
     static const byte Auto_GRP = 0b11000000; // GRPPWM..GRPFREQ
     static const byte Auto_PWM_GRP = 0b11100000; // PWM0_Register..n, GRPPWM..GRPFREQ
-    // It may appear that a reset looks like Auto_PWM ^ PWMx_Register(3) = 0x5a. But Reset_addr is a special mode.
+    // The byte(s) sent for Reset_Addr are not increment+address, it's a special mode
 
-    // Control Registers
+    // Control Registers FIXME: move to "low level"
     static const byte Control_Register_Min = 0;
-    static const byte Control_Register_Max = 0x1E; // NB, no 0x1F !
     static const byte MODE1_Register = 0x00;
-    static const byte MODE1_OSC_mask = 0b10000;
-    static const byte MODE1_SUB1_mask = 0b1000;
-    static const byte MODE1_SUB2_mask = 0b100;
-    static const byte MODE1_SUB3_mask = 0b10;
-    static const byte MODE1_ALLCALL_mask = 0b1;
+      static const byte MODE1_OSC_mask = 0b10000;
+      static const byte MODE1_SUB1_mask = 0b1000;
+      static const byte MODE1_SUB2_mask = 0b100;
+      static const byte MODE1_SUB3_mask = 0b10;
+      static const byte MODE1_ALLCALL_mask = 0b1;
     static const byte MODE2_Register = 0x01;
+      static const byte MODE2_DMBLNK = 1 << 5; // 0 = group dimming, 1 = group blinking
+      static const byte MODE2_EFCLR = 1 << 7; // 0 to enable, 1 to clear
+      static const byte MODE2_OCH = 1 << 3; // 0 = "latch" on Stop, 1 = latch on ACK
     static const byte PWM0_Register = 0x02;
+      static byte PWMx_Register(byte led_num) { LEDOUTx_CHECK(__LINE__,led_num); return PWM0_Register + led_num; }
     static const byte GRPPWM_Register = 0x12; // aka blink-duty-cycle-register
     static const byte GRPFREQ_Register = 0x13; // aka blink-length 0=~24hz, 255=~10sec
-    static const byte LEDOUT0_Register = 0x14;
+    static const byte LEDOUT0_Register = 0x14; // len_num -> LEDOUTx_Register number. Registers are: {0x14, 0x15, 0x16, 0x17}
+    static const byte LEDOUTx_Max = Channels-1; // 0..15
+      static byte is_valid_led(byte v) { return v <= LEDx_Max; };
+      static void LEDOUTx_CHECK(int line, byte led_num) { 
+        if (led_num > LEDOUTx_Max) {
+          TLC59116Warn(F("led_num out of range "));TLC59116Warn(led_num); 
+          TLC59116Warn(F(" @")); TLC59116Warn(line); TLC59116Warn();
+          }
+        }
+      static byte LEDOUTx_Register(byte led_num) { return LEDOUT0_Register + (led_num >> 2); } // 4 leds per register
+      const static byte LEDOUT_Mask = 0b11; // 2 bits per led 
+      const static byte LEDOUT_PWM = 0b10;
+      const static byte LEDOUT_GRPPWM = 0b11; // also "group blink" when mode2[dmblnk] = 1
+      const static byte LEDOUT_DigitalOn = 0b01;
+      const static byte LEDOUT_DigitalOff = 0b00;
+      // FIXME: check for usage of these
+      static byte LEDx_Register_mask(byte led_num) { // bit mask for led mode bits
+        LEDOUTx_CHECK(__LINE__, led_num); 
+        return LEDOUT_Mask << (2 * (led_num % 4)); 
+        }
+      static byte LEDx_Register_bits(byte led_num, byte register_value) { // extract bits for led
+        LEDOUTx_CHECK(__LINE__, led_num);
+        return register_value & LEDx_Register_mask(led_num); 
+        }
+      static byte LEDx_to_Register_bits(byte led_num, byte out_mode) { return (LEDOUT_Mask & out_mode) << (2 * (led_num % 4));} // 2 bits in a LEDOUTx_Register
+      static void LEDX_set_mode(byte was, byte led_num, byte mode) {
+        LEDOUTx_CHECK(__LINE__, led_num);
+        return set_with_mask(was, LEDx_Register_mask(led_num), LEDx_to_Register_bits(led_num, mode);
+        }
+      static byte LEDx_pwm_bits(byte led_num) {return LEDx_to_Register_bits(led_num, LEDOUT_PWM);}
+      static byte LEDx_gpwm_bits(byte led_num) {return LEDx_to_Register_bits(led_num, LEDOUT_GRPPWM);}
+      static byte LEDx_digital_off_bits(byte led_num) { return 0; }; // no calc needed (cheating)
+      static byte LEDx_digital_on_bits(byte led_num) {  return LEDx_to_Register_bits(led_num, LEDOUT_DigitalOn);}
+    //                LEDOUT3_Register = 0x17
     static const byte SUBADR1_Register = 0x18;
-    static const byte IREF_Register = 0x1d;
-    static const byte IREF_CM_mask = 1<<7;
-    static const byte IREF_HC_mask = 1<<6;
-    static const byte IREF_CC_mask = 0x1F; // 5 bits
-    // for LEDx_Register, see Register_Led_State
-    static const byte EFLAG1_Register = 0x1d;
+      static byte SUBADRx_Register(byte i) { 
+        if (i>3) {TLC59116Dev(F("SUBADRx out of range")); TLC59116Dev();} 
+        return SUBADR1_Register - 1 + i; 
+        }
+    //                SUBADR3_Register = 0x1A
+    static const byte AllCall_Addr_Register = 0x1B;
+    static const byte IREF_Register = 0x1C;
+      static const byte IREF_CM_mask = 1<<7;
+      static const byte IREF_HC_mask = 1<<6;
+      static const byte IREF_CC_mask = 0x1F; // 5 bits
+    // for LEDOUTx_Register, see Register_Led_State
+    static const byte EFLAG1_Register = 0x1D;
     static const byte EFLAG2_Register = EFLAG1_Register + 1;
-    static const byte LEDx_Max = 15; // 0..15
+    static const byte Control_Register_Max = 0x1E; // NB, no 0x1F !
+      static bool is_control_register(byte register_num) {
+        return (register_num >= Control_Register_Min && register_num <= Control_Register_Max);
+        }
+
+    static const char* Device; // holds "TLC59116" for convenience for debug messages
 
   public: // class
-    static const char* Device;
-
-    // some tests
-    static bool is_device_range_addr(byte address) { return address >= Base_Addr && address <= Max_Addr; } // inline
-    static bool is_SUBADR(byte address) { // inline
-      // does not take into account changing these programmable addresses, nor whether they are enabled
-      return address == SUBADR1 || address == SUBADR2 || address == SUBADR3 ;
-      }
-    static bool is_single_device_addr(byte address) { // inline
-      // Is a single device: not AllCall,Reset,or SUBADRx
-      // does not take into account programmable addresses, nor whether they are enabled
-      return is_device_range_addr(address) && address != Reset_Addr && address != AllCall_Addr && !is_SUBADR(address);
-      }
-    static bool is_control_register(byte register_num) { // inline
-      return (register_num >= Control_Register_Min && register_num <= Control_Register_Max);
-      }
-    static byte is_valid_led(byte v) { return v <= LEDx_Max; };
 
     // utility
     static byte normalize_address(byte address) { 
-      return 
-        (address <= (Max_Addr-Base_Addr))  // 0..13 shorthand for 0x60..0x6D
-        ? (Base_Addr+address) 
-        : address
-        ;
+      if (address <= (Base_Addr - Max_Addr)) // 0..15
+        return Base_Addr+address;
+      else if (address >= Base_Addr && address <= Max_Addr) // Wire's I2C address: 0x60...
+        return address
+      else if (address >= (Base_Addr<<1) && address <= (Max_Addr<<1)) // I2C protocol address: 0x60<<1
+        return address >> 1
+      else
+        return 0; // Not
       }
-    static byte set_with_mask(byte new_bits, byte mask, byte was) {
+    static byte set_with_mask(byte was, byte mask, byte new_bits) { // only set the bits marked by mask
       byte to_change = mask & new_bits; // sanity
       byte unchanged = ~mask & was; // the bits of interest are 0 here
       byte new_value = unchanged ^ to_change;
       return new_value;
       }
 
-    static byte LEDx_Register(byte led_num) {
-      // 4 leds per register, 2 bits per led
-      // See LEDx_pwm _gpwm _digital... below
-      // registers are: {0x14, 0x15, 0x16, 0x17}; 
-      return LEDOUT0_Register + (led_num >> 2); // int(led_num/4)
-      }
-    static byte PWMx_Register(byte led_num) { return PWM0_Register + led_num; }
+    // disabled because of bug
+    #if TLC59116_UseGroupPWM
+        TLC59116& group_pwm();
+    #endif
 
-    // LED register bits
-    const static byte LEDOUT_PWM = 0b10;
-    const static byte LEDOUT_GRPPWM = 0b11; // also "group blink" when mode2[dmblnk] = 1
-    const static byte LEDOUT_DigitalOn = 0b01;
-    const static byte LEDOUT_DigitalOff = 0b00;
-    static byte LEDx_Register_mask(byte led_num) { return 0b11 << (2 * (led_num % 4)); }
-    static byte LEDx_bits(byte led_num, byte register_value) {  return register_value & (0b11 << ((led_num % 4)* 2)); }
-    static byte LEDx_mode_bits(byte led_num, byte out_mode) { return out_mode << (2 * (led_num % 4));} // 2 bits in a LEDx_Register
-    static byte LEDx_pwm_bits(byte led_num) {return LEDx_mode_bits(led_num, LEDOUT_PWM);}
-    static byte LEDx_gpwm_bits(byte led_num) {return LEDx_mode_bits(led_num, LEDOUT_GRPPWM);}
-    static byte LEDx_digital_off_bits(byte led_num) { return 0; }; // no calc needed (cheating)
-    static byte LEDx_digital_on_bits(byte led_num) {  return LEDx_mode_bits(led_num, LEDOUT_DigitalOn);}
 
-    // Other register bits
-    const static byte MODE2_DMBLNK = 0b100000;
-    const static byte MODE2_EFCLR = 0x80; // '1' is clear.
 
     // fixme: move up
     // Constructors (plus ::Each, ::Broadcast)
@@ -307,7 +335,7 @@ class TLC59116_Unmanaged {
         byte first_addr() { // debug message and 0xff if none 
           // return a good address or fall through
           for(byte i=0; i<found; i++) {
-            if (is_single_device_addr(addresses[i])) return addresses[i]; 
+            if (is_default_single_addr(addresses[i])) return addresses[i]; 
             }
 
           TLC59116Warn(F("Error: There is no first address for a "));TLC59116Warn(Device);TLC59116Warn();
