@@ -27,9 +27,13 @@ inoify : $(ino_link)
 $(ino_link) : $(shell /bin/ls -1 examples/*.ino)
 	ln -s $< $@
 
+# Launch ide
 .PHONY : ide
-ide :
-	arduino `pwd`/*.ino &
+ide : log
+	arduino `pwd`/*.ino > log/ide.log 2>&1 &
+
+log :
+	mkdir -p log
 
 # documentation, section 1, is in .cpp
 # the first /* ... */ as markdown
