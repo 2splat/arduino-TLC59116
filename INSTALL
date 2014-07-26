@@ -1,0 +1,37 @@
+Obtaining:
+Should be in github as ...
+You only need the arduino_TLC59116.zip if you are a user. NOT the "download zip" button!
+
+Installing:
+All Platforms:
+In the arduino-ide, do the "Sketch":"import library" thing, on the .zip.
+
+Making. Assumes linux.
+Requirements:
+* gnumake (might work with other makes)
+* clang-check from clang-tools (optional)
+* perl
+* zip
+* markdown (optional)
+* awk
+
+To make the zip:
+    make zip
+It should make the zip. If you are missing any tools, some functionality may be missing (keywords.txt, for example).
+It should whine about missing tools. Install them, "rm" the zip, make again.
+
+
+Developing:
+The directory is ino'ified, you can develop out of here!
+* Remove the TLC59116 library you may have installed above, it will conflict.
+* You can open the tlc59116_lib.ino in the arduino ide
+* Note the additional tabs for the libraries .h/.cpp's!
+Due to a "interesting" arduino-ide behavior, the source files do #include with "", the make puts them back to canonical for the zip.
+The "" seems to work anyway.
+
+You can also develop with a separate .ino.
+
+NB: If you add any #includes in the .h's, you should test the .zip (import, etc.). Because, the arduino-ide will fail to load the .h's that are included in the .h's ! You'll get 'not in scope' errors in the .h's.
+Workarounds:
+* "extern" can fix some things;
+* You may have to provide a boilerplate pile of #include's for the hapless user (goes in their .ino)

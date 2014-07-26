@@ -1,6 +1,7 @@
-address KEYWORD2
 device_count KEYWORD2
 EnableOutputs KEYWORD2
+MaxDevicesPerI2C KEYWORD2
+operator KEYWORD2
 reset KEYWORD2
 Reset KEYWORD2
 TLC59116 KEYWORD1
