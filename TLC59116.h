@@ -32,15 +32,16 @@ class TLC59116 : TLC59116_Unmanaged {
 
   private:
     // Manager has to track for reset, so factory
-    TLC59116(byte address) : TLC59116_Unmanaged(address) {}  // factory control, must get from manager
+    TLC59116(TwoWire& bus, byte address, TLC59116Manager& m) : manager(m), TLC59116_Unmanaged(bus, address) {reset_shadow_registers();}  // factory control, must get from manager
     TLC59116(); // none
     TLC59116(const TLC59116&); // none
     TLC59116& operator=(const TLC59116&); // none
     ~TLC59116() {} // managed destructor....
 
-    // No link to the bus (yet)
-
+    
     void reset_happened(); // reset affects the state of the devices
+    void modify_control_register(byte register_num, byte mask, byte bits);
+    void modify_control_register(byte register_num, byte value);
 
     // We have to shadow the state
     byte shadow_registers[Control_Register_Max+1];
@@ -48,6 +49,28 @@ class TLC59116 : TLC59116_Unmanaged {
     void sync_shadow_registers() { /* fixme: read device, for ... shadow=; */ }
 
   public:
+    virtual TLC59116& enable_outputs(bool yes = true, bool with_delay = true);
+
+    TLC59116Manager& manager;
+
+  public: // Special classes
+    class Broadcast;
+  };
+
+class TLC59116::Broadcast : TLC59116 {
+  public: //
+    Broadcast(TwoWire &bus, TLC59116Manager& m) : TLC59116(bus, TLC59116::AllCall_Addr, m) {}
+
+    Broadcast& enable_outputs(bool yes = true, bool with_delay = true);
+
+  private:
+    Broadcast(); // none
+    Broadcast(const Broadcast&); // none
+    Broadcast& operator=(const TLC59116&); // none
+    friend class TLC59116Manager;
+    ~Broadcast() {} // managed destructor....
+
+    void propagate_register(byte register_num);
 
   };
 
@@ -55,6 +78,9 @@ class TLC59116Manager {
   // Manager
   // Holds all-devices (on one bus) because reset needs to affect them
   // Holds which "wire" interface
+
+  // FIXME: this skips the device at AllCall_Addr, allow a remediation of that
+  // FIXME: likewise, subadr is disabled at reset, allow remediation to exclude that on scan
 
   friend class TLC59116;
 
@@ -67,13 +93,13 @@ class TLC59116Manager {
     static const byte Reset = 0b100;
 
     // convenience I2C bus using Wire, the standard I2C arduino pins
-    TLC59116Manager() : bus(Wire) { init(100000L,  WireInit | EnableOutputs | Reset); }  
+    TLC59116Manager() : i2cbus(Wire) { init(100000L,  WireInit | EnableOutputs | Reset); }  
     // specific I2C bus, because reset affects only 1 bus
     TLC59116Manager(TwoWire &w, // Use the specified i2c bus (shouldn't allow 2 of these on same bus)
       long frequency = 100000L, // default to 100khz, it's the default for Wire
         // turn-off pattern: 0xFF ^ X::EnableOutputs
       byte dothings = WireInit | EnableOutputs | Reset // do things by default
-      ) : bus(w) { init(frequency, dothings); }
+      ) : i2cbus(w) { init(frequency, dothings); }
     // You'll have to write an adaptor for other interfaces
 
     // Get the 0th, 1st, 2nd, etc. device (index, not by i2c-address). In address order.
@@ -92,7 +118,9 @@ class TLC59116Manager {
       }
     byte device_count() { return device_ct; } // you can iterate
 
-    void reset(); // all devices on bus
+  public: // global things
+    int reset(); // 0 is success
+    TLC59116::Broadcast& broadcast() { static TLC59116::Broadcast x(Wire, *this); return x; }
 
     // consider: is_SUBADR(). has to track all devices subaddr settings (value & enabled)
 
@@ -102,9 +130,10 @@ class TLC59116Manager {
     void init(long frequency,
       byte dothings // turn-off pattern: 0xFF ^ X::EnableOutputs
       );
+    int scan();
 
     // Specific bus
-    TwoWire &bus;
+    TwoWire &i2cbus;
     byte reset_actions;
 
     // Need to track extant

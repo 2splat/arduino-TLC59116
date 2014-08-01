@@ -44,13 +44,13 @@
     #define TLC59116_WARNINGS 1
   #else
     #define TLC59116_WARNINGS 0
-  #end
+  #endif
 #endif
 
 // inline the Warn() function, when disabled, no code
 #if TLC59116_WARNINGS
-  template <typename T> void TLC59116Warn(T msg) {Serial.print(msg);}
-  template <typename T> void TLC59116Warn(T msg, int format) { // and inlined
+  template <typename T> void inline TLC59116Warn(T msg) {Serial.print(msg);}
+  template <typename T> void inline TLC59116Warn(T msg, int format) { // and inlined
     if (format == BIN) {
       Serial.print(F("0b")); // so tired
       for(byte i=0; i < (sizeof(msg) * 8); i++) {
@@ -63,15 +63,15 @@
       Serial.print(msg, format);
       }
     }
-  void TLC59116Warn() { Serial.println();}
+  void inline TLC59116Warn() { Serial.println();}
 #else
-  template <typename T> void TLC59116Warn(T msg, int format=0) {}
-  void TLC59116Warn() {}
+  template <typename T> void inline TLC59116Warn(T msg, int format=0) {}
+  void inline TLC59116Warn() {}
 #endif
 
-template <typename T> void TLC59116Dev(T msg) {TLC59116Warn(msg);}
-template <typename T> void TLC59116Dev(T msg, int format) {TLC59116Warn(msg, format);}
-void TLC59116Dev() {TLC59116Warn();}
+template <typename T> void inline TLC59116Dev(T msg) {TLC59116Warn(msg);}
+template <typename T> void inline TLC59116Dev(T msg, int format) {TLC59116Warn(msg, format);}
+void inline TLC59116Dev() {TLC59116Warn();}
 
 #ifndef TLC59116_UseGroupPWM
   // Set this to enable group_pwm
@@ -102,6 +102,7 @@ class TLC59116_Unmanaged {
     static const byte SUBADR1      = Base_Addr + 0x09; // +0b1001 Programmable Disabled at on/reset
     static const byte SUBADR2      = Base_Addr + 0x0A; // +0b1010 Programmable Disabled at on/reset
     static const byte Reset_Addr   = Base_Addr + 0x0B; // +0b1011
+      static const word Reset_Bytes =  0xA55A;
     static const byte SUBADR3      = Base_Addr + 0x0C; // +0b1100 Programmable Disabled at on/reset
     //                                         + 0x0D .. 0x0F // Unassigned at on/reset
     static const byte Max_Addr     = Base_Addr + 0xF;   // 14 typically available
@@ -142,7 +143,7 @@ class TLC59116_Unmanaged {
     static const byte GRPFREQ_Register = 0x13; // aka blink-length 0=~24hz, 255=~10sec
     static const byte LEDOUT0_Register = 0x14; // len_num -> LEDOUTx_Register number. Registers are: {0x14, 0x15, 0x16, 0x17}
     static const byte LEDOUTx_Max = Channels-1; // 0..15
-      static byte is_valid_led(byte v) { return v <= LEDx_Max; };
+      static byte is_valid_led(byte v) { return v <= LEDOUTx_Max; };
       static void LEDOUTx_CHECK(int line, byte led_num) { 
         if (led_num > LEDOUTx_Max) {
           TLC59116Warn(F("led_num out of range "));TLC59116Warn(led_num); 
@@ -165,9 +166,9 @@ class TLC59116_Unmanaged {
         return register_value & LEDx_Register_mask(led_num); 
         }
       static byte LEDx_to_Register_bits(byte led_num, byte out_mode) { return (LEDOUT_Mask & out_mode) << (2 * (led_num % 4));} // 2 bits in a LEDOUTx_Register
-      static void LEDX_set_mode(byte was, byte led_num, byte mode) {
+      static byte LEDX_set_mode(byte was, byte led_num, byte mode) {
         LEDOUTx_CHECK(__LINE__, led_num);
-        return set_with_mask(was, LEDx_Register_mask(led_num), LEDx_to_Register_bits(led_num, mode);
+        return set_with_mask(was, LEDx_Register_mask(led_num), LEDx_to_Register_bits(led_num, mode));
         }
       static byte LEDx_pwm_bits(byte led_num) {return LEDx_to_Register_bits(led_num, LEDOUT_PWM);}
       static byte LEDx_gpwm_bits(byte led_num) {return LEDx_to_Register_bits(led_num, LEDOUT_GRPPWM);}
@@ -202,9 +203,9 @@ class TLC59116_Unmanaged {
       if (address <= (Base_Addr - Max_Addr)) // 0..15
         return Base_Addr+address;
       else if (address >= Base_Addr && address <= Max_Addr) // Wire's I2C address: 0x60...
-        return address
+        return address;
       else if (address >= (Base_Addr<<1) && address <= (Max_Addr<<1)) // I2C protocol address: 0x60<<1
-        return address >> 1
+        return address >> 1;
       else
         return 0; // Not
       }
@@ -220,19 +221,17 @@ class TLC59116_Unmanaged {
         TLC59116& group_pwm();
     #endif
 
-
-
     // fixme: move up
     // Constructors (plus ::Each, ::Broadcast)
     // NB: The initial state is "outputs off"
-    TLC59116_Unmanaged(byte address) : i2c_address(address) {}
+    TLC59116_Unmanaged(TwoWire &bus, byte address) : i2cbus(bus), i2c_address(address) {}
     TLC59116_Unmanaged(const TLC59116_Unmanaged&); // none
     TLC59116_Unmanaged& operator=(const TLC59116_Unmanaged&); // none
     ~TLC59116_Unmanaged() {} // managed destructor....
 
 
     TLC59116_Unmanaged& describe();
-    TLC59116_Unmanaged& enable_outputs(bool yes = true); // enables w/o arg, use false for disable
+    // to enable outputs, control_register(MODE1_Register, old_value set/unset MODE1_OSC_mask);
 
     TLC59116_Unmanaged& on(byte led_num, bool yes = true); // turns the led on, false turns it off
     TLC59116_Unmanaged& pattern(word bit_pattern, word which_mask = 0xFFFF); // "bulk" on, by bitmask pattern, msb=15
@@ -291,8 +290,10 @@ class TLC59116_Unmanaged {
       _begin_trans(addr, auto_mode ^ register_num); 
       }
 
-    static int _end_trans() {
-      int stat = Wire.endTransmission();
+    int _end_trans() { return TLC59116_Unmanaged::_end_trans(i2cbus); }
+
+    static int _end_trans(TwoWire &bus) {
+      int stat = bus.endTransmission();
 
       if (stat != 0) {
         TLC59116Warn(F("endTransmission error, = "));TLC59116Warn(stat);TLC59116Warn();
@@ -309,6 +310,7 @@ class TLC59116_Unmanaged {
     // our identity is the bus address (w/in a bus)
     // Addresses are 7 bits (lsb missing)
     byte i2c_address;
+    TwoWire& i2cbus;
 
     void describe_mode1();
     void describe_addresses();

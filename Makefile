@@ -62,6 +62,7 @@ zip : ../arduino_$(Device).zip
 	@# safety
 	rm $@ 2>/dev/null || true
 	cd build && zip -r $@ $(Device)
+	rm -rf build/$(Device) 2>/dev/null || true
 
 keywords.txt : $(Device).h
 ifeq ($(shell which clang),)
