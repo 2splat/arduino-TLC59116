@@ -1,2 +1,5 @@
 /build
 /*.ino
+/examples/.*.ino.menu
+/*.zip
+/log
