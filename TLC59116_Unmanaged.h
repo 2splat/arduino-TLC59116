@@ -32,8 +32,10 @@
 
 */
 
+#include <Arduino.h>
 
 // Set this to 1/true to turn on lower-level development debugging
+// Don't forget to Serial.begin(some-speed)
 #ifndef TLC59116_DEV
   #define TLC59116_DEV 0
 #endif
@@ -69,9 +71,15 @@
   void inline TLC59116Warn() {}
 #endif
 
-template <typename T> void inline TLC59116Dev(T msg) {TLC59116Warn(msg);}
-template <typename T> void inline TLC59116Dev(T msg, int format) {TLC59116Warn(msg, format);}
-void inline TLC59116Dev() {TLC59116Warn();}
+#if TLC59116_DEV
+  template <typename T> void inline TLC59116Dev(T msg) {TLC59116Warn(msg);}
+  template <typename T> void inline TLC59116Dev(T msg, int format) {TLC59116Warn(msg, format);}
+  void inline TLC59116Dev() {TLC59116Warn();}
+#else
+  template <typename T> void inline TLC59116Dev(T msg) {}
+  template <typename T> void inline TLC59116Dev(T msg, int format) {}
+  void inline TLC59116Dev() {}
+#endif
 
 #ifndef TLC59116_UseGroupPWM
   // Set this to enable group_pwm
@@ -143,6 +151,11 @@ class TLC59116_Unmanaged {
     static const byte GRPFREQ_Register = 0x13; // aka blink-length 0=~24hz, 255=~10sec
     static const byte LEDOUT0_Register = 0x14; // len_num -> LEDOUTx_Register number. Registers are: {0x14, 0x15, 0x16, 0x17}
     static const byte LEDOUTx_Max = Channels-1; // 0..15
+      const static byte LEDOUT_Mask = 0b11; // 2 bits per led 
+      const static byte LEDOUT_PWM = 0b10;
+      const static byte LEDOUT_GRPPWM = 0b11; // also "group blink" when mode2[dmblnk] = 1
+      const static byte LEDOUT_DigitalOn = 0b01;
+      const static byte LEDOUT_DigitalOff = 0b00;
       static byte is_valid_led(byte v) { return v <= LEDOUTx_Max; };
       static void LEDOUTx_CHECK(int line, byte led_num) { 
         if (led_num > LEDOUTx_Max) {
@@ -151,11 +164,6 @@ class TLC59116_Unmanaged {
           }
         }
       static byte LEDOUTx_Register(byte led_num) { return LEDOUT0_Register + (led_num >> 2); } // 4 leds per register
-      const static byte LEDOUT_Mask = 0b11; // 2 bits per led 
-      const static byte LEDOUT_PWM = 0b10;
-      const static byte LEDOUT_GRPPWM = 0b11; // also "group blink" when mode2[dmblnk] = 1
-      const static byte LEDOUT_DigitalOn = 0b01;
-      const static byte LEDOUT_DigitalOff = 0b00;
       // FIXME: check for usage of these
       static byte LEDx_Register_mask(byte led_num) { // bit mask for led mode bits
         LEDOUTx_CHECK(__LINE__, led_num); 
@@ -221,6 +229,9 @@ class TLC59116_Unmanaged {
         TLC59116& group_pwm();
     #endif
 
+  public: // instance
+    TwoWire& i2cbus; // r/o
+
     // fixme: move up
     // Constructors (plus ::Each, ::Broadcast)
     // NB: The initial state is "outputs off"
@@ -281,23 +292,31 @@ class TLC59116_Unmanaged {
     void control_register(byte count, const byte *register_num, const byte data[]); // set a bunch FIXME not using...
     void get_control_registers(byte count, const byte *register_num, byte data[]); // get a bunch (more efficient)
 
-    static void _begin_trans(byte addr, byte register_num) {
-      Wire.beginTransmission(addr);
-      Wire.write(register_num);
+    void _begin_trans(byte register_num) { TLC59116_Unmanaged::_begin_trans(i2cbus,address(),register_num); }
+    void _begin_trans(byte auto_mode, byte register_num) {
+      TLC59116_Unmanaged::_begin_trans(i2cbus, address(), auto_mode, register_num);
       }
-    static void _begin_trans(byte addr, byte auto_mode, byte register_num) { // with auto-mode
-      // dev(F("Trans starting at ")); dev(register_num,HEX); dev(F(" mode ")); dev(auto_mode,BIN); dev();
-      _begin_trans(addr, auto_mode ^ register_num); 
+
+    static void _begin_trans(TwoWire& bus, byte addr, byte register_num) {
+      TLC59116Dev(F("send R "));TLC59116Dev(register_num & 0x1f,HEX);TLC59116Dev(F("/"));TLC59116Dev(register_num & 0xe0,HEX);TLC59116Dev(F(" to "));TLC59116Dev(addr,HEX);TLC59116Dev(F(" on bus "));TLC59116Dev((unsigned long)&bus, HEX);TLC59116Dev();
+      bus.beginTransmission(addr);
+      bus.write(register_num);
+      TLC59116Dev(F("  begin data..."));TLC59116Dev();
+      }
+    static void _begin_trans(TwoWire& bus, byte addr, byte auto_mode, byte register_num) { // with auto-mode
+      _begin_trans(bus, addr, auto_mode ^ register_num); 
       }
 
     int _end_trans() { return TLC59116_Unmanaged::_end_trans(i2cbus); }
 
     static int _end_trans(TwoWire &bus) {
+      TLC59116Dev(F("end_transmission..."));TLC59116Dev();
       int stat = bus.endTransmission();
 
       if (stat != 0) {
         TLC59116Warn(F("endTransmission error, = "));TLC59116Warn(stat);TLC59116Warn();
         }
+      TLC59116Dev(F("  ="));TLC59116Dev(stat);TLC59116Dev();
       return stat;
       }
 
@@ -310,7 +329,6 @@ class TLC59116_Unmanaged {
     // our identity is the bus address (w/in a bus)
     // Addresses are 7 bits (lsb missing)
     byte i2c_address;
-    TwoWire& i2cbus;
 
     void describe_mode1();
     void describe_addresses();

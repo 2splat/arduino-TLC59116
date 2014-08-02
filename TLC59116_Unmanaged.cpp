@@ -1,9 +1,15 @@
 // FIXME: make things final
 
+#define TLC59116_DEV 1
+#define TLC59116_WARNINGS 1
+
 #include "TLC59116_Unmanaged.h"
 #include <Wire.h>
 
 // The convenience method sometlc.delay(x) hides the normal delay. Use ::delay(...)
+
+#define WARN TLC59116Warn
+#define DEV TLC59116Dev
 
 const char* TLC59116_Unmanaged::Device = "TLC59116";
 
@@ -22,8 +28,9 @@ void TLC59116_Unmanaged::control_register(byte register_num, byte data) {
     TLC59116Warn(F(". Set to "));TLC59116Warn(data,HEX);TLC59116Warn(F("is ignored."));
     return;
     }
-    // TLC59116Warn(F("set R "));TLC59116Warn(register_num,HEX);TLC59116Warn("=");TLC59116Warn(data,BIN);TLC59116Warn();
-    _begin_trans(this->address(), register_num); 
-      Wire.write(data);
-    _end_trans();
+  TLC59116Dev(F("Set "));TLC59116Dev(register_num,HEX);TLC59116Dev(F("=>"));TLC59116Dev(data,HEX);TLC59116Dev();
+  _begin_trans(register_num); 
+    DEV(F(" "));DEV(data,BIN);DEV();
+    i2cbus.write(data);
+  _end_trans();
   }

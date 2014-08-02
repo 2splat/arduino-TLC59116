@@ -3,6 +3,7 @@ lib_files := $(shell find -type f -not -path './build/*' -a \( -name '*.cpp' -o 
 arduino_dir := $(shell which arduino | xargs --no-run-if-empty realpath | xargs --no-run-if-empty dirname)
 arduino_inc_dir := $(arduino_dir)/hardware
 ino_link := $(shell basename `/bin/pwd`).ino
+example_srcs := $(shell find examples -name '*.h' -o -name '*.cpp' | xargs basename )
 
 # a=`which arduino` && b=`realpath $$a` && echo `dirname $$b`/hardware
 
@@ -23,9 +24,12 @@ build_dir :
 
 # makes this directory work as an .ino
 .PHONY : inoify
-inoify : $(ino_link)
+inoify : $(ino_link) $(example_srcs)
 $(ino_link) : $(shell /bin/ls -1 examples/*.ino)
 	ln -s $< $@
+
+$(example_srcs) :
+	ln -s examples/$@
 
 # Launch ide
 .PHONY : ide
