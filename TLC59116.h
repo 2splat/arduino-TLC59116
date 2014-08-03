@@ -15,6 +15,9 @@
 extern TwoWire Wire;
 class TLC59116Manager;
 
+#define WARN TLC59116Warn
+#define DEV TLC59116Dev
+#define LOWD TLC59116LowLevel
 
 class TLC59116 : public TLC59116_Unmanaged {
   // High level operations,
@@ -24,6 +27,17 @@ class TLC59116 : public TLC59116_Unmanaged {
   friend class TLC59116Manager;
 
   public:
+    // No constructor, get from a TLC59116Manager[i]
+
+    virtual TLC59116& enable_outputs(bool yes = true, bool with_delay = true);
+
+    // High level
+    TLC59116& set_outputs(word pattern, word which=0xFFFF); // Only change bits marked in which: to bits in pattern
+    TLC59116& pattern(word pattern, word which=0xFFFF) { return set_outputs(pattern, which); }
+
+    TLC59116& describe_shadow(); 
+
+    TLC59116Manager& manager; // our manager
 
 
   private:
@@ -49,18 +63,10 @@ class TLC59116 : public TLC59116_Unmanaged {
     // We have to shadow the state
     byte shadow_registers[Control_Register_Max+1];
     void reset_shadow_registers() {
-      TLC59116Dev(F("Reset copy "));TLC59116Dev(address(),HEX);TLC59116Dev(F(" max "));TLC59116Dev(Control_Register_Max,HEX);TLC59116Dev();
+      DEV(F("Reset shadow "));DEV(address(),HEX);DEV();
       memcpy_P(shadow_registers, Power_Up_Register_Values, Control_Register_Max);
       }
     void sync_shadow_registers() { /* fixme: read device, for ... shadow=; */ }
-
-  public:
-    virtual TLC59116& enable_outputs(bool yes = true, bool with_delay = true);
-
-    TLC59116& set_outputs(word pattern, word which=0xFFFF); // Only change bits marked in which: to bits in pattern
-    TLC59116& pattern(word pattern, word which=0xFFFF) { return set_outputs(pattern, which); }
-
-    TLC59116Manager& manager;
 
   public: // Special classes
     class Broadcast;
@@ -129,7 +135,7 @@ class TLC59116Manager {
     TLC59116& operator[](byte index) { 
       if (index >= device_ct) { 
         TLC59116Warn(F("Index "));TLC59116Warn(index);TLC59116Warn(F(" >= max device "));TLC59116Warn(device_ct);TLC59116Warn();
-        /// return NULL;
+        return *(devices[0]); // Can't return null
         } 
       else { 
         return *(devices[index]);

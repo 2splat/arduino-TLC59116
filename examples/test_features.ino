@@ -47,6 +47,19 @@ void loop() {
       test_num = 0xff;
       break;
 
+    case 'd' : // Dump actual device
+      Serial.println();
+      tlc->describe_actual();
+      test_num = 0xff;
+      break;
+
+    case 'D' : // Dump shadow registers
+      Serial.println();
+      tlc->describe_shadow();
+      test_num = 0xff;
+      break;
+
+
     case 'b' : // Blink with an alternating pattern
       do_sequence_till_input
         sequence(0, tlc->pattern(0x5555), 250)
@@ -86,6 +99,7 @@ TLC59116 *pick_device(TLC59116 &was) {
 
   char x = 'z'; // --none--
 
+  Serial.println();
   while (x >= tlcmanager.device_count() && x != '*' && x != '|') {
     // show the list, including broadcast, marking with "="
     // take 0..F from list, or '*' for broadcast, '|' for .each

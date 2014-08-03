@@ -8,6 +8,7 @@ extern "C" void atexit( void ) { } // so I can have statics in a method, i.e. si
 // #define WARN Serial.print
 #define WARN TLC59116Warn
 #define DEV TLC59116Dev
+#define LOWD TLC59116LowLevel
 
 const prog_uchar TLC59116::Power_Up_Register_Values[TLC59116_Unmanaged::Control_Register_Max] PROGMEM = {
   TLC59116_Unmanaged::MODE1_OSC_mask | TLC59116_Unmanaged::MODE1_ALLCALL_mask,
@@ -265,6 +266,14 @@ void TLC59116::update_ledx_registers(const byte* new_ledx /* [4] */, byte led_st
       //TLC59116Warn();
     _end_trans();
     }
+  }
+
+TLC59116& TLC59116::describe_shadow() {
+  Serial.print(Device);Serial.print(F(" 0x"));Serial.print(address(),HEX);
+  Serial.print(F(" on bus "));Serial.print((unsigned long)&i2cbus, HEX);Serial.println();
+  Serial.println(F("Shadow Registers"));
+  TLC59116_Unmanaged::describe_registers(shadow_registers); 
+  return *this; 
   }
 
 //

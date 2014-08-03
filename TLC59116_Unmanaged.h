@@ -34,10 +34,19 @@
 
 #include <Arduino.h>
 
+// Set this to 1/true for lowlevel debugging messages
+#ifndef TLC59116_LOWLEVEL
+  #define TLC59116_LOWLEVEL 0
+#endif
+
 // Set this to 1/true to turn on lower-level development debugging
 // Don't forget to Serial.begin(some-speed)
 #ifndef TLC59116_DEV
-  #define TLC59116_DEV 0
+  #if TLC59116_LOWLEVEL
+    #define TLC59116_DEV 1
+  #else
+    #define TLC59116_DEV 0
+  #endif
 #endif
 
 // Set this to 1/true to turn on Warnings & info
@@ -84,6 +93,16 @@
 #ifndef TLC59116_UseGroupPWM
   // Set this to enable group_pwm
   #define TLC59116_UseGroupPWM 0
+#endif
+
+#if TLC59116_LOWLEVEL
+  template <typename T> void inline TLC59116LowLevel(T msg) {TLC59116Warn(msg);}
+  template <typename T> void inline TLC59116LowLevel(T msg, int format) {TLC59116Warn(msg, format);}
+  void inline TLC59116LowLevel() {TLC59116Warn();}
+#else
+  template <typename T> void inline TLC59116LowLevel(T msg) {}
+  template <typename T> void inline TLC59116LowLevel(T msg, int format) {}
+  void inline TLC59116LowLevel() {}
 #endif
 
 #include <Arduino.h>
@@ -220,9 +239,11 @@ class TLC59116_Unmanaged {
     static byte set_with_mask(byte was, byte mask, byte new_bits) { // only set the bits marked by mask
       byte to_change = mask & new_bits; // sanity
       byte unchanged = ~mask & was; // the bits of interest are 0 here
-      byte new_value = unchanged ^ to_change;
+      byte new_value = unchanged | to_change;
       return new_value;
       }
+
+    static void describe_registers(byte* registers /*[4]*/);
 
     // disabled because of bug
     #if TLC59116_UseGroupPWM
@@ -240,8 +261,8 @@ class TLC59116_Unmanaged {
     TLC59116_Unmanaged& operator=(const TLC59116_Unmanaged&); // none
     ~TLC59116_Unmanaged() {} // managed destructor....
 
+    TLC59116_Unmanaged& describe_actual();
 
-    TLC59116_Unmanaged& describe();
     // to enable outputs, control_register(MODE1_Register, old_value set/unset MODE1_OSC_mask);
 
     TLC59116_Unmanaged& on(byte led_num, bool yes = true); // turns the led on, false turns it off
@@ -298,10 +319,10 @@ class TLC59116_Unmanaged {
       }
 
     static void _begin_trans(TwoWire& bus, byte addr, byte register_num) {
-      TLC59116Dev(F("send R "));TLC59116Dev(register_num & 0x1f,HEX);TLC59116Dev(F("/"));TLC59116Dev(register_num & 0xe0,HEX);TLC59116Dev(F(" to "));TLC59116Dev(addr,HEX);TLC59116Dev(F(" on bus "));TLC59116Dev((unsigned long)&bus, HEX);TLC59116Dev();
+      TLC59116LowLevel(F("send R "));TLC59116LowLevel(register_num & 0x1f,HEX);TLC59116LowLevel(F("/"));TLC59116LowLevel(register_num & 0xe0,HEX);TLC59116LowLevel(F(" to "));TLC59116LowLevel(addr,HEX);TLC59116LowLevel(F(" on bus "));TLC59116LowLevel((unsigned long)&bus, HEX);TLC59116LowLevel();
       bus.beginTransmission(addr);
       bus.write(register_num);
-      TLC59116Dev(F("  begin data..."));TLC59116Dev();
+      TLC59116LowLevel(F("  begin data..."));TLC59116LowLevel();
       }
     static void _begin_trans(TwoWire& bus, byte addr, byte auto_mode, byte register_num) { // with auto-mode
       _begin_trans(bus, addr, auto_mode ^ register_num); 
@@ -310,13 +331,13 @@ class TLC59116_Unmanaged {
     int _end_trans() { return TLC59116_Unmanaged::_end_trans(i2cbus); }
 
     static int _end_trans(TwoWire &bus) {
-      TLC59116Dev(F("end_transmission..."));TLC59116Dev();
+      TLC59116LowLevel(F("end_transmission..."));TLC59116LowLevel();
       int stat = bus.endTransmission();
 
       if (stat != 0) {
         TLC59116Warn(F("endTransmission error, = "));TLC59116Warn(stat);TLC59116Warn();
         }
-      TLC59116Dev(F("  ="));TLC59116Dev(stat);TLC59116Dev();
+      TLC59116LowLevel(F("  ="));TLC59116LowLevel(stat);TLC59116LowLevel();
       return stat;
       }
 
@@ -330,12 +351,11 @@ class TLC59116_Unmanaged {
     // Addresses are 7 bits (lsb missing)
     byte i2c_address;
 
-    void describe_mode1();
-    void describe_addresses();
+    static void describe_iref(byte* registers);
+    static void describe_addresses(byte* registers);
     void describe_mode2();
-    void describe_channels();
-    void describe_iref();
-    void describe_error_flag();
+    static void describe_channels(byte* registers);
+    static void describe_error_flag(byte* registers);
 
     void update_ledx_registers(byte addr, byte to_what, byte led_start_i, byte led_end_i);
     void update_ledx_registers(byte addr, const byte* want_ledx /* [4] */, byte led_start_i, byte led_end_i);
