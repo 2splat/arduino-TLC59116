@@ -243,7 +243,7 @@ class TLC59116_Unmanaged {
       return new_value;
       }
 
-    static void describe_registers(byte* registers /*[4]*/);
+    static void describe_registers(byte* registers /*[Control_Register_Max]*/);
 
     // disabled because of bug
     #if TLC59116_UseGroupPWM
@@ -319,7 +319,7 @@ class TLC59116_Unmanaged {
       }
 
     static void _begin_trans(TwoWire& bus, byte addr, byte register_num) {
-      TLC59116LowLevel(F("send R "));TLC59116LowLevel(register_num & 0x1f,HEX);TLC59116LowLevel(F("/"));TLC59116LowLevel(register_num & 0xe0,HEX);TLC59116LowLevel(F(" to "));TLC59116LowLevel(addr,HEX);TLC59116LowLevel(F(" on bus "));TLC59116LowLevel((unsigned long)&bus, HEX);TLC59116LowLevel();
+      TLC59116LowLevel(F("send R "));TLC59116LowLevel(register_num & 0x1f,HEX);TLC59116LowLevel(F("/"));TLC59116LowLevel(register_num & 0xe0,BIN);TLC59116LowLevel(F(" to "));TLC59116LowLevel(addr,HEX);TLC59116LowLevel(F(" on bus "));TLC59116LowLevel((unsigned long)&bus, HEX);TLC59116LowLevel();
       bus.beginTransmission(addr);
       bus.write(register_num);
       TLC59116LowLevel(F("  begin data..."));TLC59116LowLevel();
@@ -353,7 +353,7 @@ class TLC59116_Unmanaged {
 
     static void describe_iref(byte* registers);
     static void describe_addresses(byte* registers);
-    void describe_mode2();
+    static void describe_mode2(byte *registers);
     static void describe_channels(byte* registers);
     static void describe_error_flag(byte* registers);
 

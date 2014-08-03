@@ -73,6 +73,9 @@ void loop() {
       Serial.print("Using 0x");Serial.print(tlc->address(),HEX);Serial.println();
       // menu made by: make (in examples/, then insert here)
 Serial.println(F("=  pick a device"));
+Serial.println(F("r  Reset all"));
+Serial.println(F("d  Dump actual device"));
+Serial.println(F("D  Dump shadow registers"));
 Serial.println(F("b  Blink with an alternating pattern"));
 Serial.println(F("?  display menu"));
       // end menu

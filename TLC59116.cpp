@@ -140,14 +140,14 @@ TLC59116& TLC59116::enable_outputs(bool yes, bool with_delay) {
     modify_control_register(MODE1_Register,MODE1_OSC_mask, MODE1_OSC_mask); // bits on is osc off
     }
 
-  WARN(F("Finished en/dis-able outputs"));WARN();
+  LOWD(F("Finished en/dis-able outputs"));LOWD();
   return *this;
   }
 
 void TLC59116::modify_control_register(byte register_num, byte value) {
   if (shadow_registers[register_num] != value) {
       shadow_registers[register_num] = value;
-      TLC59116Dev(F("Modify "));TLC59116Dev(register_num,HEX);TLC59116Dev(F("=>"));TLC59116Dev(value,HEX);TLC59116Dev();
+      LOWD(F("Modify "));LOWD(register_num,HEX);LOWD(F("=>"));LOWD(value,HEX);LOWD();
       control_register(register_num, value);
       }
   }
@@ -155,11 +155,11 @@ void TLC59116::modify_control_register(byte register_num, byte value) {
 void TLC59116::modify_control_register(byte register_num, byte mask, byte bits) {
   byte new_value = set_with_mask(shadow_registers[register_num], mask, bits);
   if (register_num < PWM0_Register || register_num > 0x17) {
-    TLC59116Warn(F("Modify R"));TLC59116Warn(register_num,HEX);TLC59116Warn();
-    TLC59116Warn(F("       ="));TLC59116Warn(shadow_registers[register_num],BIN);TLC59116Warn();
-    TLC59116Warn(F("       M"));TLC59116Warn(mask,BIN);TLC59116Warn();
-    TLC59116Warn(F("       V"));TLC59116Warn(bits,BIN);TLC59116Warn();
-    TLC59116Warn(F("       ="));TLC59116Warn(new_value,BIN);TLC59116Warn();
+    LOWD(F("Modify R"));LOWD(register_num,HEX);LOWD();
+    LOWD(F("       ="));LOWD(shadow_registers[register_num],BIN);LOWD();
+    LOWD(F("       M"));LOWD(mask,BIN);LOWD();
+    LOWD(F("       V"));LOWD(bits,BIN);LOWD();
+    LOWD(F("       ="));LOWD(new_value,BIN);LOWD();
     }
   modify_control_register(register_num, new_value);
   }
