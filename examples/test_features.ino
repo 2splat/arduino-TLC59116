@@ -75,7 +75,7 @@ void loop() {
 Serial.println(F("=  pick a device"));
 Serial.println(F("b  Blink with an alternating pattern"));
 Serial.println(F("?  display menu"));
-      // end insert
+      // end menu
       // fallthrough
 
     case 0xff : // show prompt, get input

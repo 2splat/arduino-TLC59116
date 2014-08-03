@@ -28,6 +28,10 @@ inoify : $(ino_link) $(example_srcs)
 $(ino_link) : $(shell /bin/ls -1 examples/*.ino)
 	ln -s $< $@
 
+.PHONE : menu
+menu :
+	@cd examples && make insertmenu
+
 $(example_srcs) :
 	ln -s examples/$@
 
