@@ -45,6 +45,7 @@ class TLC59116 : public TLC59116_Unmanaged {
     // PWM
     TLC59116& set_outputs(byte led_num_start, byte ct, const byte brightness[] /*[ct]*/); // A list of PWM values starting at start_i. Tolerates wrapping past i=15
     TLC59116& pwm(byte led_num, byte brightness) { byte ba[1] = {brightness}; return set_outputs(led_num, 1, ba); }
+    TLC59116& pwm(byte led_num_start, byte ct, const byte brightness[] /*[ct]*/) { return set_outputs(led_num_start, ct, brightness); }
     
 
     TLC59116& describe_shadow(); 

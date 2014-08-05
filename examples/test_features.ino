@@ -11,6 +11,9 @@ TLC59116Manager tlcmanager; // defaults
 extern int __bss_end;
 extern void *__brkval;
 
+const byte Hump_Values[] = { 0,10,80,255,80,10,0 };
+const unsigned long Hump_Speed = 50; // time between changing. actually "slowness"
+
 int get_free_memory()
 {
   int free_memory;
@@ -113,6 +116,17 @@ void loop() {
       test_num = 0xff;
       break;
 
+    case 'W' : // Wave using pwm, bulk
+      {
+      byte i;
+      do_sequence_till_input
+        // me so tricky
+        sequence(0, tlc->pwm(i++ % 16, sizeof(Hump_Values), Hump_Values), Hump_Speed)
+      end_do_sequence
+      }
+      test_num = 0xff;
+      break;
+
     case '?' : // display menu
       Serial.println();
       Serial.print(F("Free memory "));Serial.println(get_free_memory());
@@ -125,6 +139,8 @@ Serial.println(F("D  Dump shadow registers"));
 Serial.println(F("b  Blink with an alternating pattern"));
 Serial.println(F("o  test On/Off bit pattern"));
 Serial.println(F("O  test on off by led-num"));
+Serial.println(F("w  Wave using pwm, individual .pwm(led_num, brightness)"));
+Serial.println(F("W  Wave using pwm, bulk"));
 Serial.println(F("?  display menu"));
       // end menu
       // fallthrough
@@ -179,9 +195,6 @@ TLC59116 *pick_device(TLC59116 &was) {
 
   return tlc;
   }
-
-const byte Hump_Values[] = { 0,10,80,255,80,10,0 };
-const unsigned long Hump_Speed = 50; // time between changing. actually "slowness"
 
 void pwm_wave(TLC59116& tlc) {
   // 6 leds 80,160,240,160,80 that chase around

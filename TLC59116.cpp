@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#define TLC59116_LOWLEVEL 1
+#define TLC59116_LOWLEVEL 0
 #define TLC59116_DEV 1
 #define TLC59116_WARNINGS 1
 
