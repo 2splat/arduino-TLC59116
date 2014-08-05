@@ -60,7 +60,7 @@
 
 // inline the Warn() function, when disabled, no code
 #if TLC59116_WARNINGS
-  template <typename T> void inline TLC59116Warn(T msg) {Serial.print(msg);}
+  template <typename T> void inline TLC59116Warn(const T msg) {Serial.print(msg);}
   template <typename T> void inline TLC59116Warn(T msg, int format) { // and inlined
     if (format == BIN) {
       Serial.print(F("0b")); // so tired
@@ -76,16 +76,16 @@
     }
   void inline TLC59116Warn() { Serial.println();}
 #else
-  template <typename T> void inline TLC59116Warn(T msg, int format=0) {}
+  template <typename T> void inline TLC59116Warn(const T msg, int format=0) {}
   void inline TLC59116Warn() {}
 #endif
 
 #if TLC59116_DEV
-  template <typename T> void inline TLC59116Dev(T msg) {TLC59116Warn(msg);}
+  template <typename T> void inline TLC59116Dev(const T msg) {TLC59116Warn(msg);}
   template <typename T> void inline TLC59116Dev(T msg, int format) {TLC59116Warn(msg, format);}
   void inline TLC59116Dev() {TLC59116Warn();}
 #else
-  template <typename T> void inline TLC59116Dev(T msg) {}
+  template <typename T> void inline TLC59116Dev(const T msg) {}
   template <typename T> void inline TLC59116Dev(T msg, int format) {}
   void inline TLC59116Dev() {}
 #endif
@@ -169,7 +169,7 @@ class TLC59116_Unmanaged {
     static const byte GRPPWM_Register = 0x12; // aka blink-duty-cycle-register
     static const byte GRPFREQ_Register = 0x13; // aka blink-length 0=~24hz, 255=~10sec
     static const byte LEDOUT0_Register = 0x14; // len_num -> LEDOUTx_Register number. Registers are: {0x14, 0x15, 0x16, 0x17}
-    static const byte LEDOUTx_Max = Channels-1; // 0..15
+      static const byte LEDOUTx_Max = Channels-1; // 0..15
       const static byte LEDOUT_Mask = 0b11; // 2 bits per led 
       const static byte LEDOUT_PWM = 0b10;
       const static byte LEDOUT_GRPPWM = 0b11; // also "group blink" when mode2[dmblnk] = 1
@@ -193,7 +193,7 @@ class TLC59116_Unmanaged {
         return register_value & LEDx_Register_mask(led_num); 
         }
       static byte LEDx_to_Register_bits(byte led_num, byte out_mode) { return (LEDOUT_Mask & out_mode) << (2 * (led_num % 4));} // 2 bits in a LEDOUTx_Register
-      static byte LEDX_set_mode(byte was, byte led_num, byte mode) {
+      static byte LEDx_set_mode(byte was, byte led_num, byte mode) {
         LEDOUTx_CHECK(__LINE__, led_num);
         return set_with_mask(was, LEDx_Register_mask(led_num), LEDx_to_Register_bits(led_num, mode));
         }

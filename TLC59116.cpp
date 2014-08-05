@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#define TLC59116_LOWLEVEL 1
 #define TLC59116_DEV 1
 #define TLC59116_WARNINGS 1
 
@@ -176,7 +177,7 @@ TLC59116& TLC59116::set_outputs(word pattern, word which) {
 
   for(byte ledx_i=15; ; ledx_i--) {
     if (0x8000 & which) {
-      new_ledx[ledx_i / 4] = LEDX_set_mode(
+      new_ledx[ledx_i / 4] = LEDx_set_mode(
         new_ledx[ledx_i / 4], 
         ledx_i, 
         (pattern & 0x8000) ? LEDOUT_DigitalOn : LEDOUT_DigitalOff
@@ -188,83 +189,103 @@ TLC59116& TLC59116::set_outputs(word pattern, word which) {
     if (ledx_i==0) break; // can't detect < 0 on an unsigned!
     }
 
-  update_ledx_registers(new_ledx, 0, 15);
+  update_registers(new_ledx, LEDOUT0_Register, LEDOUTx_Register(15));
   return *this;
   }
 
-void TLC59116::update_ledx_registers(const byte* new_ledx /* [4] */, byte led_start_i, byte led_end_i) {
-  // Update only the LEDx registers that need it
-  // new_ledx is shadow_registers & new settings
+TLC59116& TLC59116::set_outputs(byte led_num_start, byte ct, const byte brightness[] /*[ct]*/ ) {
+  // We are going to start with current shadow values, mark changes against them, 
+  //  then write the smallest range of registers.
+  // We are going to write LEDOUTx and PWMx registers together to prevent flicker.
+  // This becomes less efficient if the only changed PWMx is at a large 'x',
+  // And if a LEDOUTx needs to be changed to PWM,
+  // And/Or if the changed PWMx is sparse.
+  // But, pretty efficient if the number of changes (from first change to last) is more than 1/2 the range.
+
+  LOWD(F("Set PWMs from "));LOWD(led_num_start,HEX),LOWD(F(" for "));LOWD(ct);
+    LOWD(F(": "));for(byte i=0;i<ct;i++) {LOWD(brightness[i],HEX);LOWD(F(" "));}
+    LOWD();
+
+  // need current values to mark changes against
+  // FIXME: We could try to minimize the register_count: to start with the min(PWMx), but math
+  byte register_count = /* r0... */ LEDOUTx_Register(Channels-1) + 1;
+  byte want[register_count]; // I know that TLC59116 is veryfew...PWMx..LEDOUTx
+  memcpy(want, this->shadow_registers, register_count);
+
+  // (for ledoutx, Might be able to do build it with <<bitmask, and then set_with_mask the whole thing)
+  LOWD(F("  copying led# "));LOWD(led_num_start);LOWD(F(" to% "));LOWD((led_num_start + ct -1)%16);LOWD();
+  for(byte ledi=led_num_start; ledi < led_num_start + ct; ledi++) {
+    // ledout settings
+    byte wrapped_i = ledi % 16; // %16 wraps
+    byte out_r = LEDOUTx_Register(wrapped_i);
+    want[out_r] = LEDx_set_mode(want[out_r], wrapped_i, LEDOUT_PWM);
+    
+    // PWM
+    want[ PWMx_Register(wrapped_i) ] = brightness[ledi - led_num_start];
+    }
+
+  update_registers(&want[PWM0_Register], PWM0_Register, LEDOUTx_Register(Channels-1));
+  return *this;
+  }
+
+void TLC59116::update_registers(const byte want[] /* [start..end] */, byte start_r, byte end_r) {
+  // Update only the registers that need it
+  // 'want' has to be (shadow_registers & new_value)
+  // want[0] is register_value[start_r], i.e. a subset of the full register set
   // Does wire.begin, write,...,end
   // (_i = index of a led 0..15, _r is register_number)
-  const byte ledx_first_r = LEDOUTx_Register(led_start_i);
-  const byte ledx_last_r = LEDOUTx_Register(led_end_i);
-  //TLC59116Warn(F("Update control from #"));
-    //TLC59116Warn(led_start_i);TLC59116Warn(F("/C"));TLC59116Warn(ledx_first_r,HEX);
-    //TLC59116Warn(F(" to "));TLC59116Warn(led_end_i);TLC59116Warn(F("/C"));TLC59116Warn(ledx_last_r,HEX);
-    //TLC59116Warn();
+  LOWD(F("Update registers ")); LOWD(start_r,HEX);LOWD(F(".."));LOWD(end_r,HEX);LOWD();
 
-  //TLC59116Warn(F("Change to ")); for(byte i=0;i<4;i++){ TLC59116Warn(new_ledx[i],BIN); TLC59116Warn(" ");} TLC59116Warn();
+  LOWD(F("Change to ")); LOWD();
+  for(byte i=0;i<end_r-start_r+1;i++){if (i>0 && i % 8 ==0) LOWD(); LOWD(want[i],BIN);LOWD(F("/"));LOWD(want[i],HEX); LOWD(" "); } 
+  LOWD();
 
-  // "new" is updated, now find the changed ones
-  // (all the following work to write only changed bytes instead of 4. 
+  // now find the changed ones
   //  best case is: no writes
-  //  2nd best case is: begin, device addr, register, 1 byte, end
-  //  instead of  : begin, device addr, register, byte byte byte byte, end
-  //  which is a _possible_ savings of 3-bytes/24-bits out of 56-bits = 42%
-  //  so, pretty good
-  // )
-  byte change_first_r; // an LEDOUTx register num
-  bool has_change_first = false;
+  //  2nd best case is some subrange
 
-  for (byte r = ledx_first_r; r <= ledx_last_r; r++) {
-    if (new_ledx[r - LEDOUT0_Register] != shadow_registers[r]) {
-      change_first_r = r;
-      has_change_first = true;
-      break; // done if we found one
+  const byte *want_fullset = want - start_r; // now want[i] matches shadow_register[i]
+
+  // First change...
+  bool has_change_first = false;
+  byte change_first_r; // a register num
+  for (change_first_r = start_r; change_first_r <= end_r; change_first_r++) {
+    if (want_fullset[change_first_r] != shadow_registers[change_first_r]) {
+      has_change_first = true; // found it
+      break;
       }
     }
-  // if (!has_change_first) {TLC59116Warn(F("No Diff"));TLC59116Warn();}
 
   // Write the data if any changed
 
-  if (has_change_first) { // might be "none changed"
-    //// DEBUG
-    //TLC59116Warn("Diff F... ");
-    //for(byte r = LEDOUT0_Register; r < change_first_r; r++) TLC59116Warn("           ");
-    //for(byte r = change_first_r; r < 4 + LEDOUT0_Register; r++) { TLC59116Warn(new_ledx[r - LEDOUT0_Register],BIN);TLC59116Warn(" "); }
-    //TLC59116Warn();
-    //// DEBUG
-  
-
-    byte change_last_r;
-
-    // Find last
-    for(byte r = ledx_last_r; ; r--) { // we know we'll hit change_first_r
-      if (new_ledx[r - LEDOUT0_Register] != shadow_registers[r]) {
-        change_last_r = r;
-        break; // done if we found one. it might be change_first_r
+  if (!has_change_first) { // might be "none changed"
+    LOWD(F("No Diff"));LOWD();
+    }
+  else {
+    // Find last change
+    byte change_last_r; // a register num
+    for (change_last_r = end_r; change_last_r >= change_first_r; change_last_r--) {
+      if (want_fullset[change_last_r] != shadow_registers[change_last_r]) {
+        break; // found it
         }
       }
-    //// DEBUG
-    //TLC59116Warn("Diff      ");
-    //for(byte r = LEDOUT0_Register; r < change_first_r; r++) TLC59116Warn("           ");
-    //for(byte r = change_first_r; r <= change_last_r; r++) { TLC59116Warn(new_ledx[r - LEDOUT0_Register],BIN);TLC59116Warn(" "); }
-    //TLC59116Warn();
-    //// DEBUG
+    LOWD(F("Diff "));LOWD(change_first_r,HEX);LOWD(F(".."));LOWD(change_last_r,HEX);
+      LOWD(F(" ("));LOWD(change_last_r-change_first_r+1);LOWD(F(")"));
+    LOWD();
+    for(byte r=change_first_r; r<=change_last_r; r++) {LOWD(shadow_registers[r],HEX);LOWD(" ");} LOWD();
+    for(byte r=change_first_r; r<=change_last_r; r++) {LOWD(want_fullset[r],HEX);LOWD(" ");} LOWD();
 
     // We have a first..last, so write them
-    // TLC59116Warn(F("Write @ register ")); TLC59116Warn(change_first_r,HEX); TLC59116Warn(" "); TLC59116Warn(change_last_r - change_first_r +1); TLC59116Warn(F(" bytes of data")); TLC59116Warn();
+    LOWD(F("Write "));LOWD(change_first_r,HEX);LOWD(F(": "));
     _begin_trans(Auto_All, change_first_r);
       // TLC59116Warn("  ");
-      i2cbus.write(&new_ledx[ change_first_r - LEDOUT0_Register ], change_last_r-change_first_r+1);
-      for(; change_first_r <= change_last_r; change_first_r++) {
-        byte new_val = new_ledx[ change_first_r - LEDOUT0_Register ];
-        shadow_registers[ change_first_r ] = new_val;
-        // TLC59116Warn(new_val,BIN);TLC59116Warn(" ");
-        }
-      //TLC59116Warn();
+      i2cbus.write(&want_fullset[change_first_r], change_last_r-change_first_r+1);
     _end_trans();
+    // update shadow
+    LOWD();
+    memcpy(&shadow_registers[change_first_r], &want_fullset[change_first_r], change_last_r-change_first_r+1);
+    // FIXME: propagate shadow
+    LOWD(F("Wrote bulk"));LOWD();
     }
   }
 

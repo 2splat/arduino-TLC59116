@@ -67,6 +67,52 @@ void loop() {
       end_do_sequence
       break;
 
+    case 'o' : // test On/Off bit pattern
+      // Shows that on/off doesn't disturb other channels
+      while (Serial.available() <= 0) {
+        tlc->on(0xFFFF).delay(200);
+        word offp = 0b1;
+        word onp = 0b1;
+        for(byte i=0; i<16; i++) {
+          tlc->off(offp);
+          delay(200);
+          offp <<= 1;
+          if (Serial.available()>0) break;
+          }
+        for(byte i=0; i<16; i++) {
+          tlc->on(onp);
+          delay(200);
+          onp <<= 1;
+          if (Serial.available()>0) break;
+          }
+        }
+      test_num = '?';
+      break;
+
+    case 'O' : // test on off by led-num
+      while (Serial.available() <= 0) {
+        for(byte i=0; i<16; i++) tlc->set(i,HIGH);
+        delay(200);
+
+        for(byte i=0; i<16; i++) {
+          tlc->set(i,LOW);
+          delay(200);
+          if (Serial.available()>0) break;
+          }
+        for(byte i=0; i<16; i++) {
+          tlc->set(i,HIGH);
+          delay(200);
+          if (Serial.available()>0) break;
+          }
+        }
+      test_num = '?';
+      break;
+
+    case 'w' : // Wave using pwm, individual .pwm(led_num, brightness)
+      pwm_wave(*tlc);
+      test_num = 0xff;
+      break;
+
     case '?' : // display menu
       Serial.println();
       Serial.print(F("Free memory "));Serial.println(get_free_memory());
@@ -77,6 +123,8 @@ Serial.println(F("r  Reset all"));
 Serial.println(F("d  Dump actual device"));
 Serial.println(F("D  Dump shadow registers"));
 Serial.println(F("b  Blink with an alternating pattern"));
+Serial.println(F("o  test On/Off bit pattern"));
+Serial.println(F("O  test on off by led-num"));
 Serial.println(F("?  display menu"));
       // end menu
       // fallthrough
@@ -130,4 +178,31 @@ TLC59116 *pick_device(TLC59116 &was) {
   else Serial.println("What?");
 
   return tlc;
+  }
+
+const byte Hump_Values[] = { 0,10,80,255,80,10,0 };
+const unsigned long Hump_Speed = 50; // time between changing. actually "slowness"
+
+void pwm_wave(TLC59116& tlc) {
+  // 6 leds 80,160,240,160,80 that chase around
+  // Writing individual leds
+  unsigned long before_time = 0;
+  byte chase_i = 0;
+
+  while(Serial.available() <= 0) {
+    // Serial.print("at ");Serial.print((chase_i+3) % 16);Serial.print(" ");
+    before_time = millis();
+    for (char i = -3; i <= 3; i++) {
+      byte led_num = (chase_i + 3 + i) % 16;
+      byte pwm =  Hump_Values[i + 3];
+      // Serial.print(pwm);Serial.print(" ");
+      tlc.pwm(led_num, pwm);
+      }
+    // Serial.println(F("Doit"));
+    chase_i = (chase_i + 1) % 16; // 0..15
+
+    unsigned long used = millis() - before_time;
+    if (Hump_Speed > used) delay(Hump_Speed - used);
+    else { Serial.print("!Took ");Serial.println(used); }
+    }
   }

@@ -32,8 +32,20 @@ class TLC59116 : public TLC59116_Unmanaged {
     virtual TLC59116& enable_outputs(bool yes = true, bool with_delay = true);
 
     // High level
+    // Digital
     TLC59116& set_outputs(word pattern, word which=0xFFFF); // Only change bits marked in which: to bits in pattern
     TLC59116& pattern(word pattern, word which=0xFFFF) { return set_outputs(pattern, which); }
+    TLC59116& on(word pattern) { return set_outputs(pattern, pattern); } // only set those indicated
+    TLC59116& off(word pattern) { return set_outputs(~pattern, pattern); } // only turn-off those indicated
+    TLC59116& set(int led_num, int offon) {  // only turn-off those indicated
+      word bits = 1 << led_num;
+      return set_outputs(offon ? bits : ~bits,bits); 
+      }
+
+    // PWM
+    TLC59116& set_outputs(byte led_num_start, byte ct, const byte brightness[] /*[ct]*/); // A list of PWM values starting at start_i. Tolerates wrapping past i=15
+    TLC59116& pwm(byte led_num, byte brightness) { byte ba[1] = {brightness}; return set_outputs(led_num, 1, ba); }
+    
 
     TLC59116& describe_shadow(); 
 
@@ -57,7 +69,7 @@ class TLC59116 : public TLC59116_Unmanaged {
     void modify_control_register(byte register_num, byte value);
 
     // mid-level
-    void update_ledx_registers(const byte* new_ledx /* [4] */, byte led_start_i, byte led_end_i);
+    void update_registers(const byte want[] /* [start..end] */, byte start_r, byte end_r); // want[0]=register[start_r]
 
 
     // We have to shadow the state
