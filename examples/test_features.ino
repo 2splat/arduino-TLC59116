@@ -127,6 +127,24 @@ void loop() {
       test_num = 0xff;
       break;
 
+    case 'B' : // Blink using group_blink, will run on its own
+      tlc->pwm(0, TLC59116::Channels-1, 128);
+      {
+      int i=0;
+      do_sequence_till_input
+        sequence(0, tlc->group_blink(0xFFFFFFFF, (i++ % 30) + 2.0, 10.0), 4000);
+      end_do_sequence
+      }
+      break;
+      do_sequence_till_input
+        sequence(0, tlc->pwm(0, TLC59116::Channels-1, 128), 0); // FIXME: Channels-1 is not friendly
+        sequence(1, tlc->group_blink(0xFFFFFFFF, 6, 128), 3000);
+        sequence(2, tlc->on(0xAAAAAAAA), 1000);
+        sequence(3, tlc->pwm(0, TLC59116::Channels-1, 100), 0);
+        sequence(4, tlc->group_blink(0xFFFFFFFF, 1, 50), 4000);
+      end_do_sequence
+      break;
+
     case '?' : // display menu
       Serial.println();
       Serial.print(F("Free memory "));Serial.println(get_free_memory());

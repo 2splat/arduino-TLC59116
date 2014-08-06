@@ -46,7 +46,29 @@ class TLC59116 : public TLC59116_Unmanaged {
     TLC59116& set_outputs(byte led_num_start, byte ct, const byte brightness[] /*[ct]*/); // A list of PWM values starting at start_i. Tolerates wrapping past i=15
     TLC59116& pwm(byte led_num, byte brightness) { byte ba[1] = {brightness}; return set_outputs(led_num, 1, ba); }
     TLC59116& pwm(byte led_num_start, byte ct, const byte brightness[] /*[ct]*/) { return set_outputs(led_num_start, ct, brightness); }
+    TLC59116& pwm(byte led_num_start, byte led_num_end, byte pwm_value) { // set all to same value
+      const byte register_count = led_num_end - led_num_start +1;
+      // FIXME: warnings of range
+      byte pwm[register_count];
+      memset(pwm, pwm_value, register_count);
+      return set_outputs(led_num_start, register_count, pwm); 
+      }
+    // fixme: maybe brightness()?
     
+    // Blink the LEDs, at their current/last PWM setting. 
+    // Set PWM values first.
+    // To turn off blink, set channels to PWM or digital-on/off
+    TLC59116& group_blink(byte blink_time, byte on_ratio=128) { return group_blink(0xFFFFFFFF,blink_time,on_ratio); }
+    TLC59116& group_blink(double hz, double on_percent=50.0) { return group_blink(0xFFFFFFFF,hz,on_percent); }
+    TLC59116& group_blink(word bit_pattern, double hz, double on_percent=50.0) { // convenience % & hz
+      // on_percent is 05..99.61%, hz is 24.00384hz to .09375 (10sec long) in steps of .04166hz (blink time 0..255)
+      return group_blink(
+        (word)bit_pattern, 
+        (byte) int( 24.0 / hz) - 1,
+        (byte) int(on_percent * 256.0/100.0) // cheating on the percent->decimal
+        );
+      }
+    TLC59116& group_blink(word bit_pattern, int blink_time, int on_ratio=128);
 
     TLC59116& describe_shadow(); 
 

@@ -23,6 +23,23 @@ inline void printf0(byte v) { // 3 digits
     Serial.print(v);
     }
 
+void TLC59116_Unmanaged::LEDx_set_mode(byte registers[] /*[4]*/, byte to_what, word which) {
+  // count through LED nums, starting from max (backwards is easier)
+
+  for(byte ledx_i=15; ; ledx_i--) {
+    if (0x8000 & which) {
+      registers[ledx_i / 4] = LEDx_set_mode(
+        registers[ledx_i / 4], 
+        ledx_i, 
+        to_what
+        );
+      }
+    which <<= 1;
+
+    if (ledx_i==0) break; // can't detect < 0 on an unsigned!
+    }
+  }
+
 void TLC59116_Unmanaged::control_register(byte register_num, byte data) {
   // set
   if (!is_control_register(register_num)) {

@@ -175,6 +175,7 @@ class TLC59116_Unmanaged {
       const static byte LEDOUT_GRPPWM = 0b11; // also "group blink" when mode2[dmblnk] = 1
       const static byte LEDOUT_DigitalOn = 0b01;
       const static byte LEDOUT_DigitalOff = 0b00;
+      static byte LEDOUTx_Register(byte led_num) { return LEDOUT0_Register + (led_num >> 2); } // 4 leds per register
       static byte is_valid_led(byte v) { return v <= LEDOUTx_Max; };
       static void LEDOUTx_CHECK(int line, byte led_num) { 
         if (led_num > LEDOUTx_Max) {
@@ -182,7 +183,6 @@ class TLC59116_Unmanaged {
           TLC59116Warn(F(" @")); TLC59116Warn(line); TLC59116Warn();
           }
         }
-      static byte LEDOUTx_Register(byte led_num) { return LEDOUT0_Register + (led_num >> 2); } // 4 leds per register
       // FIXME: check for usage of these
       static byte LEDx_Register_mask(byte led_num) { // bit mask for led mode bits
         LEDOUTx_CHECK(__LINE__, led_num); 
@@ -197,6 +197,8 @@ class TLC59116_Unmanaged {
         LEDOUTx_CHECK(__LINE__, led_num);
         return set_with_mask(was, LEDx_Register_mask(led_num), LEDx_to_Register_bits(led_num, mode));
         }
+      static void LEDx_set_mode(byte registers[] /*[4]*/, byte to_what, word which);
+
       static byte LEDx_pwm_bits(byte led_num) {return LEDx_to_Register_bits(led_num, LEDOUT_PWM);}
       static byte LEDx_gpwm_bits(byte led_num) {return LEDx_to_Register_bits(led_num, LEDOUT_GRPPWM);}
       static byte LEDx_digital_off_bits(byte led_num) { return 0; }; // no calc needed (cheating)
@@ -242,6 +244,7 @@ class TLC59116_Unmanaged {
       byte new_value = unchanged | to_change;
       return new_value;
       }
+    static void set_with_mask(byte *was, byte mask, byte new_bits) { *was = set_with_mask(*was, mask, new_bits); }
 
     static void describe_registers(byte* registers /*[Control_Register_Max]*/);
 
@@ -282,12 +285,15 @@ class TLC59116_Unmanaged {
     unsigned int overtemp_detect() { return error_detect(true); } // convenience. bitvalues: 0=overtemp, 1=normal
       // overtemp is not likely to last long
 
-    // Blink the LEDs, at their current PWM setting
-    TLC59116_Unmanaged& group_blink(word bit_pattern, byte ratio, byte blink_time); // 0%..99.61%, 0=10sec..255=24hz
-    TLC59116_Unmanaged& group_blink(word bit_pattern, float on_percent, float hz) { // convenience % & hz
+    // Blink the LEDs, at their current setting
+    TLC59116_Unmanaged& group_blink(word bit_pattern, byte blink_time, byte on_ratio=128); // 0%..99.61%, 0=10sec..255=24hz
+    TLC59116_Unmanaged& group_blink(word bit_pattern, float hz, float on_percent=50.0) { // convenience % & hz
       // on_percent is 05..99.61%, hz is 24.00384hz to .09375 (10sec long) in steps of .04166hz (blink time 0..255)
-      return group_blink((word)bit_pattern, (byte) int(on_percent * 256.0), 
-      (byte) int( 24.0 / hz) - 1); 
+      return group_blink(
+        (word)bit_pattern, 
+        (byte) int( 24.0 / hz) - 1,
+        (byte) int(on_percent * 256.0/100.0) // cheating on the percent->decimal
+        ); 
       }
     TLC59116_Unmanaged& group_blink(unsigned int bit_pattern, double on_percent, double hz) { // convenience: % & hz in default literal datatype
       return group_blink((word) bit_pattern, (float) on_percent, (float) hz); 

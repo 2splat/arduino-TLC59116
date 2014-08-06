@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#define TLC59116_LOWLEVEL 0
+#define TLC59116_LOWLEVEL 1
 #define TLC59116_DEV 1
 #define TLC59116_WARNINGS 1
 
@@ -10,6 +10,7 @@ extern "C" void atexit( void ) { } // so I can have statics in a method, i.e. si
 #define WARN TLC59116Warn
 #define DEV TLC59116Dev
 #define LOWD TLC59116LowLevel
+#define DEBUG TLC59116Warn
 
 const prog_uchar TLC59116::Power_Up_Register_Values[TLC59116_Unmanaged::Control_Register_Max] PROGMEM = {
   TLC59116_Unmanaged::MODE1_OSC_mask | TLC59116_Unmanaged::MODE1_ALLCALL_mask,
@@ -225,6 +226,24 @@ TLC59116& TLC59116::set_outputs(byte led_num_start, byte ct, const byte brightne
     }
 
   update_registers(&want[PWM0_Register], PWM0_Register, LEDOUTx_Register(Channels-1));
+  return *this;
+  }
+
+TLC59116& TLC59116::group_blink(word bit_pattern, int blink_time, int on_ratio) {
+  byte register_count = LEDOUTx_Register(Channels-1) + 1;
+  byte want[register_count]; // 0..MODE2_Register...GRPPWM_Register,GRPFREQ_Register,LEDOUTx...; wasting 1
+
+  want[MODE2_Register] = set_with_mask(shadow_registers[MODE2_Register], MODE2_DMBLNK, MODE2_DMBLNK);
+  // not touching PWM registers
+  memcpy( &want[PWM0_Register], &shadow_registers[PWM0_Register],  GRPPWM_Register - PWM0_Register);
+  want[GRPPWM_Register] = on_ratio;
+  want[GRPFREQ_Register] = blink_time;
+  // start with extant LEDOUTx values
+  memcpy(&want[LEDOUT0_Register], &shadow_registers[LEDOUT0_Register], LEDOUTx_Register(Channels-1) - LEDOUT0_Register+1);
+  LEDx_set_mode( &want[LEDOUT0_Register], LEDOUT_GRPPWM, bit_pattern);
+
+  // do it
+  update_registers(&want[MODE2_Register], MODE2_Register, register_count-1);
   return *this;
   }
 
