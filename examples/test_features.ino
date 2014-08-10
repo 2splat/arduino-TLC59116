@@ -121,7 +121,8 @@ void loop() {
       byte i;
       do_sequence_till_input
         // me so tricky
-        sequence(0, tlc->pwm(i++ % 16, sizeof(Hump_Values), Hump_Values), Hump_Speed)
+        sequence(0, tlc->pwm(i % 16, i+sizeof(Hump_Values)-1, Hump_Values), Hump_Speed)
+        sequence(1, i++, 0);
       end_do_sequence
       }
       test_num = 0xff;
