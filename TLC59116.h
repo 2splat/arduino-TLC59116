@@ -36,15 +36,15 @@ class TLC59116 : public TLC59116_Unmanaged {
     TLC59116& pattern(word pattern, word which=0xFFFF) { return set_outputs(pattern, which); }
     TLC59116& on(word pattern) { return set_outputs(pattern, pattern); } // only set those indicated
     TLC59116& off(word pattern) { return set_outputs(~pattern, pattern); } // only turn-off those indicated
-    TLC59116& set(int led_num, int offon) {  // only turn-off those indicated
+    TLC59116& set(int led_num, bool offon) {  // only turn-off one
       word bits = 1 << led_num;
       return set_outputs(offon ? bits : ~bits,bits); 
       }
 
     // PWM
-    TLC59116& set_outputs(byte led_num_start, byte ct, const byte brightness[] /*[ct]*/); // A list of PWM values starting at start_i. Tolerates wrapping past i=15
+    TLC59116& set_outputs(byte led_num_start, byte led_num_end, const byte brightness[] /*[ct]*/); // A list of PWM values starting at start_i. Tolerates led_num_end>15 which wraps around
     TLC59116& pwm(byte led_num, byte brightness) { byte ba[1] = {brightness}; return set_outputs(led_num, 1, ba); }
-    TLC59116& pwm(byte led_num_start, byte ct, const byte brightness[] /*[ct]*/) { return set_outputs(led_num_start, ct, brightness); }
+    TLC59116& pwm(byte led_num_start, byte led_num_end, const byte brightness[] /*[ct]*/) { return set_outputs(led_num_start, led_num_end, brightness); }
     TLC59116& pwm(byte led_num_start, byte led_num_end, byte pwm_value) { // set all to same value
       const byte register_count = led_num_end - led_num_start +1;
       // FIXME: warnings of range

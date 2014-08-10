@@ -194,7 +194,7 @@ TLC59116& TLC59116::set_outputs(word pattern, word which) {
   return *this;
   }
 
-TLC59116& TLC59116::set_outputs(byte led_num_start, byte ct, const byte brightness[] /*[ct]*/ ) {
+TLC59116& TLC59116::set_outputs(byte led_num_start, byte led_num_end, const byte brightness[] /*[ct]*/ ) {
   // We are going to start with current shadow values, mark changes against them, 
   //  then write the smallest range of registers.
   // We are going to write LEDOUTx and PWMx registers together to prevent flicker.
@@ -203,6 +203,7 @@ TLC59116& TLC59116::set_outputs(byte led_num_start, byte ct, const byte brightne
   // And/Or if the changed PWMx is sparse.
   // But, pretty efficient if the number of changes (from first change to last) is more than 1/2 the range.
 
+  byte ct = led_num_end - led_num_start + 1;
   LOWD(F("Set PWMs from "));LOWD(led_num_start,HEX),LOWD(F(" for "));LOWD(ct);
     LOWD(F(": "));for(byte i=0;i<ct;i++) {LOWD(brightness[i],HEX);LOWD(F(" "));}
     LOWD();
