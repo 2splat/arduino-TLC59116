@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#define TLC59116_LOWLEVEL 1
+#define TLC59116_LOWLEVEL 0
 #define TLC59116_DEV 1
 #define TLC59116_WARNINGS 1
 
@@ -12,10 +12,10 @@ extern "C" void atexit( void ) { } // so I can have statics in a method, i.e. si
 #define LOWD TLC59116LowLevel
 #define DEBUG TLC59116Warn
 
-const prog_uchar TLC59116::Power_Up_Register_Values[TLC59116_Unmanaged::Control_Register_Max] PROGMEM = {
+const prog_uchar TLC59116::Power_Up_Register_Values[TLC59116_Unmanaged::Control_Register_Max + 1] PROGMEM = {
   TLC59116_Unmanaged::MODE1_OSC_mask | TLC59116_Unmanaged::MODE1_ALLCALL_mask,
   0, // mode2
-  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // pwm0..15
+  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // pwm0..15
   0xff, // grppwm
   0, // grpfreq
   0,0,0,0, // ledout0..3
@@ -50,7 +50,7 @@ void TLC59116Manager::init() {
   scan();
   if (reset_actions & Reset) reset(); // does enable
 
-  WARN(F("Inited manager for "));WARN((unsigned long)&i2cbus, HEX); WARN();
+  WARN(F("Inited manager for I2C "));WARN((unsigned long)&i2cbus, HEX); WARN();
   }
 
 int TLC59116Manager::scan() {
@@ -76,7 +76,7 @@ int TLC59116Manager::scan() {
 
     if (stat == 0) {
       if (addr == TLC59116_Unmanaged::AllCall_Addr) {TLC59116Dev(F(" AllCall_Addr, skipped")); TLC59116Dev(); continue; }
-      if (addr == TLC59116_Unmanaged::Reset_Addr) {TLC59116Dev(F(" AllCall_Addr, skipped")); TLC59116Dev(); continue; }
+      if (addr == TLC59116_Unmanaged::Reset_Addr) {TLC59116Dev(F(" Reset_Addr, skipped")); TLC59116Dev(); continue; }
 
       this->devices[ this->device_ct++ ] = new TLC59116(i2cbus,addr, *this);
       TLC59116Warn(F(" found "));TLC59116Warn(addr,HEX);
@@ -229,21 +229,57 @@ TLC59116& TLC59116::set_outputs(byte led_num_start, byte ct, const byte brightne
   return *this;
   }
 
-TLC59116& TLC59116::group_blink(word bit_pattern, int blink_time, int on_ratio) {
+TLC59116& TLC59116::group_pwm(word bit_pattern, byte brightness) {
+  // Doing them together to minimize freq/mode being out of sync
   byte register_count = LEDOUTx_Register(Channels-1) + 1;
   byte want[register_count]; // 0..MODE2_Register...GRPPWM_Register,GRPFREQ_Register,LEDOUTx...; wasting 1
 
-  want[MODE2_Register] = set_with_mask(shadow_registers[MODE2_Register], MODE2_DMBLNK, MODE2_DMBLNK);
   // not touching PWM registers
   memcpy( &want[PWM0_Register], &shadow_registers[PWM0_Register],  GRPPWM_Register - PWM0_Register);
-  want[GRPPWM_Register] = on_ratio;
-  want[GRPFREQ_Register] = blink_time;
   // start with extant LEDOUTx values
   memcpy(&want[LEDOUT0_Register], &shadow_registers[LEDOUT0_Register], LEDOUTx_Register(Channels-1) - LEDOUT0_Register+1);
+
+  want[MODE2_Register] = set_with_mask(shadow_registers[MODE2_Register], MODE2_DMBLNK, 0);
+  want[GRPPWM_Register] = brightness;
+  want[GRPFREQ_Register] = 0; // not actuall "don't care", it's ~dynamic_range
   LEDx_set_mode( &want[LEDOUT0_Register], LEDOUT_GRPPWM, bit_pattern);
 
   // do it
-  update_registers(&want[MODE2_Register], MODE2_Register, register_count-1);
+  update_registers(&want[MODE2_Register], MODE1_Register, register_count-1);
+  return *this;
+  }
+
+TLC59116& TLC59116::group_blink(word bit_pattern, int blink_delay, int on_ratio) {
+  // Doing them together to minimize freq/mode being out of sync
+  byte register_count = LEDOUTx_Register(Channels-1) + 1;
+  byte want[register_count]; // 0..MODE2_Register...GRPPWM_Register,GRPFREQ_Register,LEDOUTx...; wasting 1
+
+  // not touching PWM registers
+  memcpy( &want[PWM0_Register], &shadow_registers[PWM0_Register],  GRPPWM_Register - PWM0_Register);
+  // start with extant LEDOUTx values
+  memcpy(&want[LEDOUT0_Register], &shadow_registers[LEDOUT0_Register], LEDOUTx_Register(Channels-1) - LEDOUT0_Register+1);
+
+  // Hypoth: DMBLNK resets the grpfreq timer. Nope.
+  // want[MODE2_Register] = set_with_mask(shadow_registers[MODE2_Register], MODE2_DMBLNK, ~MODE2_DMBLNK);
+  // want[GRPPWM_Register] = 0xFF;
+  // want[GRPFREQ_Register] = 0;
+  // LEDx_set_mode( &want[LEDOUT0_Register], LEDOUT_PWM, bit_pattern);
+  // update_registers(&want[MODE1_Register], MODE1_Register, 1);
+
+  // Hypoth: OSC resets the grpfreq timer. Nope.
+  // want[MODE1_Register] = set_with_mask(shadow_registers[MODE1_Register], MODE1_OSC_mask, MODE1_OSC_mask);
+  // update_registers(&want[MODE1_Register], MODE1_Register, 1);
+  // delayMicroseconds(501);
+
+  // Only Reset resetsthe grpfreq timer.
+
+  want[MODE2_Register] = set_with_mask(shadow_registers[MODE2_Register], MODE2_DMBLNK, MODE2_DMBLNK);
+  want[GRPPWM_Register] = on_ratio;
+  want[GRPFREQ_Register] = blink_delay;
+  LEDx_set_mode( &want[LEDOUT0_Register], LEDOUT_GRPPWM, bit_pattern);
+
+  // do it
+  update_registers(&want[MODE2_Register], MODE1_Register, register_count-1);
   return *this;
   }
 
@@ -314,6 +350,56 @@ TLC59116& TLC59116::describe_shadow() {
   Serial.println(F("Shadow Registers"));
   TLC59116_Unmanaged::describe_registers(shadow_registers); 
   return *this; 
+  }
+
+TLC59116& TLC59116::set_address(const byte address[/* sub1,sub2,sub3,all */], byte enable_mask /* MODE1_ALLCALL_mask | MODE1_SUB1_mask... */) {
+  // does much:
+  // sets the adresses, if != 0
+  // enables/disables if corresponding address !=0
+  byte want_mode1 = registers[MODE1_Register];
+  byte want_addresses[4];
+  memcpy(want_addresses, &shadow_registers[SUBADR1_Register], 4);
+
+  for(byte i=0; i<4; i++) {
+    if (address != 0) {
+      // actual address
+      if (address[i]==Reset_Addr) {
+        WARN(F("Ignored attempt to use the Reset_Addr (0x60) for "));
+        if (i==3) WARN(F("AllCall"));
+        else {
+          WARN(F("SUBADR"));WARN(i+1);
+          }
+        WARN();
+        continue;
+        }
+
+      want_addresses[i] = address[i];
+      if (i==3) {
+        // enable'ment
+        set_with_mask(&want_mode1, MODE1_ALLCALL_mask, enable_mask);
+        }
+      else {
+        // enable'ment
+        set_with_mask(&want_mode1, MODE1_SUB1_mask >> (i), enable_mask);
+        }
+      }
+    }
+  update_registers( want, MODE1_Register, MODE1_Register);
+  update_registers( want, SUBADR1_Register, AllCall_Addr_Register);
+  return *this;
+  }
+
+
+TLC59116& TLC59116::SUBADR_address(byte which, byte address, bool enable) {
+  byte want_address[4] = {0,0,0,0};
+  if (which==0 || which > 3) { WARN(F("Expected 1..3 for 'which' in SUBADR_address(), saw "));WARN(which);WARN(); return *this;}
+  want_address[which-1] = address;
+  return set_address(want_address, enable ? MODE1_SUB1_mask >> (which-1) : 0);
+  }
+
+TLC59116& TLC59116::allcall_address(byte address, bool enable) {
+  byte want_address[4] = {0,0,0,address};
+  return set_address(want_address, enable ? MODE1_ALLCALL_mask : 0);
   }
 
 //

@@ -132,7 +132,10 @@ void loop() {
       {
       int i=0;
       do_sequence_till_input
-        sequence(0, tlc->group_blink(0xFFFFFFFF, (i++ % 30) + 2.0, 10.0), 4000);
+        sequence(0, Serial.print("---> "), 0);
+        sequence(1, Serial.println(13-(i % 13)), 0);
+        sequence(2, tlc->group_blink(0xFFFFFFFF, 13-(i++ % 13), 10.0), 0);
+        sequence(3, debug_actual_group_mode(*tlc), 400);
       end_do_sequence
       }
       break;
@@ -237,3 +240,13 @@ void pwm_wave(TLC59116& tlc) {
     else { Serial.print("!Took ");Serial.println(used); }
     }
   }
+
+void debug_actual_group_mode(TLC59116& tlc) {
+  // minimal fetch
+  byte registers[31]; //[TLC59116::GRPFREQ_Register+1];
+  // tlc.fetch_registers(TLC59116::MODE1_Register, 2, registers);
+  // tlc.fetch_registers(TLC59116::GRPPWM_Register, 2, registers);
+  tlc.fetch_registers(0, 31, registers);
+  tlc.describe_group_mode(registers);
+  }
+  

@@ -12,6 +12,7 @@
 #define WARN TLC59116Warn
 #define DEV TLC59116Dev
 #define LOWD TLC59116LowLevel
+#define DEBUG TLC59116Warn
 
 const char* TLC59116_Unmanaged::Device = "TLC59116";
 
@@ -54,47 +55,53 @@ void TLC59116_Unmanaged::control_register(byte register_num, byte data) {
   _end_trans();
   }
 
-TLC59116_Unmanaged& TLC59116_Unmanaged::describe_actual() {
-  byte actual[Control_Register_Max]; 
-  
+byte TLC59116_Unmanaged::fetch_registers(byte start_r, byte count, byte registers[]) {
   // FIXME: make some notes on this pattern
-  _begin_trans(Auto_All, 0x0);
-  if (_end_trans() != 0) {
+  _begin_trans(Auto_All, start_r);
+  byte rez = _end_trans();
+  if (rez != 0) {
      WARN(F("Read all failed"));WARN(); 
+     return rez;
      }
 
-  else { 
+  int avail = i2cbus.requestFrom(address(), count);
+  LOWD(F("Read # registers: "));LOWD(avail);LOWD();
+  if (avail != count) { 
+    WARN(F("Expected to read "));WARN(count);
+    WARN(F(" bytes for all registers, but got "));WARN(avail);WARN();
+    }
+  if (avail > count) avail = count;
 
-    int avail = i2cbus.requestFrom(address(), Control_Register_Max);
-    LOWD(F("Read # registers: "));LOWD(avail);LOWD();
-    if (avail != Control_Register_Max) { 
-      WARN(F("Expected to read "));WARN(Control_Register_Max);
-      WARN(F(" bytes for all registers, but got "));WARN(avail);WARN();
-      }
-    if (avail > Control_Register_Max) avail = Control_Register_Max;
-
-    for(byte i=0; i<avail; i++) {
-      actual[i] = i2cbus.read();
-      LOWD(F("  Read "));LOWD(i,HEX);LOWD(F("="));LOWD(actual[i],HEX);LOWD(F("/"));LOWD(actual[i],BIN);LOWD();
-      }
-
-    Serial.print(Device);Serial.print(F(" 0x"));Serial.print(address(),HEX);
-    Serial.print(F(" on bus "));Serial.print((unsigned long)&i2cbus, HEX);Serial.println();
-    Serial.println(F("Actual Registers"));
-
-    TLC59116_Unmanaged::describe_registers(actual);
+  for(byte i=0; i<avail; i++) {
+    registers[i] = i2cbus.read();
+    LOWD(F("  Read "));LOWD(i,HEX);LOWD(F("="));LOWD(registers[i],HEX);LOWD(F("/"));LOWD(registers[i],BIN);LOWD();
     }
 
-
-  return *this;
+  return 0;
   }
+
+TLC59116_Unmanaged& TLC59116_Unmanaged::describe_actual() {
+  byte actual[Control_Register_Max]; 
+  byte rez = fetch_registers(0, Control_Register_Max+1, actual);
+  if (rez) return *this;
+
+  Serial.print(Device);Serial.print(F(" 0x"));Serial.print(address(),HEX);
+  Serial.print(F(" on bus "));Serial.print((unsigned long)&i2cbus, HEX);Serial.println();
+  Serial.println(F("Actual Registers"));
+
+  TLC59116_Unmanaged::describe_registers(actual);
+return *this;
+  }
+
+
 
 void TLC59116_Unmanaged::describe_registers(byte* registers /*[Control_Register_Max]*/) {
   describe_iref(registers);
   // mode1 is folded into describe_channels()
   describe_addresses(registers);
   describe_mode2(registers);
-  describe_channels(registers);
+  describe_group_mode(registers);
+  describe_outputs(registers);
   describe_error_flag(registers);
   }
 
@@ -137,7 +144,9 @@ void TLC59116_Unmanaged::describe_mode2(byte *registers) {
     Serial.println();
     }
 
-void TLC59116_Unmanaged::describe_channels(byte *registers) {
+void TLC59116_Unmanaged::describe_group_mode(byte *registers) {
+    // registers has to have valid: [MODE1_Register,MODE2_Register...GRPPWM_Register,GRPFREQ_Register]
+    // e.g. [0,1,...,18,19]
     
     // General/Group
     byte grppwm = registers[GRPPWM_Register];
@@ -147,25 +156,47 @@ void TLC59116_Unmanaged::describe_channels(byte *registers) {
 
     // note: if MODE2[GRP/DMBLNK] then GRPPWM is PWM, GRPFREQ is blink 24Hz to .1hz
     // note: if !MODE2[GRP/DMBLNK] then GRPPWM is PWM, GRPFREQ ignored, and PWMx is * GRPPWM
-    Serial.print(F("GRP["));
-    Serial.print(is_blink ? F("Blink") : F("PWM*"));
-    Serial.print(F("]="));Serial.print(grppwm);Serial.print(F("/256 on-ratio, "));
-
-    byte grpfreq = registers[GRPFREQ_Register];
-    float blink_len = ((float)grpfreq + 1.0) / 24.0; // docs say max 10.73 secs, but math says 10.66 secs
-    Serial.print(F("GRPFREQ="));
-    // Aren't we nice:
-    if (blink_len <= 1) {
-      Serial.print(1.0/blink_len);Serial.print(F("Hz blink"));
+    if (is_blink) {
+      Serial.print(F("GRP[Blink]="));
+      Serial.print(grppwm);Serial.print(F("/256 on-ratio, "));
       }
     else {
-      Serial.print(blink_len);Serial.print(F(" second blink"));
+      Serial.print(F("GRP[*PWM]="));
+      Serial.print(grppwm);Serial.print(F("/256, "));
       }
-    if (!is_blink) Serial.print(F("(ignored):"));
+
+    Serial.print(F("GRPFREQ="));
+    byte grpfreq = registers[GRPFREQ_Register];
+
+    if (!is_blink) {
+      if (grpfreq !=0) {
+        Serial.print(F("!"));Serial.print(grpfreq);Serial.print(F("/256, "));
+        Serial.print(F("(group PWM dynamic range):"));
+        }
+      else {
+        Serial.print(F("(ignored):"));
+        }
+      }
+    else {
+      float blink_len = ((float)grpfreq + 1.0) / 24.0; // docs say max 10.73 secs, but math says 10.66 secs
+      // Aren't we nice:
+      if (blink_len <= 1) {
+        Serial.print(1.0/blink_len);Serial.print(F("Hz blink"));
+        }
+      else {
+        Serial.print(blink_len);Serial.print(F(" second blink"));
+        }
+      }
 
     if (is_blink) { Serial.print(F(" for outputs that are ")); Serial.println(F("Bnnn")); }
     else { Serial.print(F(" on top of outputs that are ")); Serial.println(F("Gnnn")); }
-    
+    }
+     
+void TLC59116_Unmanaged::describe_outputs(byte *registers) {
+    byte mode1 = registers[MODE1_Register];
+    byte mode2 = registers[MODE2_Register];
+    bool is_blink = (mode2 && MODE2_DMBLNK);
+
     Serial.print(F("Outputs "));
     Serial.print( (mode1 & MODE1_OSC_mask) ? F("OFF") : F("ON")); // nb. reverse, "OSC"
     Serial.println();

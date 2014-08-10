@@ -28,6 +28,9 @@
       claimed to happen at same point every time (speed dependant I think)
   !! I see flickering when: many LEDs (14) are pwm on fairly dim (20), and I on/off blink another LED.
       adjustng Vext seems to improve the situation (so, current?)
+  "As the value of GRPFREQ increases, the GRPPWM duty cycle dynamic range decreases" -- Karl M
+  http://e2e.ti.com/support/power_management/led_driver/f/192/p/201430/1048227.aspx#1048227
+  http://e2e.ti.com/support/power_management/led_driver/f/192/t/153172.aspx
   !! This stuff appears to work in a timer-service-routine, but you must (re-)enable interrupts in the isr: sei();
 
 */
@@ -88,11 +91,6 @@
   template <typename T> void inline TLC59116Dev(const T msg) {}
   template <typename T> void inline TLC59116Dev(T msg, int format) {}
   void inline TLC59116Dev() {}
-#endif
-
-#ifndef TLC59116_UseGroupPWM
-  // Set this to enable group_pwm
-  #define TLC59116_UseGroupPWM 0
 #endif
 
 #if TLC59116_LOWLEVEL
@@ -159,6 +157,7 @@ class TLC59116_Unmanaged {
       static const byte MODE1_SUB1_mask = 0b1000;
       static const byte MODE1_SUB2_mask = 0b100;
       static const byte MODE1_SUB3_mask = 0b10;
+      bool is_SUBADR_bit(byte mode1_value, byte which) { return mode1_value & (MODE1_SUB1_mask > (which-1)); }
       static const byte MODE1_ALLCALL_mask = 0b1;
     static const byte MODE2_Register = 0x01;
       static const byte MODE2_DMBLNK = 1 << 5; // 0 = group dimming, 1 = group blinking
@@ -248,11 +247,6 @@ class TLC59116_Unmanaged {
 
     static void describe_registers(byte* registers /*[Control_Register_Max]*/);
 
-    // disabled because of bug
-    #if TLC59116_UseGroupPWM
-        TLC59116& group_pwm();
-    #endif
-
   public: // instance
     TwoWire& i2cbus; // r/o
 
@@ -264,7 +258,9 @@ class TLC59116_Unmanaged {
     TLC59116_Unmanaged& operator=(const TLC59116_Unmanaged&); // none
     ~TLC59116_Unmanaged() {} // managed destructor....
 
+    byte fetch_registers(byte start_r, byte count, byte registers[]); // returns 0 for success, I2C status otherwise
     TLC59116_Unmanaged& describe_actual();
+    static void describe_group_mode(byte* registers); // for debugging
 
     // to enable outputs, control_register(MODE1_Register, old_value set/unset MODE1_OSC_mask);
 
@@ -284,6 +280,18 @@ class TLC59116_Unmanaged {
     unsigned int open_detect() { return error_detect(); } // convenience, 0=open, 1=loaded
     unsigned int overtemp_detect() { return error_detect(true); } // convenience. bitvalues: 0=overtemp, 1=normal
       // overtemp is not likely to last long
+
+    // "group" functions have a bug:
+    // If you decrease the value (blink_time or brightness),
+    // The chip may act like the value is max for one "cycle".
+    // This causes a full-brightness result for group_pwm, and a 10 second blink-length for group_blink.
+    // I think this is because:
+    // * There is a continously running timer, counting up.
+    // * The "value" is compared to the timer, and triggers the action and a reset of the timer.
+    // * If you move the "value" down, you may skip over the current timer value,
+    //    so it runs to the maximum value before wrapping around again.
+    // "reset" is the only thing that I know of that will reset the timer.
+    // But, more experimentation is needed.
 
     // Blink the LEDs, at their current setting
     TLC59116_Unmanaged& group_blink(word bit_pattern, byte blink_time, byte on_ratio=128); // 0%..99.61%, 0=10sec..255=24hz
@@ -325,7 +333,7 @@ class TLC59116_Unmanaged {
       }
 
     static void _begin_trans(TwoWire& bus, byte addr, byte register_num) {
-      TLC59116LowLevel(F("send R "));TLC59116LowLevel(register_num & 0x1f,HEX);TLC59116LowLevel(F("/"));TLC59116LowLevel(register_num & 0xe0,BIN);TLC59116LowLevel(F(" to "));TLC59116LowLevel(addr,HEX);TLC59116LowLevel(F(" on bus "));TLC59116LowLevel((unsigned long)&bus, HEX);TLC59116LowLevel();
+      TLC59116LowLevel(F("send R "));TLC59116LowLevel(register_num & 0x1f,HEX);TLC59116LowLevel(F("/"));TLC59116LowLevel((register_num & (byte)0xe0 >> 5),BIN);TLC59116LowLevel(F(" to "));TLC59116LowLevel(addr,HEX);TLC59116LowLevel(F(" on bus "));TLC59116LowLevel((unsigned long)&bus, HEX);TLC59116LowLevel();
       bus.beginTransmission(addr);
       bus.write(register_num);
       TLC59116LowLevel(F("  begin data..."));TLC59116LowLevel();
@@ -360,7 +368,7 @@ class TLC59116_Unmanaged {
     static void describe_iref(byte* registers);
     static void describe_addresses(byte* registers);
     static void describe_mode2(byte *registers);
-    static void describe_channels(byte* registers);
+    static void describe_outputs(byte* registers);
     static void describe_error_flag(byte* registers);
 
     void update_ledx_registers(byte addr, byte to_what, byte led_start_i, byte led_end_i);
