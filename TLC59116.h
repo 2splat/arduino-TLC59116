@@ -27,7 +27,9 @@ class TLC59116 : public TLC59116_Unmanaged {
   public:
     // No constructor, get from a TLC59116Manager[i]
 
-    virtual TLC59116& enable_outputs(bool yes = true, bool with_delay = true);
+    virtual TLC59116& enable_outputs(bool yes = true, bool with_delay = true); // delay if doing something immediately
+    bool is_enable_outputs() { return !is_OSC_bit(shadow_registers[MODE1_Register]); };
+    bool is_enabled() { return is_enable_outputs(); }
 
     // High level
 
@@ -43,7 +45,7 @@ class TLC59116 : public TLC59116_Unmanaged {
 
     // PWM
     TLC59116& set_outputs(byte led_num_start, byte led_num_end, const byte brightness[] /*[ct]*/); // A list of PWM values starting at start_i. Tolerates led_num_end>15 which wraps around
-    TLC59116& pwm(byte led_num, byte brightness) { byte ba[1] = {brightness}; return set_outputs(led_num, 1, ba); }
+    TLC59116& pwm(byte led_num, byte brightness) { byte ba[1] = {brightness}; return set_outputs(led_num, led_num, ba); }
     TLC59116& pwm(byte led_num_start, byte led_num_end, const byte brightness[] /*[ct]*/) { return set_outputs(led_num_start, led_num_end, brightness); }
     TLC59116& pwm(byte led_num_start, byte led_num_end, byte pwm_value) { // set all to same value
       const byte register_count = led_num_end - led_num_start +1;
@@ -67,15 +69,17 @@ class TLC59116 : public TLC59116_Unmanaged {
     // But, more experimentation is needed.
 
     // Superpose group-pwm on current pwm setting (but, current should be 255 for best results)
+    // FIXME: has a hardware bug
     TLC59116& group_pwm(word bit_pattern, byte brightness);
 
     // Blink the LEDs, at their current/last PWM setting. 
+    // FIXME: has a hardware bug
     // Set PWM values first.
     // To turn off blink, set channels to PWM or digital-on/off
     // All:
-    TLC59116& group_blink(byte blink_delay, byte on_ratio=128) { return group_blink(0xFFFFFFFF,blink_delay,on_ratio); }
+    TLC59116& group_blink(byte blink_delay, byte on_ratio=128) { return group_blink(0xFFFF,blink_delay,on_ratio); }
     TLC59116& group_blink(double blink_length_secs, double on_percent=50.0) {
-      return group_blink(0xFFFFFFFF,blink_length_secs,on_percent); 
+      return group_blink(0xFFFF,blink_length_secs,on_percent); 
       }
     // By pattern:
     TLC59116& group_blink(word bit_pattern, double blink_length_secs, double on_percent=50.0) { // convenience % & len
@@ -86,13 +90,13 @@ class TLC59116 : public TLC59116_Unmanaged {
         (byte) int(on_percent * 256.0/100.0)
         );
       }
-    TLC59116& group_blink(int bit_pattern, int blink_delay, double on_percent=50.0) {
-      return group_blink((word)bit_pattern, blink_delay, int(on_percent * 256.0/100.0));
+    TLC59116& group_blink(unsigned int bit_pattern, int blink_length_secs, double on_percent=50.0) {
+      return group_blink((word)bit_pattern, blink_length_secs, int(on_percent * 256.0/100.0));
       }
     TLC59116& group_blink(word bit_pattern, int blink_delay, int on_ratio=128); // blinks/sec = (blink_delay+1)/24
 
     // Address stuff
-    // it is illegal to set any address to Reset_Addr (will be ignored, with warning)
+    // it is illegal to set any address to Reset_Addr (0x6B), will be ignored, with warning
     // Addresses should be specified as 0x60..0x6F
 
     // Can't change Reset
@@ -101,8 +105,8 @@ class TLC59116 : public TLC59116_Unmanaged {
     // allcall is enabled at reset
     TLC59116& allcall_address(byte address, bool enable=true);
     TLC59116& allcall_address(bool enable); // enable/disable
-    byte allcall_address() { return registers[AllCall_Addr_Register] >> 1; }
-    bool is_allcall_address() { return registers[AllCall_Addr_Register] & MODE1_ALLCALL_mask; }
+    byte allcall_address() { return shadow_registers[AllCall_Addr_Register] >> 1; }
+    bool is_allcall_address() { return shadow_registers[AllCall_Addr_Register] & MODE1_ALLCALL_mask; }
 
     // SUBADR's are disabled at reset
     // SUBADR are 1,2,3 for "which"
@@ -113,13 +117,14 @@ class TLC59116 : public TLC59116_Unmanaged {
 
   public: // Debugging
     TLC59116& describe_shadow();
-
+    TLC59116& resync_shadow_registers();
 
   private:
     static const prog_uchar Power_Up_Register_Values[TLC59116_Unmanaged::Control_Register_Max + 1];
+    TLC59116Manager &manager;
 
     // Manager has to track for reset, so factory
-    TLC59116(TwoWire& bus, byte address, TLC59116Manager& m) : manager(m), TLC59116_Unmanaged(bus, address) {reset_shadow_registers();}  // factory control, must get from manager
+    TLC59116(TwoWire& bus, byte address, TLC59116Manager& m) : TLC59116_Unmanaged(bus, address), manager(m) {reset_shadow_registers();}  // factory control, must get from manager
     TLC59116(); // none
     TLC59116(const TLC59116&); // none
     TLC59116& operator=(const TLC59116&); // none
@@ -133,7 +138,7 @@ class TLC59116 : public TLC59116_Unmanaged {
 
     // mid-level
     void update_registers(const byte want[] /* [start..end] */, byte start_r, byte end_r); // want[0]=register[start_r]
-    TLC59116& TLC59116::set_address(const byte address[/* sub1,sub2,sub3,all */], byte enable_mask /* MODE1_ALLCALL_mask | MODE1_SUB1_mask... */); // set all at once w/enable'ment
+    TLC59116& set_address(const byte address[/* sub1,sub2,sub3,all */], byte enable_mask /* MODE1_ALLCALL_mask | MODE1_SUB1_mask... */); // set all at once w/enable'ment
 
 
 

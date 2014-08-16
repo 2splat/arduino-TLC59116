@@ -280,7 +280,7 @@ TLC59116& TLC59116::group_blink(word bit_pattern, int blink_delay, int on_ratio)
   LEDx_set_mode( &want[LEDOUT0_Register], LEDOUT_GRPPWM, bit_pattern);
 
   // do it
-  update_registers(&want[MODE2_Register], MODE1_Register, register_count-1);
+  update_registers(&want[MODE2_Register], MODE2_Register, register_count-1);
   return *this;
   }
 
@@ -357,7 +357,7 @@ TLC59116& TLC59116::set_address(const byte address[/* sub1,sub2,sub3,all */], by
   // does much:
   // sets the adresses, if != 0
   // enables/disables if corresponding address !=0
-  byte want_mode1 = registers[MODE1_Register];
+  byte want_mode1 = shadow_registers[MODE1_Register];
   byte want_addresses[4];
   memcpy(want_addresses, &shadow_registers[SUBADR1_Register], 4);
 
@@ -385,8 +385,8 @@ TLC59116& TLC59116::set_address(const byte address[/* sub1,sub2,sub3,all */], by
         }
       }
     }
-  update_registers( want, MODE1_Register, MODE1_Register);
-  update_registers( want, SUBADR1_Register, AllCall_Addr_Register);
+  update_registers( &want_mode1, MODE1_Register, MODE1_Register);
+  update_registers( want_addresses, SUBADR1_Register, AllCall_Addr_Register);
   return *this;
   }
 
@@ -401,6 +401,11 @@ TLC59116& TLC59116::SUBADR_address(byte which, byte address, bool enable) {
 TLC59116& TLC59116::allcall_address(byte address, bool enable) {
   byte want_address[4] = {0,0,0,address};
   return set_address(want_address, enable ? MODE1_ALLCALL_mask : 0);
+  }
+
+TLC59116& TLC59116::resync_shadow_registers() {
+  byte rez = fetch_registers(0, Control_Register_Max+1, shadow_registers);
+  return *this;
   }
 
 //

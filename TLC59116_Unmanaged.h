@@ -104,7 +104,6 @@
 #endif
 
 #include <Arduino.h>
-#include <Serial.h>
 
 // for .c
 #include <Wire.h> // does nothing in the .h
@@ -154,6 +153,7 @@ class TLC59116_Unmanaged {
     static const byte Control_Register_Min = 0;
     static const byte MODE1_Register = 0x00;
       static const byte MODE1_OSC_mask = 0b10000;
+      bool is_OSC_bit(byte mode1_value) { return mode1_value & MODE1_OSC_mask; } // OSC is inverted for enable!
       static const byte MODE1_SUB1_mask = 0b1000;
       static const byte MODE1_SUB2_mask = 0b100;
       static const byte MODE1_SUB3_mask = 0b10;

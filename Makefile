@@ -28,7 +28,7 @@ inoify : $(ino_link) $(example_srcs)
 $(ino_link) : $(shell /bin/ls -1 examples/*.ino)
 	ln -s $< $@
 
-.PHONE : menu
+.PHONY : menu
 menu :
 	@cd examples && make insertmenu
 
@@ -42,6 +42,11 @@ ide : log
 
 log :
 	mkdir -p log
+
+# echo the preprocessed file (depends on the log file)
+.PHONY : preproc
+preproc :
+	@perl -n -e '/avr-g\+\+/ && /-o (\/tmp\/build.+)\.o/ && do {print("$$1\n"); exit(0)};' log/ide.log
 
 # documentation, section 1, is in .cpp
 # the first /* ... */ as markdown
