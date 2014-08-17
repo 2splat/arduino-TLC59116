@@ -157,7 +157,7 @@ class TLC59116_Unmanaged {
       static const byte MODE1_SUB1_mask = 0b1000;
       static const byte MODE1_SUB2_mask = 0b100;
       static const byte MODE1_SUB3_mask = 0b10;
-      bool is_SUBADR_bit(byte mode1_value, byte which) { return mode1_value & (MODE1_SUB1_mask > (which-1)); }
+      bool is_SUBADR_bit(byte mode1_value, byte which) { return mode1_value & (MODE1_SUB1_mask >> (which-1)); }
       static const byte MODE1_ALLCALL_mask = 0b1;
     static const byte MODE2_Register = 0x01;
       static const byte MODE2_DMBLNK = 1 << 5; // 0 = group dimming, 1 = group blinking

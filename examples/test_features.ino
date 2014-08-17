@@ -29,7 +29,7 @@ int get_free_memory()
 
 void setup() {
   Serial.begin(115200);
-  Serial.println("Top of setup");
+  Serial.println(F("Top of setup"));
   Serial.print(F("Free memory "));Serial.println(get_free_memory());
   tlcmanager.init();
   Serial.print(F("Free memory after init "));Serial.println(get_free_memory());
@@ -81,9 +81,12 @@ void loop() {
 
     case 'b' : // Blink with an alternating pattern
       do_sequence_till_input
-        sequence(0, tlc->pattern(0x5555), 250)
-        sequence(1, tlc->pattern(0xAAAA), 250)
+        sequence(0, tlc->pattern(0x5555), 50)
+        sequence(1, tlc->pattern(0x0), 250)
+        sequence(2, tlc->pattern(0xAAAA), 50)
+        sequence(3, tlc->pattern(0x0), 250)
       end_do_sequence
+      test_num = 0xff;
       break;
 
     case 'o' : // test On/Off bit pattern
@@ -149,12 +152,13 @@ void loop() {
       {
       int i=0;
       do_sequence_till_input
-        sequence(0, Serial.print("---> "), 0);
+        sequence(0, Serial.print(F("---> ")), 0);
         sequence(1, Serial.println(13-(i % 13)), 0);
         sequence(2, tlc->group_blink(0xFFFF, 13-(i++ % 13), 10.0), 0);
         sequence(3, debug_actual_group_mode(*tlc), 400);
       end_do_sequence
       }
+      test_num = 0xff;
       break;
       do_sequence_till_input
         sequence(0, tlc->pwm(0, TLC59116::Channels-1, 128), 0); // FIXME: Channels-1 is not friendly
@@ -163,12 +167,11 @@ void loop() {
         sequence(3, tlc->pwm(0, TLC59116::Channels-1, 100), 0);
         sequence(4, tlc->group_blink(0xFFFF, 1, 50), 4000);
       end_do_sequence
+      test_num = 0xff;
       break;
 
     case '?' : // display menu
       Serial.println();
-      Serial.print(F("Free memory "));Serial.println(get_free_memory());
-      Serial.print("Using 0x");Serial.print(tlc->address(),HEX);Serial.println();
       // menu made by: make (in examples/, then insert here)
 Serial.println(F("l  List devices: addresses & output enablement"));
 Serial.println(F("!  pick a device: hex, *=broadcast, |=each"));
@@ -188,10 +191,10 @@ Serial.println(F("?  display menu"));
       // fallthrough
 
     case 0xff : // show prompt, get input
+      Serial.print(F("Free memory "));Serial.println(get_free_memory());
+      Serial.print(F("Using 0x"));Serial.print(tlc->address(),HEX);Serial.println();
       Serial.print(F("Choose (? for help): "));
-      while(Serial.available() <= 0) {}
-      test_num = Serial.read();
-      Serial.println(test_num);
+      test_num = blocking_read();
       break;
 
     default : 
@@ -199,9 +202,15 @@ Serial.println(F("?  display menu"));
       break;
 
     }
-  if (Serial.available() > 0) test_num = Serial.read();
 
   }
+
+char blocking_read() {
+      while (Serial.available() <= 0) {}
+      char x = Serial.read();
+      Serial.println(x);
+      return x;
+      }
 
 byte is_hex_digit(char d) { 
   if (d >= '0' && d <= '9') return d - '0';
@@ -216,26 +225,24 @@ TLC59116 *pick_device(TLC59116 &was) {
   char x = 'z'; // --none--
 
   bool type_ahead = Serial.available() > 0;
-  while (x >= tlcmanager.device_count() && x != '*' && x != '|' && x != '=') {
-    if (!type_ahead) {
-      // show the list, including broadcast, marking with "="
-      // take 0..F from list, or '=' for no change, '*' for broadcast, '|' for .each
-      Serial.println("* Broadcast");
-      for(byte i=0; i < tlcmanager.device_count(); i++) {
-        Serial.print( tlc == &tlcmanager[i] ? '=' : ' ');
-        Serial.print(i,HEX);Serial.print(" Device at ");printw(tlcmanager[i].address(),HEX);Serial.print("/");Serial.print(tlcmanager[i].address() - TLC59116::Base_Addr);
-        Serial.println();
-        }
-      Serial.print(tlc == &tlcmanager.broadcast() ? '=' : ' '); Serial.println("* Broadcast");
-      Serial.print(tlc == NULL ? '=' : ' ');Serial.println("| Each individually");
+  if (!type_ahead) {
+    // show the list, including broadcast, marking with "="
+    // take 0..F from list, or '=' for no change, '*' for broadcast, '|' for .each
+    Serial.println("* Broadcast");
+    for(byte i=0; i < tlcmanager.device_count(); i++) {
+      Serial.print( tlc == &tlcmanager[i] ? '=' : ' ');
+      Serial.print(i,HEX);Serial.print(F(" Device at "));printw(tlcmanager[i].address(),HEX);Serial.print(F("/"));Serial.print(tlcmanager[i].address() - TLC59116::Base_Addr);
+      Serial.println();
       }
-
-    Serial.print("Choose device: ");
-    x = Serial.read(); Serial.println(x);
-
-    x = is_hex_digit(x);
-    if (x > 0xf || x < 0) x='z';
+    Serial.print(tlc == &tlcmanager.broadcast() ? '=' : ' '); Serial.println("* Broadcast");
+    Serial.print(tlc == NULL ? '=' : ' ');Serial.println("| Each individually");
     }
+
+  Serial.print(F("Choose device: "));
+  x = blocking_read();
+
+  x = is_hex_digit(x);
+
   TLC59116Warn(F(" chose i "));TLC59116Warn((byte)x,HEX); TLC59116Warn();
   if (x < tlcmanager.device_count()) tlc = &tlcmanager[x];
   else if (x=='*') tlc = &tlcmanager.broadcast();
@@ -253,7 +260,7 @@ void pwm_wave(TLC59116& tlc) {
   byte chase_i = 0;
 
   while(Serial.available() <= 0) {
-    // Serial.print("at ");Serial.print((chase_i+3) % 16);Serial.print(" ");
+    // Serial.print(F("at "));Serial.print((chase_i+3) % 16);Serial.print(" ");
     before_time = millis();
     for (char i = -3; i <= 3; i++) {
       byte led_num = (chase_i + 3 + i) % 16;
@@ -266,7 +273,7 @@ void pwm_wave(TLC59116& tlc) {
 
     unsigned long used = millis() - before_time;
     if (Hump_Speed > used) delay(Hump_Speed - used);
-    else { Serial.print("!Took ");Serial.println(used); }
+    else { Serial.print(F("!Took "));Serial.println(used); }
     }
   }
 
@@ -283,20 +290,21 @@ void resync() {
   for(byte i=0; i < tlcmanager.device_count(); i++) {
     TLC59116& tlc = tlcmanager[i];
     tlc.resync_shadow_registers();
-    Serial.print("Synced 0x");Serial.println(tlc.address(),HEX);
+    Serial.print(F("Synced 0x"));Serial.println(tlc.address(),HEX);
     }
   }
 
 void list_devices() {
-  Serial.println("Addr on Broadcast Sub1 Sub2 Sub3"); // header
+  Serial.println(F("Addr on Broadcast  Sub1  Sub2  Sub3")); // header
   for(byte i=0; i < tlcmanager.device_count(); i++) {
     TLC59116& tlc = tlcmanager[i];
     printw(tlc.address(), HEX); print(" ");
-    tlc.is_enabled() ? print("+ ") : print("- ");
-    print("     ");printw(tlc.allcall_address(),HEX);
-    printw(tlc.SUBADR_address(1),HEX);print(" ");
-    printw(tlc.SUBADR_address(2),HEX);print(" ");
-    printw(tlc.SUBADR_address(3),HEX);print(" ");
+    tlc.is_enabled() ? print(F(" + ")) : print(F(" - "));
+    print(F("    ")); print(tlc.is_allcall_address() ? F("+") : F("-")); printw(tlc.allcall_address(),HEX);print(" ");
+    for (byte s_i = 1; s_i<=3; s_i++) {
+      print(tlc.is_SUBADR_address(s_i) ? F("+") : F("-"));
+      printw(tlc.SUBADR_address(s_i),HEX);print(" ");
+      }
     Serial.println();
     }
   }
@@ -308,15 +316,15 @@ void set_something(TLC59116 *tlc) {
   tlc = pick_device(*tlc);
   // :: setall | setsub | setenabled
 
-  print("set: a allcall-addr, s subaddr, +/- output enable: ");
-  char what = Serial.read(); Serial.println(what);
+  print(F("set: a allcall-addr, s subaddr, +/- output enable: "));
+  char what = blocking_read();
 
   switch (what) {
     case 'a' :
       // handle setting allcall +/-, or to address
       {
-      print("allcall address: hex_digit set as +0x60, +/- enable: ");
-      char x = Serial.read(); Serial.println(x);
+      print(F("allcall address: hex_digit set as +0x60, +/- enable: "));
+      char x = blocking_read();
 
       if (x=is_hex_digit(x)) tlc->allcall_address(0x60 + x, true); // and enable
       else if (x == '+' || x == '-') tlc->allcall_address( x=='+' );
@@ -327,14 +335,14 @@ void set_something(TLC59116 *tlc) {
     case 's' :
       // handle setting nth subadr +/-, or to address
       {
-      print("subcall #: 1, 2 or 3: ");
-      char x = Serial.read(); print(x); Serial.println();
+      print(F("subcall #: 1, 2 or 3: "));
+      char x = blocking_read();
 
       if (x == '1' || x=='2' || x=='3') {
         byte subadr_i = x - '0';
         
-        print("subadr #");print(subadr_i);print(" address: hex_digit set as +0x60, +/- enable: "); 
-        x = Serial.read(); print(x); Serial.println();
+        print(F("subadr #"));print(subadr_i);print(F(" address: hex_digit set as +0x60, +/- enable: ")); 
+        x = blocking_read();
        
         if (x=is_hex_digit(x)) tlc->SUBADR_address(subadr_i, 0x60 + x, true); // and enable
         else if (x == '+' || x == '-') tlc->SUBADR_address(subadr_i, x=='+' );

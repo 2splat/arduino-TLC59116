@@ -19,8 +19,8 @@ const prog_uchar TLC59116::Power_Up_Register_Values[TLC59116_Unmanaged::Control_
   0xff, // grppwm
   0, // grpfreq
   0,0,0,0, // ledout0..3
-  (TLC59116_Unmanaged::SUBADR1 << 1), (TLC59116_Unmanaged::SUBADR2 << 1), (TLC59116_Unmanaged::SUBADR2 << 1),
-  TLC59116_Unmanaged::AllCall_Addr,
+  (TLC59116_Unmanaged::SUBADR1 << 1), (TLC59116_Unmanaged::SUBADR2 << 1), (TLC59116_Unmanaged::SUBADR3 << 1),
+  (TLC59116_Unmanaged::AllCall_Addr << 1),
   TLC59116_Unmanaged::IREF_CM_mask | TLC59116_Unmanaged::IREF_HC_mask | ( TLC59116_Unmanaged::IREF_CC_mask && 0xff),
   0,0 // eflag1..eflag2
   };
@@ -362,7 +362,7 @@ TLC59116& TLC59116::set_address(const byte address[/* sub1,sub2,sub3,all */], by
   memcpy(want_addresses, &shadow_registers[SUBADR1_Register], 4);
 
   for(byte i=0; i<4; i++) {
-    if (address != 0) {
+    if (address[i] != 0) {
       // actual address
       if (address[i]==Reset_Addr) {
         WARN(F("Ignored attempt to use the Reset_Addr (0x60) for "));
@@ -394,12 +394,12 @@ TLC59116& TLC59116::set_address(const byte address[/* sub1,sub2,sub3,all */], by
 TLC59116& TLC59116::SUBADR_address(byte which, byte address, bool enable) {
   byte want_address[4] = {0,0,0,0};
   if (which==0 || which > 3) { WARN(F("Expected 1..3 for 'which' in SUBADR_address(), saw "));WARN(which);WARN(); return *this;}
-  want_address[which-1] = address;
+  want_address[which-1] = address << 1;
   return set_address(want_address, enable ? MODE1_SUB1_mask >> (which-1) : 0);
   }
 
 TLC59116& TLC59116::allcall_address(byte address, bool enable) {
-  byte want_address[4] = {0,0,0,address};
+  byte want_address[4] = {0,0,0,address << 1};
   return set_address(want_address, enable ? MODE1_ALLCALL_mask : 0);
   }
 

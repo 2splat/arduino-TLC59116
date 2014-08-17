@@ -112,7 +112,7 @@ class TLC59116 : public TLC59116_Unmanaged {
     // SUBADR are 1,2,3 for "which"
     TLC59116& SUBADR_address(byte which, byte address, bool enable=true);
     TLC59116& SUBADR_address(byte which, bool enable); // enable/disable
-    byte SUBADR_address(byte which) { return shadow_registers[SUBADR1 + which - 1] >> 1; }
+    byte SUBADR_address(byte which) { return shadow_registers[SUBADRx_Register(which)] >> 1; }
     bool is_SUBADR_address(byte which) { return is_SUBADR_bit( shadow_registers[MODE1_Register], which); }
 
   public: // Debugging
