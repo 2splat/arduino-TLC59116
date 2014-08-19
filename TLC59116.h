@@ -54,6 +54,7 @@ class TLC59116 : public TLC59116_Unmanaged {
       memset(pwm, pwm_value, register_count);
       return set_outputs(led_num_start, register_count, pwm); 
       }
+    TLC59116& pwm(const byte brightness[16]) { return set_outputs(0,15, brightness); }
     // fixme: maybe brightness()?
     
     // "group" functions have a bug:
