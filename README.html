@@ -6,14 +6,6 @@
 // Useful "default" forms to get started easier.
 // Warnings/Info available</p>
 
-<p>// Set this to 1/true to turn on lower-level development debugging</p>
-
-<h1>ifndef TLC59116_DEV</h1>
-
-<p>#define TLC59116_DEV 0</p>
-
-<h1>endif</h1>
-
 <h1>include <Arduino.h></h1>
 
 <h1>include <avr/pgmspace.h></h1>
@@ -25,28 +17,35 @@
 <p>extern TwoWire Wire;
 class TLC59116Manager;</p>
 
-<p>class TLC59116 : TLC59116<em>Unmanaged {
+<h1>define WARN TLC59116Warn</h1>
+
+<h1>define DEV TLC59116Dev</h1>
+
+<h1>define LOWD TLC59116LowLevel</h1>
+
+<p>class TLC59116 : public TLC59116_Unmanaged {
   // High level operations,
   // Relieves you from having to track/manage the modes/state of each device.
-  // Get one from TLC59116</em>Manager x[]</p>
+  // Get one from TLC59116Manager x[]</p>
 
-<p>friend class TLC59116Manager;</p>
+<p>public:
+// No constructor, get from a TLC59116Manager[i]</p>
 
-<p>public:</p>
+<p>virtual TLC59116&amp; enable<em>outputs(bool yes = true, bool with</em>delay = true); // delay if doing something immediately
+bool is<em>enable</em>outputs() { return !is<em>OSC</em>bit(shadow<em>registers[MODE1</em>Register]); };
+bool is<em>enabled() { return is</em>enable_outputs(); }</p>
 
-<p>private:
-// Manager has to track for reset, so factory
-TLC59116(byte address) : TLC59116_Unmanaged(address) {}  // factory control, must get from manager
-TLC59116(); // none
-TLC59116(const TLC59116&amp;); // none
-TLC59116&amp; operator=(const TLC59116&amp;); // none
-~TLC59116() {} // managed destructor....</p>
+<p>// High level</p>
 
-<p>// No link to the bus (yet)</p>
+<p>// Digital
+TLC59116&amp; set<em>outputs(word pattern, word which=0xFFFF); // Only change bits marked in which: to bits in pattern
+TLC59116&amp; pattern(word pattern, word which=0xFFFF) { return set</em>outputs(pattern, which); }
+TLC59116&amp; on(word pattern) { return set<em>outputs(pattern, pattern); } // only set those indicated
+TLC59116&amp; off(word pattern) { return set</em>outputs(~pattern, pattern); } // only turn-off those indicated
+TLC59116&amp; set(int led<em>num, bool offon) {  // only turn-off one
+  word bits = 1 &lt;&lt; led</em>num;
+  return set_outputs(offon ? bits : ~bits,bits); 
+  }</p>
 
-<p>void reset_happened(); // reset affects the state of the devices</p>
-
-<p>// We have to shadow the state
-byte shadow<em>registers[Control</em>Register<em>Max+1];
-void inline reset</em>shadow<em>registers(); 
-void sync</em>shadow_registers() { /* fixme: read device, for ... shadow=; */ }</p>
+<p>// PWM
+TLC59116&amp; set<em>outputs(byte led</em>num<em>start, byte led</em>num<em>end, const byte brightness[] /*[ct]*/); // A list of PWM values starting at start</em>i. Tolerates led<em>num</em>end>15 which wraps around</p>

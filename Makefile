@@ -63,10 +63,11 @@ else
 endif
 
 .PHONY : zip
-zip : ../arduino_$(Device).zip
+zip : arduino_$(Device).zip
 
-../arduino_$(Device).zip : $(lib_files) build_tools/syslibify
+arduino_$(Device).zip : $(lib_files) build_tools/syslibify
 	rm -rf build/$(Device) 2>/dev/null || true
+	rm $@ || true
 	mkdir -p build/$(Device)
 	@# copy
 	env -u TAPE -u ARCHIVE tar c $(lib_files) | tar x -C build/$(Device)
@@ -74,7 +75,7 @@ zip : ../arduino_$(Device).zip
 	cd build && perl -p -i ../build_tools/syslibify `find $(Device) -name '*.cpp' -o -name '*.h' -o -name '*.hpp' -o -name '*.ino'`
 	@# safety
 	rm $@ 2>/dev/null || true
-	cd build && zip -r $@ $(Device)
+	cd build && zip -r ../$@ $(Device)
 	rm -rf build/$(Device) 2>/dev/null || true
 
 keywords.txt : $(Device).h
