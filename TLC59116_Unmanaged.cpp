@@ -108,11 +108,17 @@ void TLC59116_Unmanaged::describe_registers(byte* registers /*[Control_Register_
 void TLC59116_Unmanaged::describe_iref(byte* registers) {
     const byte value = registers[IREF_Register];
 
-    // FIXME: do the math, and explain
-    Serial.print(F("IREF: "));
-    Serial.print(F("CM=0x"));Serial.print(value & IREF_CC_mask,HEX);
-    Serial.print(F(" HC="));Serial.print( (value & IREF_HC_mask) ? "1" : "0");
-    Serial.print( (value & IREF_CM_mask) ? " Hi" : " Lo");
+    byte CC = value & IREF_CC_mask;
+    byte D=reverse_cc(CC);
+
+    Serial.print(F("Iout "));Serial.print(i_out(value));Serial.print(F("ma @ 235ohms ("));
+    byte CM=(value & IREF_CM_mask) ? 1 : 0;
+    Serial.print(F("CM:"));Serial.print( (value & IREF_CM_mask) ? "1" : "0");
+    byte HC=(value & IREF_HC_mask) ? 1 : 0;
+    Serial.print(F(" HC:"));Serial.print(HC);
+    Serial.print(F(" CC:0b"));Serial.print( (value & IREF_CC_mask), BIN); 
+    Serial.print(F(" (D:"));Serial.print(D);Serial.print(F(") = "));
+    Serial.print(((1.26 * ((1 + HC) * (1.0 + D/64.0) / 4.0)) * 15.0 * (3^(CM-1))));Serial.print(F("/Rext ma"));
     Serial.println();
     }
 
@@ -134,6 +140,79 @@ void TLC59116_Unmanaged::describe_addresses(byte* registers) {
       Serial.print(the_addr >> 1, HEX); Serial.print(") ");
       }
   Serial.println();
+  }
+
+byte TLC59116_Unmanaged::i_out(byte CM, byte HC, byte CC, int Rext) { 
+  // the Iout per channel 
+  byte D=reverse_cc(CC);
+  return i_out_d(CM, HC, CC, Rext); 
+  }
+
+byte TLC59116_Unmanaged::i_out_d(byte CM, byte HC, byte D, int Rext) { 
+  // the Iout per channel, with bit reversed CC
+  return ((1.26 * ((1 + HC) * (1.0 + D/64.0) / 4.0)) / (double)Rext) * (CM ? 15 : 5) *1000;
+  }
+
+byte TLC59116_Unmanaged::best_iref(byte ma, int Rext) { // mili-amps, and ohms default=235 (magic for 120 ma), 1410 for 20ma,
+  byte HC; // [6]
+  byte CM; // [7]
+  byte D; // [5:0], but reverse bits for CC!
+
+  // Iout = ((1.26v * ((1 + HC) * (1 + D/64) / 4)) / Rext) * 15 * 3^(CM-1)
+  // (as per specsheet "SLDS157D – FEBRUARY 2008 – REVISED JULY 2011")
+  // where D is CC bit-reversed
+  // simplify for HC & CM and D=0|127 to get ranges below
+
+  byte actual = 255; // anything is better.
+  if (ma <= 5 || ma < 1575/Rext) {
+    HC=0; CM=0; D=0;
+    actual = i_out_d(CM, HC, D, Rext);
+    // printf("Too small, actual %dma HC %d, CM %d, D %03o\n",actual, HC, CM, D);
+    }
+  else if (ma >= 120 || ma > 28202.3/Rext) {
+    HC=1; CM=1; D=0b111111;
+    actual = i_out_d(CM, HC, D, Rext);
+    // printf("Too big, actual %dma HC %d, CM %d, D %03o\n",actual, HC, CM, D);
+    }
+  else {
+    if (ma <= 4725/Rext) {
+      HC=0; CM=0; D = (2.560*ma*Rext)/63-64;
+      actual = i_out_d(CM, HC, D, Rext);
+      // printf("segment 1, actual %dma HC %d, CM %d, D %03o\n",actual, HC, CM, D);
+      }
+    else if (ma <= 14101.2/Rext) {
+      HC=0; CM=1; D = (2.560*ma*Rext)/189-64;
+      actual = i_out_d(CM, HC, D, Rext);
+      // printf("segment 2, actual %dma HC %d, CM %d, D %03o\n",actual, HC, CM, D);
+      }
+    if (ma >= 3150/Rext && ma <= 9449.98/Rext) {
+      HC=1; CM=0; D = (1.280*ma*Rext )/63-64;
+      byte proposed = i_out_d(CM, HC, D, Rext);
+      // The solutions overlap, so:
+      if ( proposed >= actual) actual=proposed;
+      else {
+        // printf("  tried proposed %dma HC %d, CM %d, D %03o but, use previous segment\n", proposed, HC, CM, D);
+        // revert
+        D=D*2; // 1.28 -> 2.56
+        HC=0;
+        actual = i_out_d(CM, HC, D, Rext);
+        }
+      // printf("segment 3, actual %dma HC %d, CM %d, D %03o\n",actual, HC, CM, D);
+      }
+    else {
+      HC=1; CM=1; D = (1.280*ma*Rext)/189.0-64;
+      actual = i_out_d(CM, HC, D, Rext);
+      // printf("segment 4, actual %dma HC %d, CM %d, D %03o\n",actual, HC, CM, D);
+      }
+    }
+  byte iref = 0;
+  // CC (D reversed)
+  iref = reverse_cc(D);
+  iref |= HC << 6 | CM << 7;
+  DEV(F("Iref wanted "));DEV(ma);DEV(F("ma closest "));DEV(actual);DEV(F("ma, iref="));DEV(iref,BIN);DEV();
+  // printf("Iref wanted %dma closest %dma, iref=%03o\n", ma, actual, iref);
+  if (abs(ma - actual) > 1) { WARN(F("You asked for "));WARN(ma);WARN(F(" but best is "));WARN(actual);WARN(); }
+  return iref; // FIXME: and the flags
   }
 
 void TLC59116_Unmanaged::describe_mode2(byte *registers) {

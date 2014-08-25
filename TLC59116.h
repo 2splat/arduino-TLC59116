@@ -115,6 +115,17 @@ class TLC59116 : public TLC59116_Unmanaged {
     TLC59116& SUBADR_address(byte which, bool enable); // enable/disable
     byte SUBADR_address(byte which) { return shadow_registers[SUBADRx_Register(which)] >> 1; }
     bool is_SUBADR_address(byte which) { return is_SUBADR_bit( shadow_registers[MODE1_Register], which); }
+    
+    // Software current control
+    // We need a Rext value to calculate this, 235ohms gives 120ma at reset, 937ohms give 20ma
+    // Note that this will tend to set the output 1milliamp low.
+    // This will also clip the result to the minimum (for Rext) and 120ma.
+    // Check it with milliamps().
+    TLC59116& set_milliamps(byte ma, int Rext=235); // 235ohms is 120ma at reset.
+    int milliamps(int Rext=235) {return i_out(shadow_registers[IREF_Register]); } // current setting
+
+    // Error detect
+    // FIXME: implement. we should set error enable on reset? then read them?
 
   public: // Debugging
     TLC59116& describe_shadow();

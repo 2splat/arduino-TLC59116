@@ -408,6 +408,12 @@ TLC59116& TLC59116::resync_shadow_registers() {
   return *this;
   }
 
+TLC59116& TLC59116::set_milliamps(byte ma, int Rext) {
+  byte iref_value = best_iref(ma, Rext);
+  modify_control_register(IREF_Register,iref_value);
+  return *this;
+  }
+
 //
 // Broadcast
 //

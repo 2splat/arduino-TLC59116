@@ -213,7 +213,13 @@ class TLC59116_Unmanaged {
     static const byte IREF_Register = 0x1C;
       static const byte IREF_CM_mask = 1<<7;
       static const byte IREF_HC_mask = 1<<6;
-      static const byte IREF_CC_mask = 0x1F; // 5 bits
+      static const byte IREF_CC_mask = 0b111111; // 6 bits
+      static byte best_iref(byte ma, int Rext=235); // from milliamps. 235ohms=120ma at default. 1410 for 20ma.
+      static byte i_out(byte CM, byte HC, byte CC, int Rext=235); // milliamps for register setting
+      static byte i_out(byte iref_value, int Rext=235) { 
+        return i_out( iref_value >> 7 & 1, iref_value >> 6 & 1, iref_value && IREF_CC_mask, Rext ); 
+        }
+      static byte i_out_d(byte CM, byte HC, byte D, int Rext=235); // D=CC with bits reversed
     // for LEDOUTx_Register, see Register_Led_State
     static const byte EFLAG1_Register = 0x1D;
     static const byte EFLAG2_Register = EFLAG1_Register + 1;
@@ -247,6 +253,13 @@ class TLC59116_Unmanaged {
 
     static void describe_registers(byte* registers /*[Control_Register_Max]*/);
 
+    static byte inline reverse_cc(byte CC) { // CC<->D (reverse 6 bits)
+      // CC<->D (reverse 6 bits)
+      byte D=0;
+      for(byte i=0;i<6;i++) D |= ((CC>>i) & 0b1)<<(5-i);
+      return D;
+      }
+
   public: // instance
     TwoWire& i2cbus; // r/o
 
@@ -262,64 +275,11 @@ class TLC59116_Unmanaged {
     TLC59116_Unmanaged& describe_actual();
     static void describe_group_mode(byte* registers); // for debugging
 
-    // to enable outputs, control_register(MODE1_Register, old_value set/unset MODE1_OSC_mask);
-
-    TLC59116_Unmanaged& on(byte led_num, bool yes = true); // turns the led on, false turns it off
-    TLC59116_Unmanaged& pattern(word bit_pattern, word which_mask = 0xFFFF); // "bulk" on, by bitmask pattern, msb=15
-    TLC59116_Unmanaged& off(byte led_num) { return on(led_num, false); } // convenience
-    TLC59116_Unmanaged& pwm(byte led_num, byte value); 
-    // timings give 1/2..2mitllis for bulk, vs. 1..6millis for one-at-time (proportional to ct)
-    // Changing the LEDOUTx registers from digital to pwm seems to add 1/4millis for one-at-a-time
-    //  and about 1/8 millis for bulk.
-    // Seeing quite a bit of variance, first time is slowest (seems to be the "monitor" communications)
-    TLC59116_Unmanaged& pwm(byte led_num_start, byte ct, const byte* values); // bulk set
-    TLC59116_Unmanaged& pwm(const byte* values) { return pwm(0,16, values); }
-
-    // Error detect bits, msb=15
-    unsigned int error_detect(bool do_overtemp = false);
-    unsigned int open_detect() { return error_detect(); } // convenience, 0=open, 1=loaded
-    unsigned int overtemp_detect() { return error_detect(true); } // convenience. bitvalues: 0=overtemp, 1=normal
-      // overtemp is not likely to last long
-
-    // "group" functions have a bug:
-    // If you decrease the value (blink_time or brightness),
-    // The chip may act like the value is max for one "cycle".
-    // This causes a full-brightness result for group_pwm, and a 10 second blink-length for group_blink.
-    // I think this is because:
-    // * There is a continously running timer, counting up.
-    // * The "value" is compared to the timer, and triggers the action and a reset of the timer.
-    // * If you move the "value" down, you may skip over the current timer value,
-    //    so it runs to the maximum value before wrapping around again.
-    // "reset" is the only thing that I know of that will reset the timer.
-    // But, more experimentation is needed.
-
-    // Blink the LEDs, at their current setting
-    TLC59116_Unmanaged& group_blink(word bit_pattern, byte blink_time, byte on_ratio=128); // 0%..99.61%, 0=10sec..255=24hz
-    TLC59116_Unmanaged& group_blink(word bit_pattern, float hz, float on_percent=50.0) { // convenience % & hz
-      // on_percent is 05..99.61%, hz is 24.00384hz to .09375 (10sec long) in steps of .04166hz (blink time 0..255)
-      return group_blink(
-        (word)bit_pattern, 
-        (byte) int( 24.0 / hz) - 1,
-        (byte) int(on_percent * 256.0/100.0) // cheating on the percent->decimal
-        ); 
-      }
-    TLC59116_Unmanaged& group_blink(unsigned int bit_pattern, double on_percent, double hz) { // convenience: % & hz in default literal datatype
-      return group_blink((word) bit_pattern, (float) on_percent, (float) hz); 
-      }
-
-    // Superpose group-pwm on current pwm setting (but, current should be 255 for best results)
-    TLC59116_Unmanaged& group_pwm(word bit_pattern, byte brightness);
-
     TLC59116_Unmanaged& delay(int msec) { ::delay(msec); return *this;} // convenience
 
-    byte address() { return i2c_address; } 
+    // FIXME: implement error bits (reset, read).
 
-    // Low level interface: Modifies only those bits of interest
-    // Keeps a "shadow" of the control registers.
-    // Assumes power-up-reset to start with, or call .update_shadows(). # FIXME
-    // Each read via control_register(x) will update the shadow.
-    void modify_control_register(byte register_num, byte mask, byte bits);
-    void modify_control_register(byte register_num, byte value); // whole register
+    byte address() { return i2c_address; } 
 
     // Low Level interface: writes bash the whole register
     byte control_register(byte register_num); // get. Failure returns 0, set TLC59116_WARNINGS=1 and check monitor
