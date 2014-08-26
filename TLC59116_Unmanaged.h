@@ -214,12 +214,13 @@ class TLC59116_Unmanaged {
       static const byte IREF_CM_mask = 1<<7;
       static const byte IREF_HC_mask = 1<<6;
       static const byte IREF_CC_mask = 0b111111; // 6 bits
-      static byte best_iref(byte ma, int Rext=235); // from milliamps. 235ohms=120ma at default. 1410 for 20ma.
-      static byte i_out(byte CM, byte HC, byte CC, int Rext=235); // milliamps for register setting
-      static byte i_out(byte iref_value, int Rext=235) { 
-        return i_out( iref_value >> 7 & 1, iref_value >> 6 & 1, iref_value && IREF_CC_mask, Rext ); 
+      static const int Rext_Min = 156; // in ohms, gives 120ma at reset
+      static byte best_iref(byte ma, int Rext=Rext_Min); // from milliamps. 937 for 20ma.
+      static byte i_out(byte CM, byte HC, byte CC, int Rext=Rext_Min); // milliamps for register setting
+      static byte i_out(byte iref_value, int Rext=Rext_Min) { 
+        return i_out( iref_value >> 7 & 1, iref_value >> 6 & 1, iref_value & IREF_CC_mask, Rext ); 
         }
-      static byte i_out_d(byte CM, byte HC, byte D, int Rext=235); // D=CC with bits reversed
+      static byte i_out_d(byte CM, byte HC, byte D, int Rext=Rext_Min); // D=CC with bits reversed
     // for LEDOUTx_Register, see Register_Led_State
     static const byte EFLAG1_Register = 0x1D;
     static const byte EFLAG2_Register = EFLAG1_Register + 1;

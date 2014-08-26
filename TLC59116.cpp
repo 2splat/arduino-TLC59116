@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #define TLC59116_LOWLEVEL 0
-#define TLC59116_DEV 1
+#define TLC59116_DEV 0
 #define TLC59116_WARNINGS 1
 
 #include "TLC59116.h"
@@ -21,7 +21,7 @@ const prog_uchar TLC59116::Power_Up_Register_Values[TLC59116_Unmanaged::Control_
   0,0,0,0, // ledout0..3
   (TLC59116_Unmanaged::SUBADR1 << 1), (TLC59116_Unmanaged::SUBADR2 << 1), (TLC59116_Unmanaged::SUBADR3 << 1),
   (TLC59116_Unmanaged::AllCall_Addr << 1),
-  TLC59116_Unmanaged::IREF_CM_mask | TLC59116_Unmanaged::IREF_HC_mask | ( TLC59116_Unmanaged::IREF_CC_mask && 0xff),
+  TLC59116_Unmanaged::IREF_CM_mask | TLC59116_Unmanaged::IREF_HC_mask | ( TLC59116_Unmanaged::IREF_CC_mask & 0xff),
   0,0 // eflag1..eflag2
   };
 
@@ -118,7 +118,7 @@ int TLC59116Manager::reset() {
   int rez = TLC59116_Unmanaged::_end_trans(i2cbus);
 
   if (rez)  { 
-    TLC59116Warn(F("Reset failed with ")); TLC59116Warn(rez); TLC59116Warn(); 
+    TLC59116Dev(F("Reset failed with ")); TLC59116Warn(rez); TLC59116Warn(); 
     return rez;
     }
 
@@ -332,7 +332,7 @@ void TLC59116::update_registers(const byte want[] /* [start..end] */, byte start
     for(byte r=change_first_r; r<=change_last_r; r++) {LOWD(want_fullset[r],HEX);LOWD(" ");} LOWD();
 
     // We have a first..last, so write them
-    LOWD(F("Write "));LOWD(change_first_r,HEX);LOWD(F(": "));
+    LOWD(F("Write "));LOWD(change_first_r,HEX);LOWD(F("+"));LOWD(change_last_r-change_first_r+1);LOWD(F(": "));
     _begin_trans(Auto_All, change_first_r);
       // TLC59116Warn("  ");
       i2cbus.write(&want_fullset[change_first_r], change_last_r-change_first_r+1);

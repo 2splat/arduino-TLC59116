@@ -37,7 +37,8 @@ $(example_srcs) :
 
 # Launch ide
 .PHONY : ide
-ide : log
+ide : log lib_dir_link
+	test -e lib_dir_link/tlc59116 && rm lib_dir_link/tlc59116 || true
 	arduino `pwd`/*.ino > log/ide.log 2>&1 &
 
 log :

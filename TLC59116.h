@@ -36,15 +36,17 @@ class TLC59116 : public TLC59116_Unmanaged {
     // Digital
     TLC59116& set_outputs(word pattern, word which=0xFFFF); // Only change bits marked in which: to bits in pattern
     TLC59116& pattern(word pattern, word which=0xFFFF) { return set_outputs(pattern, which); }
-    TLC59116& on(word pattern) { return set_outputs(pattern, pattern); } // only set those indicated
-    TLC59116& off(word pattern) { return set_outputs(~pattern, pattern); } // only turn-off those indicated
+    TLC59116& set_pattern(word pattern) { return set_outputs(pattern, pattern); } // only set those indicated
+    TLC59116& reset_pattern(word pattern) { return set_outputs(~pattern, pattern); } // only turn-off those indicated
     TLC59116& set(int led_num, bool offon) {  // only turn-off one
       word bits = 1 << led_num;
-      return set_outputs(offon ? bits : ~bits,bits); 
+      return set_outputs(offon ? bits : ~bits, bits); 
       }
+    TLC59116& on(int led_num) { return set(led_num, true); } // turn one on
+    TLC59116& off(int led_num) { return set(led_num, false); } // turn one off
 
     // PWM
-    TLC59116& set_outputs(byte led_num_start, byte led_num_end, const byte brightness[] /*[ct]*/); // A list of PWM values starting at start_i. Tolerates led_num_end>15 which wraps around
+    TLC59116& set_outputs(byte led_num_start, byte led_num_end, const byte brightness[] /*[start..end]*/); // A list of PWM values starting at start_i. Tolerates led_num_end>15 which wraps around
     TLC59116& pwm(byte led_num, byte brightness) { byte ba[1] = {brightness}; return set_outputs(led_num, led_num, ba); }
     TLC59116& pwm(byte led_num_start, byte led_num_end, const byte brightness[] /*[ct]*/) { return set_outputs(led_num_start, led_num_end, brightness); }
     TLC59116& pwm(byte led_num_start, byte led_num_end, byte pwm_value) { // set all to same value
@@ -52,7 +54,7 @@ class TLC59116 : public TLC59116_Unmanaged {
       // FIXME: warnings of range
       byte pwm[register_count];
       memset(pwm, pwm_value, register_count);
-      return set_outputs(led_num_start, register_count, pwm); 
+      return set_outputs(led_num_start, led_num_end, pwm); 
       }
     TLC59116& pwm(const byte brightness[16]) { return set_outputs(0,15, brightness); }
     // fixme: maybe brightness()?
@@ -117,12 +119,12 @@ class TLC59116 : public TLC59116_Unmanaged {
     bool is_SUBADR_address(byte which) { return is_SUBADR_bit( shadow_registers[MODE1_Register], which); }
     
     // Software current control
-    // We need a Rext value to calculate this, 235ohms gives 120ma at reset, 937ohms give 20ma
+    // We need a Rext value to calculate this, 156ohms gives 120ma at reset, 937ohms give 20ma
     // Note that this will tend to set the output 1milliamp low.
     // This will also clip the result to the minimum (for Rext) and 120ma.
     // Check it with milliamps().
-    TLC59116& set_milliamps(byte ma, int Rext=235); // 235ohms is 120ma at reset.
-    int milliamps(int Rext=235) {return i_out(shadow_registers[IREF_Register]); } // current setting
+    TLC59116& set_milliamps(byte ma, int Rext=Rext_Min); // Rext_Min ohms is 120ma at reset.
+    int milliamps(int Rext=Rext_Min) {return i_out(shadow_registers[IREF_Register]); } // current setting
 
     // Error detect
     // FIXME: implement. we should set error enable on reset? then read them?
@@ -132,8 +134,10 @@ class TLC59116 : public TLC59116_Unmanaged {
     TLC59116& resync_shadow_registers();
 
   private:
+    // FIXME: move Power_Up_Register_Values to FLASH
     static const prog_uchar Power_Up_Register_Values[TLC59116_Unmanaged::Control_Register_Max + 1];
     TLC59116Manager &manager;
+    // void (*on_reset)(byte /* manager[i] */); 
 
     // Manager has to track for reset, so factory
     TLC59116(TwoWire& bus, byte address, TLC59116Manager& m) : TLC59116_Unmanaged(bus, address), manager(m) {reset_shadow_registers();}  // factory control, must get from manager
