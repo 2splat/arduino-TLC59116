@@ -46,15 +46,15 @@ class TLC59116 : public TLC59116_Unmanaged {
     TLC59116& off(int led_num) { return set(led_num, false); } // turn one off
 
     // PWM
-    TLC59116& set_outputs(byte led_num_start, byte led_num_end, const byte brightness[] /*[start..end]*/); // A list of PWM values starting at start_i. Tolerates led_num_end>15 which wraps around
+    TLC59116& set_outputs(byte led_num_start, byte led_num_end, const byte brightness[] /*[start..end]*/); // A list of PWM values. Tolerates led_num_end>15 which wraps around
     TLC59116& pwm(byte led_num, byte brightness) { byte ba[1] = {brightness}; return set_outputs(led_num, led_num, ba); }
     TLC59116& pwm(byte led_num_start, byte led_num_end, const byte brightness[] /*[ct]*/) { return set_outputs(led_num_start, led_num_end, brightness); }
     TLC59116& pwm(byte led_num_start, byte led_num_end, byte pwm_value) { // set all to same value
       const byte register_count = led_num_end - led_num_start +1;
       // FIXME: warnings of range
-      byte pwm[register_count];
-      memset(pwm, pwm_value, register_count);
-      return set_outputs(led_num_start, led_num_end, pwm); 
+      byte pwm_buff[register_count];
+      memset(pwm_buff, pwm_value, register_count);
+      return set_outputs(led_num_start, led_num_end, pwm_buff); 
       }
     TLC59116& pwm(const byte brightness[16]) { return set_outputs(0,15, brightness); }
     // fixme: maybe brightness()?
@@ -128,6 +128,9 @@ class TLC59116 : public TLC59116_Unmanaged {
 
     // Error detect
     // FIXME: implement. we should set error enable on reset? then read them?
+
+    // Misc
+    TLC59116& delay(int msec) { ::delay(msec); return *this;} // convenience
 
   public: // Debugging
     TLC59116& describe_shadow();

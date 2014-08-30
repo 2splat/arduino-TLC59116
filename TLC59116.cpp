@@ -211,7 +211,8 @@ TLC59116& TLC59116::set_outputs(byte led_num_start, byte led_num_end, const byte
   // need current values to mark changes against
   // FIXME: We could try to minimize the register_count: to start with the min(PWMx), but math
   byte register_count = /* r0... */ LEDOUTx_Register(Channels-1) + 1;
-  byte want[register_count]; // I know that TLC59116 is veryfew...PWMx..LEDOUTx
+  LOWD(F("setup buff of 0.."));LOWD(register_count);LOWD(F("-1"));LOWD();
+  byte want[register_count]; // I know that TLC59116 is: veryfew...PWMx..LEDOUTx. so waste a few at head
   memcpy(want, this->shadow_registers, register_count);
 
   // (for ledoutx, Might be able to do build it with <<bitmask, and then set_with_mask the whole thing)
@@ -224,6 +225,9 @@ TLC59116& TLC59116::set_outputs(byte led_num_start, byte led_num_end, const byte
     
     // PWM
     want[ PWMx_Register(wrapped_i) ] = brightness[ledi - led_num_start];
+    LOWD(F("  setting LEDOUT @"));LOWD(out_r);LOWD(F("="));LOWD(want[out_r],HEX);
+    LOWD(F(", PWM @"));LOWD(wrapped_i);LOWD(F("="));LOWD(want[ PWMx_Register(wrapped_i) ]);
+    LOWD();
     }
 
   update_registers(&want[PWM0_Register], PWM0_Register, LEDOUTx_Register(Channels-1));
@@ -342,6 +346,7 @@ void TLC59116::update_registers(const byte want[] /* [start..end] */, byte start
     memcpy(&shadow_registers[change_first_r], &want_fullset[change_first_r], change_last_r-change_first_r+1);
     // FIXME: propagate shadow
     LOWD(F("Wrote bulk"));LOWD();
+    LOWD(F("S="));for(byte i=0; i <=Control_Register_Max ; i++) { LOWD(shadow_registers[i],HEX);LOWD(F(" ")); } LOWD();
     }
   }
 

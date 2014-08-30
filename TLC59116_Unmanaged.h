@@ -276,8 +276,6 @@ class TLC59116_Unmanaged {
     TLC59116_Unmanaged& describe_actual();
     static void describe_group_mode(byte* registers); // for debugging
 
-    TLC59116_Unmanaged& delay(int msec) { ::delay(msec); return *this;} // convenience
-
     // FIXME: implement error bits (reset, read).
 
     byte address() { return i2c_address; } 
