@@ -35,13 +35,15 @@ bool is_enabled() { return is_enable_outputs(); }
 // Digital
 TLC59116& set_outputs(word pattern, word which=0xFFFF); // Only change bits marked in which: to bits in pattern
 TLC59116& pattern(word pattern, word which=0xFFFF) { return set_outputs(pattern, which); }
-TLC59116& on(word pattern) { return set_outputs(pattern, pattern); } // only set those indicated
-TLC59116& off(word pattern) { return set_outputs(~pattern, pattern); } // only turn-off those indicated
+TLC59116& set_pattern(word pattern) { return set_outputs(pattern, pattern); } // only set those indicated
+TLC59116& reset_pattern(word pattern) { return set_outputs(~pattern, pattern); } // only turn-off those indicated
 TLC59116& set(int led_num, bool offon) {  // only turn-off one
   word bits = 1 << led_num;
-  return set_outputs(offon ? bits : ~bits,bits); 
+  return set_outputs(offon ? bits : ~bits, bits); 
   }
+TLC59116& on(int led_num) { return set(led_num, true); } // turn one on
+TLC59116& off(int led_num) { return set(led_num, false); } // turn one off
 
 // PWM
-TLC59116& set_outputs(byte led_num_start, byte led_num_end, const byte brightness[] /*[ct]*/); // A list of PWM values starting at start_i. Tolerates led_num_end>15 which wraps around
+TLC59116& set_outputs(byte led_num_start, byte led_num_end, const byte brightness[] /*[start..end]*/); // A list of PWM values. Tolerates led_num_end>15 which wraps around
 

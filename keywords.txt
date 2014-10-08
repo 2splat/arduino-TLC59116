@@ -2,6 +2,7 @@ allcall_address KEYWORD2
 Already KEYWORD2
 broadcast KEYWORD2
 Default_Frequency KEYWORD2
+delay KEYWORD2
 describe_shadow KEYWORD2
 device_count KEYWORD2
 enable_outputs KEYWORD2
@@ -15,6 +16,7 @@ is_enable_outputs KEYWORD2
 is_inited KEYWORD2
 is_SUBADR_address KEYWORD2
 MaxDevicesPerI2C KEYWORD2
+milliamps KEYWORD2
 off KEYWORD2
 on KEYWORD2
 operator KEYWORD2
@@ -23,9 +25,12 @@ pwm KEYWORD2
 Reset_address KEYWORD2
 reset KEYWORD2
 Reset KEYWORD2
+reset_pattern KEYWORD2
 resync_shadow_registers KEYWORD2
 set KEYWORD2
+set_milliamps KEYWORD2
 set_outputs KEYWORD2
+set_pattern KEYWORD2
 SUBADR_address KEYWORD2
 TLC59116 KEYWORD1
 WireInit KEYWORD2

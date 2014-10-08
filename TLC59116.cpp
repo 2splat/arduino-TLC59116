@@ -80,14 +80,15 @@ int TLC59116Manager::scan() {
 
       this->devices[ this->device_ct++ ] = new TLC59116(i2cbus,addr, *this);
       TLC59116Warn(F(" found "));TLC59116Warn(addr,HEX);
+      TLC59116Warn();
 
       ::delay(10);  // maybe unneeded?
       } // end of good response
     else if (stat != 2) { // "2" means, "not there"
       TLC59116Warn(F(" Unexpected stat(")); TLC59116Warn(stat); TLC59116Warn(F(") at address ")); TLC59116Warn(addr,HEX);
+      TLC59116Warn();
       }
 
-    TLC59116Warn();
 
     } // end of for loop
 

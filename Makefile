@@ -8,7 +8,7 @@ example_srcs := $(shell find examples -name '*.h' -o -name '*.cpp' | xargs basen
 # a=`which arduino` && b=`realpath $$a` && echo `dirname $$b`/hardware
 
 .PHONY : all
-all : build_dir README.html ../arduino_$(Device).zip
+all : build_dir README.html arduino_$(Device).zip
 
 .PHONY : clean
 clean : build_dir
