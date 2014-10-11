@@ -1,10 +1,21 @@
 Obtaining:
-Should be in github as ...
+Should be in github as https://github.com/2splat/arduino-TLC59116
 You only need the arduino_TLC59116.zip if you are a user. NOT the "download zip" button!
 
 Installing:
 All Platforms:
-In the arduino-ide, do the "Sketch":"import library" thing, on the .zip.
+Download the arduino_TLC59116.zip (not the "download zip" button).
+In the arduino-ide, use the "sketch" menu, 'import library...:add library' entry,
+navigate to the downloaded .zip (usually in your Downloads folder), 'open'.
+
+Updating:
+All Platforms:
+Before arduino ide 1.5.x, manually delete the folder 'libraries/TLC59116',
+located in your "sketchbooks" directory.
+    On windows, it should be in your Documents,
+    On linux it's in ~/sketchbooks,
+    On mac, ?
+Then do Installing above.
 
 Making. Assumes linux.
 Requirements:
@@ -24,12 +35,15 @@ It should whine about missing tools. Install them, "rm" the zip, make again.
 Developing:
 The directory is ino'ified, you can develop out of here!
 * Remove the TLC59116 library you may have installed above, it will conflict.
+* make the .ino for testing:
+    % make inoify
 * You can open the tlc59116_lib.ino in the arduino ide
 * Note the additional tabs for the libraries .h/.cpp's!
 Due to a "interesting" arduino-ide behavior, the source files do #include with "", the make puts them back to canonical for the zip.
 The "" seems to work anyway.
 
 You can also develop with a separate .ino.
+Probably you'd want to do something like linking $tlc59116_dev_dir to ~/sketchbook/libraries/TLC59116.
 
 NB: If you add any #includes in the .h's, you should test the .zip (import, etc.). Because, the arduino-ide will fail to load the .h's that are included in the .h's ! You'll get 'not in scope' errors in the .h's.
 Workarounds:

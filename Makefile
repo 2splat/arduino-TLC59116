@@ -1,14 +1,14 @@
 Device := TLC59116
-lib_files := $(shell find -type f -not -path './build/*' -a \( -name '*.cpp' -o -name '*.h' -o -name 'keywords.txt' -o -name '*.ino' -o -name 'README*' \) )
+lib_files := $(shell find . -type f -a -not -path './build/*' -a -not -path './_Inline/*' -a \( -name '*.cpp' -o -name '*.h' -o -name '*.ino' \) ) keywords.txt VERSION README.md README.html
 arduino_dir := $(shell which arduino | xargs --no-run-if-empty realpath | xargs --no-run-if-empty dirname)
 arduino_inc_dir := $(arduino_dir)/hardware
 ino_link := $(shell basename `/bin/pwd`).ino
-example_srcs := $(shell find examples -name '*.h' -o -name '*.cpp' | xargs basename )
+test_example_srcs := $(shell find examples/test_features -name '*.h' -o -name '*.cpp' | xargs basename )
 
 # a=`which arduino` && b=`realpath $$a` && echo `dirname $$b`/hardware
 
 .PHONY : all
-all : build_dir README.html arduino_$(Device).zip
+all : build_dir VERSION README.html arduino_$(Device).zip
 
 .PHONY : clean
 clean : build_dir
@@ -22,18 +22,20 @@ build_dir :
 	@mkdir -p build
 	@rm -rf build/*
 
-# makes this directory work as an .ino
+# makes this directory work as an .ino for testing
 .PHONY : inoify
-inoify : $(ino_link) $(example_srcs)
-$(ino_link) : $(shell /bin/ls -1 examples/*.ino)
+inoify : $(ino_link) $(test_example_srcs)
+$(ino_link) : $(shell /bin/ls -1 examples/test_features/*.ino)
+	rm $@
 	ln -s $< $@
 
 .PHONY : menu
 menu :
 	@cd examples && make insertmenu
 
-$(example_srcs) :
-	ln -s examples/$@
+$(test_example_srcs) :
+	rm $@
+	ln -s examples/test_features/$@
 
 # Launch ide
 .PHONY : ide
@@ -63,10 +65,16 @@ else
 	markdown README.md > README.html
 endif
 
-.PHONY : zip
-zip : arduino_$(Device).zip
+# Not actually phony, but remake always
+.PHONY : VERSION
+VERSION :
+	echo -n `git branch | grep '*' | awk '{print $$2}'` '' > $@
+	git log -n 1 --pretty='format:%H %ai%n' >> $@
 
-arduino_$(Device).zip : $(lib_files) build_tools/syslibify
+.PHONY : zip
+zip : all arduino_$(Device).zip README.html VERSION
+
+arduino_$(Device).zip : $(lib_files)  build_tools/syslibify
 	rm -rf build/$(Device) 2>/dev/null || true
 	rm $@ || true
 	mkdir -p build/$(Device)

@@ -1,9 +1,9 @@
 /build
 /*.ino
 /examples/.*.ino.menu
-/*.zip
 /log
 /_Inline
 /simple_sequence.h
 /tired_of_serial.h
 /lib_dir_link
+/VERSION
