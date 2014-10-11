@@ -64,6 +64,7 @@ int TLC59116Manager::scan() {
 
   byte debug_tried = 0;
 
+  this->device_ct = 0;
   for (byte addr = TLC59116_Unmanaged::Base_Addr; addr <= TLC59116_Unmanaged::Max_Addr; addr++) {
     debug_tried++;
     TLC59116Dev("Try ");TLC59116Dev(addr,HEX);

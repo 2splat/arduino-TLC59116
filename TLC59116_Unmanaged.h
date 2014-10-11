@@ -370,7 +370,7 @@ class TLC59116_Unmanaged {
           }
 
         byte found; // number of addresses found
-        byte addresses[14]; // reset/all are excluded, so only 16 possible
+        byte addresses[Max_Addr - Base_Addr - 2]; // reset/all are excluded, so only 16 possible
     };
 
     static Scan& scan(void) { // convenince, same as TLC59116::Scan::scanner();
