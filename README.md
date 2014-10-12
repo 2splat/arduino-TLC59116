@@ -1,7 +1,8 @@
 #define TLC59116_h
 
 /*
-  Pins: SDA and SCL of I2C
+  Pins:
+TLC59116: 27:SDA, 26:SCL
 UNO: A4:SDA, A5:SCL
 mega: as marked
 teensy: ...

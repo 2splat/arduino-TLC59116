@@ -1,5 +1,5 @@
 Device := TLC59116
-lib_files := $(shell find -type f -not -path './build/*' -a \( -name '*.cpp' -o -name '*.h' -o -name 'keywords.txt' -o -name '*.ino' -o -name 'README*' \) )
+lib_files := $(shell find . -type f -a -not -path './build/*' -a -not -path './_Inline/*' -a \( -name '*.cpp' -o -name '*.h' -o -name '*.ino' \) ) keywords.txt README.md README.html
 arduino_dir := $(shell which arduino | xargs --no-run-if-empty realpath | xargs --no-run-if-empty dirname)
 arduino_inc_dir := $(arduino_dir)/hardware
 ino_link := $(shell basename `/bin/pwd`).ino
@@ -7,7 +7,7 @@ ino_link := $(shell basename `/bin/pwd`).ino
 # a=`which arduino` && b=`realpath $$a` && echo `dirname $$b`/hardware
 
 .PHONY : all
-all : build_dir README.md ../arduino_$(Device).zip
+all : build_dir README.md arduino_$(Device).zip
 
 .PHONY : clean
 clean : build_dir
@@ -38,9 +38,9 @@ ifneq ($(shell which markdown),)
 endif
 
 .PHONY : zip
-zip : ../arduino_$(Device).zip
+zip : arduino_$(Device).zip
 
-../arduino_$(Device).zip : $(lib_files)
+arduino_$(Device).zip : $(lib_files)
 	rm -rf build/$(Device)
 	mkdir -p build/$(Device)
 	env -u TAPE -u ARCHIVE tar c $(lib_files) | tar x -C build/$(Device)
