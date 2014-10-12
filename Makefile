@@ -1,5 +1,5 @@
 Device := TLC59116
-lib_files := $(shell find . -type f -a -not -path './build/*' -a -not -path './_Inline/*' -a \( -name '*.cpp' -o -name '*.h' -o -name '*.ino' \) ) keywords.txt README.md README.html
+lib_files := $(shell find . -type f -a -not -path './build/*' -a -not -path './_Inline/*' -a \( -name '*.cpp' -o -name '*.h' -o -name '*.ino' \) ) keywords.txt README.md README.html VERSION
 arduino_dir := $(shell which arduino | xargs --no-run-if-empty realpath | xargs --no-run-if-empty dirname)
 arduino_inc_dir := $(arduino_dir)/hardware
 ino_link := $(shell basename `/bin/pwd`).ino
@@ -40,13 +40,19 @@ endif
 .PHONY : zip
 zip : arduino_$(Device).zip
 
-arduino_$(Device).zip : $(lib_files)
+arduino_$(Device).zip : $(lib_files) VERSION
 	rm -rf build/$(Device)
 	mkdir -p build/$(Device)
 	env -u TAPE -u ARCHIVE tar c $(lib_files) | tar x -C build/$(Device)
 	rm $@ 2>/dev/null || true
 	cd build && zip -r arduino_$(Device).zip $(Device)
 	mv build/arduino_$(Device).zip $@
+	rm VERSION
+
+.PHONY : VERSION
+VERSION :
+	echo -n `git branch | grep '*' | awk '{print $$2}'` '' > $@
+	git log -n 1 --pretty='format:%H %ai%n' >> $@
 
 keywords.txt : $(Device).h
 ifeq ($(shell which clang),)
