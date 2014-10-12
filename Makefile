@@ -8,7 +8,7 @@ test_example_srcs := $(shell find examples/test_features -name '*.h' -o -name '*
 # a=`which arduino` && b=`realpath $$a` && echo `dirname $$b`/hardware
 
 .PHONY : all
-all : build_dir VERSION README.html arduino_$(Device).zip
+all : build_dir README.html arduino_$(Device).zip
 
 .PHONY : clean
 clean : build_dir
@@ -72,9 +72,9 @@ VERSION :
 	git log -n 1 --pretty='format:%H %ai%n' >> $@
 
 .PHONY : zip
-zip : all arduino_$(Device).zip README.html VERSION
+zip : all 
 
-arduino_$(Device).zip : $(lib_files)  build_tools/syslibify
+arduino_$(Device).zip : $(lib_files)  build_tools/syslibify VERSION
 	rm -rf build/$(Device) 2>/dev/null || true
 	rm $@ || true
 	mkdir -p build/$(Device)
@@ -86,6 +86,7 @@ arduino_$(Device).zip : $(lib_files)  build_tools/syslibify
 	rm $@ 2>/dev/null || true
 	cd build && zip -r ../$@ $(Device)
 	rm -rf build/$(Device) 2>/dev/null || true
+	rm VERSION
 
 keywords.txt : $(Device).h
 ifeq ($(shell which clang),)
