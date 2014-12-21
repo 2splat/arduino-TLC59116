@@ -33,6 +33,10 @@
   http://e2e.ti.com/support/power_management/led_driver/f/192/t/153172.aspx
   !! This stuff appears to work in a timer-service-routine, but you must (re-)enable interrupts in the isr: sei();
 
+  Consider merging with https://github.com/jrowberg/i2cdevlib
+
+  todo: post to arduino playground
+
 */
 
 #include <Arduino.h>

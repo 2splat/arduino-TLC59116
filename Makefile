@@ -1,5 +1,5 @@
 Device := TLC59116
-lib_files := $(shell find . -type f -a -not -path './build/*' -a -not -path './_Inline/*' -a \( -name '*.cpp' -o -name '*.h' -o -name '*.ino' \) ) keywords.txt VERSION README.md README.html
+lib_files := $(shell find . -type f -a -not -path './build/*' -a -not -path './_Inline/*' -a \( -name '*.cpp' -o -name '*.h' -o -name '*.ino' \) ) keywords.txt VERSION README.md README.html library.properties
 arduino_dir := $(shell which arduino | xargs --no-run-if-empty realpath | xargs --no-run-if-empty dirname)
 arduino_inc_dir := $(arduino_dir)/hardware
 ino_link := $(shell basename `/bin/pwd`).ino
@@ -97,3 +97,6 @@ else
 	env TERM='dumb' clang-check -ast-dump build/$(Device).hpp -- | perl -n build_tools/keyword_make.pm | sort > $@
 	# Ignore .h not found errors
 endif
+
+library.properties : src/library.properties
+	build_tools/cutnpaste_template.pm $< version=1.5 | sed '/^#/ d' > $@
