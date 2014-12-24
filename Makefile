@@ -57,6 +57,7 @@ README.md : $(Device).h
 	awk 'FNR==2,/*\// {if ($$0 != "*/") {print}}' $< | sed 's/^    //' > $@
 	echo >> $@
 	awk '/\/* Use:/,/*\// {if ($$0 == "*/") {next}; sub(/^\/\*/, ""); print}' $< | sed 's/^ //' >> $@
+	cat build_src/README.* >> @
 
 README.html : README.md
 ifeq ($(shell which markdown),)
@@ -98,5 +99,5 @@ else
 	# Ignore .h not found errors
 endif
 
-library.properties : src/library.properties
+library.properties : build_src/library.properties
 	build_tools/cutnpaste_template.pm $< version=1.5 | sed '/^#/ d' > $@
