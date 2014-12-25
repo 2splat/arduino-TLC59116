@@ -107,8 +107,6 @@
   void inline TLC59116LowLevel() {}
 #endif
 
-#include <Arduino.h>
-
 // for .c
 #include <Wire.h> // does nothing in the .h
 extern TwoWire Wire;
@@ -130,6 +128,7 @@ class TLC59116_Unmanaged {
     static const byte SUBADR1      = Base_Addr + 0x09; // +0b1001 Programmable Disabled at on/reset
     static const byte SUBADR2      = Base_Addr + 0x0A; // +0b1010 Programmable Disabled at on/reset
     static const byte Reset_Addr   = Base_Addr + 0x0B; // +0b1011
+      // The byte(s) sent for Reset_Addr are not increment+address, it's a special mode
       static const word Reset_Bytes =  0xA55A;
     static const byte SUBADR3      = Base_Addr + 0x0C; // +0b1100 Programmable Disabled at on/reset
     //                                         + 0x0D .. 0x0F // Unassigned at on/reset
@@ -151,7 +150,6 @@ class TLC59116_Unmanaged {
     static const byte Auto_PWM = 0b10100000; // PWM0_Register .. (Channels-1)
     static const byte Auto_GRP = 0b11000000; // GRPPWM..GRPFREQ
     static const byte Auto_PWM_GRP = 0b11100000; // PWM0_Register..n, GRPPWM..GRPFREQ
-    // The byte(s) sent for Reset_Addr are not increment+address, it's a special mode
 
     // Control Registers FIXME: move to "low level"
     static const byte Control_Register_Min = 0;
@@ -206,13 +204,13 @@ class TLC59116_Unmanaged {
       static byte LEDx_gpwm_bits(byte led_num) {return LEDx_to_Register_bits(led_num, LEDOUT_GRPPWM);}
       static byte LEDx_digital_off_bits(byte led_num) { return 0; }; // no calc needed (cheating)
       static byte LEDx_digital_on_bits(byte led_num) {  return LEDx_to_Register_bits(led_num, LEDOUT_DigitalOn);}
-    //                LEDOUT3_Register = 0x17
+    //                LEDOUT3_Register = 0x17; // cf. LEDOUTx_max. FIXME: maybe the list, maybe a max?
     static const byte SUBADR1_Register = 0x18;
       static byte SUBADRx_Register(byte i) { 
         if (i>3) {TLC59116Dev(F("SUBADRx out of range")); TLC59116Dev();} 
         return SUBADR1_Register - 1 + i; 
         }
-    //                SUBADR3_Register = 0x1A
+    //                SUBADR3_Register = 0x1A; // FIXME: a _max, a list?
     static const byte AllCall_Addr_Register = 0x1B;
     static const byte IREF_Register = 0x1C;
       static const byte IREF_CM_mask = 1<<7;
@@ -225,7 +223,6 @@ class TLC59116_Unmanaged {
         return i_out( iref_value >> 7 & 1, iref_value >> 6 & 1, iref_value & IREF_CC_mask, Rext ); 
         }
       static byte i_out_d(byte CM, byte HC, byte D, int Rext=Rext_Min); // D=CC with bits reversed
-    // for LEDOUTx_Register, see Register_Led_State
     static const byte EFLAG1_Register = 0x1D;
     static const byte EFLAG2_Register = EFLAG1_Register + 1;
     static const byte Control_Register_Max = 0x1E; // NB, no 0x1F !
@@ -238,8 +235,8 @@ class TLC59116_Unmanaged {
   public: // class
 
     // utility
-    static byte normalize_address(byte address) { 
-      if (address <= (Base_Addr - Max_Addr)) // 0..15
+    static byte normalize_address(byte address) { // return a Wire i2c address (7bit)
+      if (address <= (Max_Addr - Base_Addr)) // 0..15
         return Base_Addr+address;
       else if (address >= Base_Addr && address <= Max_Addr) // Wire's I2C address: 0x60...
         return address;
@@ -377,18 +374,14 @@ class TLC59116_Unmanaged {
         byte addresses[Max_Addr - Base_Addr - 2]; // reset/all are excluded, so only 16 possible
     };
 
-    static Scan& scan(void) { // convenince, same as TLC59116::Scan::scanner();
+    static Scan& scan(void) { // convenience, same as TLC59116::Scan::scanner();
       return Scan::scanner();
       };
 
-    class Broadcast {
+    class Broadcast { // FIXME: unused?
       byte dumy;
       };
     
-    class Group1 {byte dumy1;};
-    class Group2 {byte dumy1;};
-    class Group3 {byte dumy1;};
-
 };
 
 

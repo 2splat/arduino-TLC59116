@@ -1,32 +1,66 @@
 #ifndef TLC59116_h
 #define TLC59116_h
 
-// Shadow the devices state, take them into account for high-level operations
-// So you don't have to: less bugs, more convenience.
-// Less confusion by allowing "." instead of "->"
-// Useful "default" forms to get started easier.
-// Warnings/Info available
+/* Description: High-level Arduino library for TI TLC59116 LED Driver over I2C
+
+  See: TLC59116_Unmanaged for lower level library.
+
+  This interface provides a high level interface:
+  * So it's easier to get started (provides useful defaults, etc.).
+  * With supposedly friendly functions.
+  * And allowing the friendlier ".", instead of remembering when to use "->".
+  
+  This interface keeps track of the device(s) state (i.e. output-channel 4 is already "on"):
+  * So you don't have to, which minimizes bugs 
+    (i.e.: only update the bits to turn channel 5 on, without stomping the other channels).
+  * And to optimize communication with the device(s).
+
+  See: README.*, doc/index.html
+
+*/
+
+/* Documentation:
+
+  Documentation is spread throughout these various .h, .cpp, and other files.
+  The full documentation is made/assembled by "make documentation".
+
+  See: Documentation Format
+*/
 
 #include <Arduino.h>
-#include <avr/pgmspace.h>
-#include <Wire.h>
+#include <Wire.h> // Usage.Include+: You have to do this in your .ino also
+#include <avr/pgmspace.h> // Usage.Include+: You have to do this in your .ino also
 #include "TLC59116_Unmanaged.h"
 
 extern TwoWire Wire;
 class TLC59116Manager;
 
-#define WARN TLC59116Warn
+#define WARN TLC59116Warn // FIXME: how about a include? or 2 copies (sed'ed)?
 #define DEV TLC59116Dev
 #define LOWD TLC59116LowLevel
 
 class TLC59116 : public TLC59116_Unmanaged {
-  // High level operations,
-  // Relieves you from having to track/manage the modes/state of each device.
-  // Get one from TLC59116Manager x[]
+  /* Description: High Level interface to a single TLC59116 over Wire interface.
+  */
+
+  /* Protocol:
+
+    FIXME: a beginner protocol, reveal advanced: <advanced> -> folded
+    See @TLC59116Manager.Protocol
+    then
+    * Configure the TLC59116, if needed:
+      FIXME: assemble a list from methods taggged as Configuration (@Tag.Configuration)
+      * config-thingy-description, it's protocol, in-constructor?, defaults, method 
+      FIXME: configure methods should note the default
+      FIXME: configure methods should @include constructor-args
+    * Use the various @Tag.Output methods to control the outputs
+    * Use the @Tag.Miscellaneous methods
+  */
 
   public:
     // No constructor, get from a TLC59116Manager[i]
 
+    // Turn _all_ outputs on/off.
     virtual TLC59116& enable_outputs(bool yes = true, bool with_delay = true); // delay if doing something immediately
     bool is_enable_outputs() { return !is_OSC_bit(shadow_registers[MODE1_Register]); };
     bool is_enabled() { return is_enable_outputs(); }
@@ -34,6 +68,7 @@ class TLC59116 : public TLC59116_Unmanaged {
     // High level
 
     // Digital
+    // FIXME: pattern_bits(bits, which). set_bits(pattern). reset_bits(pattern). on/off/set
     TLC59116& set_outputs(word pattern, word which=0xFFFF); // Only change bits marked in which: to bits in pattern
     TLC59116& pattern(word pattern, word which=0xFFFF) { return set_outputs(pattern, which); }
     TLC59116& set_pattern(word pattern) { return set_outputs(pattern, pattern); } // only set those indicated
@@ -103,7 +138,7 @@ class TLC59116 : public TLC59116_Unmanaged {
     // Addresses should be specified as 0x60..0x6F
 
     // Can't change Reset
-    byte Reset_address() { return shadow_registers[Reset_Addr] >> 1; } // convenience
+    byte Reset_address() { return Reset_Addr >> 1; } // convenience
 
     // allcall is enabled at reset
     TLC59116& allcall_address(byte address, bool enable=true);
@@ -206,31 +241,38 @@ class TLC59116Manager {
   public:
     static const byte MaxDevicesPerI2C = 15; // 16 addresses - reset (subadr1..subadr3 and allcall can be disabled)
   
-    // manager init flags. Default setting should be 1
-    static const byte WireInit = 0b1;
-    static const byte EnableOutputs = 0b10;
-    static const byte Reset = 0b100;
-    static const byte Already = 0b1000; // internal
+    // manager init flags. Default setting should be 1 FIXME: enum?
+    static const byte WireInit = 0b1; // call .begin() on the i2cbus. Unset if you've already done that
+    // After i2c init, and devices reset, turn outputs on (see TLC59116.enable_outputs)
+    static const byte EnableOutputs = 0b10; // device default at on/reset is "outputs disabled"
+    static const byte Reset = 0b100; // reset all devics after i2c init (see TLC59116Manager.reset)
+    static const byte Already = 0b1000; // internal use, leave unset
 
     static const long Default_Frequency = 100000L; // default to 100khz, it's the default for Wire
 
-    // specific to one I2C bus, because reset affects only 1 bus
-    TLC59116Manager(TwoWire &w, // Use the specified i2c bus (shouldn't allow 2 of these on same bus)
-        long frequency = Default_Frequency, // Use 0 to leave frequency (TWBR) alone
-        byte dothings = WireInit | EnableOutputs | Reset // do things by default. disable: 0xFF ^ (X::EnableOutputs | ...)
-        ) : i2cbus(w), init_frequency(frequency) { 
-      this->reset_actions = WireInit | EnableOutputs | Reset;
-      }
-    // convenience I2C bus using Wire, the standard I2C arduino pins
-    TLC59116Manager() : i2cbus(Wire), init_frequency(Default_Frequency) { 
-      this->reset_actions = WireInit | EnableOutputs | Reset; 
-      }
-    // You'll have to write an adaptor for other I2C interfaces
+    // Protocol: * Get a manager via a constructor
+    // Simple constructor, uses Wire (standard I2C pins), 100khz bus speed, resets devices, and enables outputs
+    TLC59116Manager() : i2cbus(Wire), init_frequency(Default_Frequency), reset_actions( WireInit | EnableOutputs | Reset) {}
+    // Allow override of setup
+    // You'll have to write an adaptor for other (non-Wire) I2C interfaces
+    TLC59116Manager(TwoWire &w, // Use the specified i2c bus (e.g. Wire) (shouldn't allow 2 of these on same bus)
+        long frequency = Default_Frequency, // hz. (Screws With:) This screws with TWBR 
+        byte dothings = WireInit | EnableOutputs | Reset // Do things now and at reset()
+        ) : i2cbus(w), init_frequency(frequency), reset_actions(dothings) { }
 
-    // You have to call this (usually in setup)
+    // Protocol: * You have to call .init() at run-time (usually in setup)
+    /* Does the things indicated by the constructor's "dothings":
+      * inits the i2c bus (see Wire.init())
+      * set i2c frequency (TWBR)
+      * finds devices (See TLC59116Manager.scan)
+      * resets all devices (See TLC59116Manager.reset)
+      * enables outputs on all devices (See TLC59116.enable_outputs)
+      NB: Only acts if !is_inited() (i.e. .init() is only usable once)
+    */
     void init();
-    bool is_inited() { return !!(this->reset_actions & Already); }
+    bool is_inited() { return !!(this->reset_actions & Already); } // you can check if .init() was called already
 
+    // Protocol: * Get a specific device with themanager[i]
     // Get the 0th, 1st, 2nd, etc. device (index, not by i2c-address). In address order.
     // Can return null if index is out of range, or there are none!
     // Pattern: TLC59116& first = manager[0]; // Note the '&'
@@ -248,15 +290,18 @@ class TLC59116Manager {
     byte device_count() { return device_ct; } // you can iterate
 
   public: // global things
-    int reset(); // 0 is success, does enable_outputs if init(...EnableOutputs...)
+    // Protocol: * OR get the .broadcast() object that sends the same command to all devices
     TLC59116::Broadcast& broadcast() { static TLC59116::Broadcast x(Wire, *this); return x; }
+
+    // Protocol: * Reset all devices with .reset(), when desired
+    int reset(); // 0 is success, does enable_outputs if init(...EnableOutputs...)
 
     // consider: is_SUBADR(). has to track all devices subaddr settings (value & enabled)
 
   private:
     TLC59116Manager(const TLC59116Manager&); // undefined
     TLC59116Manager& operator=(const TLC59116Manager&); // undefined
-    int scan();
+    int scan(); // client code can't rescan
 
     // Specific bus
     TwoWire &i2cbus;
@@ -267,8 +312,8 @@ class TLC59116Manager {
     TLC59116* devices[MaxDevicesPerI2C]; // that's 420 bytes of ram
     byte device_ct;
 
+    // We have to store the power-up values, so we can set our shadows to them on reset
     static const prog_uchar Power_Up_Register_Values[TLC59116::Control_Register_Max+1] PROGMEM;
-
   };
 
 #endif

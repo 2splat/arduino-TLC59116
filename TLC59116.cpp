@@ -35,7 +35,10 @@ void TLC59116::reset_happened() {
 
 void TLC59116Manager::init() {
   // Only once. We are mean.
-  if (this->reset_actions & Already) { WARN(F("Manager already Inited for i2c ")); WARN((unsigned long)&i2cbus, HEX); WARN(); return; }
+  if (this->reset_actions & Already) { 
+    WARN(F("Manager already Inited for i2c ")); WARN((unsigned long)&i2cbus, HEX); WARN(); 
+    return; 
+    }
   this->reset_actions |= Already;
   WARN(F("Init i2cbus "));WARN((unsigned long)&i2cbus, HEX);WARN(F(" "));WARN(init_frequency);WARN(F("hz "));WARN(reset_actions,BIN);WARN();
 
