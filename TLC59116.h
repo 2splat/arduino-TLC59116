@@ -1,6 +1,9 @@
 #ifndef TLC59116_h
 #define TLC59116_h
 
+// demo commentz
+// FIXME: insert version here
+
 /* Description: High-level Arduino library for TI TLC59116 LED Driver over I2C
 
   See: TLC59116_Unmanaged for lower level library.
@@ -32,12 +35,17 @@
 #include <avr/pgmspace.h> // Usage.Include+: You have to do this in your .ino also
 #include "TLC59116_Unmanaged.h"
 
+// more dumy comments
+/* dumy */
 extern TwoWire Wire;
 class TLC59116Manager;
 
 #define WARN TLC59116Warn // FIXME: how about a include? or 2 copies (sed'ed)?
 #define DEV TLC59116Dev
 #define LOWD TLC59116LowLevel
+
+/* dumy */
+// more dumy comments
 
 class TLC59116 : public TLC59116_Unmanaged {
   /* Description: High Level interface to a single TLC59116 over Wire interface.
@@ -61,7 +69,10 @@ class TLC59116 : public TLC59116_Unmanaged {
     // No constructor, get from a TLC59116Manager[i]
 
     // Turn _all_ outputs on/off.
-    virtual TLC59116& enable_outputs(bool yes = true, bool with_delay = true); // delay if doing something immediately
+    virtual TLC59116& enable_outputs(
+      bool yes = true,  // false to disable outputs
+      bool with_delay = true // delay if doing something immediately
+      );
     bool is_enable_outputs() { return !is_OSC_bit(shadow_registers[MODE1_Register]); };
     bool is_enabled() { return is_enable_outputs(); }
 
@@ -94,17 +105,19 @@ class TLC59116 : public TLC59116_Unmanaged {
     TLC59116& pwm(const byte brightness[16]) { return set_outputs(0,15, brightness); }
     // fixme: maybe brightness()?
     
-    // "group" functions have a bug:
-    // If you decrease the value (blink_time or brightness),
-    // The chip may act like the value is max for one "cycle".
-    // This causes a full-brightness result for group_pwm, and a 10 second blink-length for group_blink.
-    // I think this is because:
-    // * There is a continously running timer, counting up.
-    // * The "value" is compared to the timer, and triggers the action and a reset of the timer.
-    // * If you move the "value" down, you may skip over the current timer value,
-    //    so it runs to the maximum value before wrapping around again.
-    // "reset" is the only thing that I know of that will reset the timer.
-    // But, more experimentation is needed.
+    /* Group Functions:
+    "group" functions have a bug:
+    If you decrease the value (blink_time or brightness),
+    The chip may act like the value is max for one "cycle".
+    This causes a full-brightness result for group_pwm, and a 10 second blink-length for group_blink.
+    I think this is because:
+    * There is a continously running timer, counting up.
+    * The "value" is compared to the timer, and triggers the action and a reset of the timer.
+    * If you move the "value" down, you may skip over the current timer value,
+       so it runs to the maximum value before wrapping around again.
+    "reset" is the only thing that I know of that will reset the timer.
+    But, more experimentation is needed.
+    */
 
     // Superpose group-pwm on current pwm setting (but, current should be 255 for best results)
     // FIXME: has a hardware bug

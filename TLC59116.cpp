@@ -40,11 +40,14 @@ void TLC59116Manager::init() {
     return; 
     }
   this->reset_actions |= Already;
-  WARN(F("Init i2cbus "));WARN((unsigned long)&i2cbus, HEX);WARN(F(" "));WARN(init_frequency);WARN(F("hz "));WARN(reset_actions,BIN);WARN();
+  WARN(F("Init <i2cbus "));WARN((unsigned long)&i2cbus, HEX);WARN(F("> "));WARN(init_frequency);WARN(F("hz actions:"));WARN(reset_actions,BIN);WARN();
 
   if (reset_actions & WireInit) i2cbus.begin();
   // don't know how to set other WIRE interfaces
-  if (&i2cbus == &Wire && init_frequency != 0) TWBR = ((F_CPU / init_frequency) - 16) / 2; // AFTER wire.begin
+  if (&i2cbus == &Wire && init_frequency != 0) 
+    {
+    TWBR = ((F_CPU / init_frequency) - 16) / 2; // AFTER wire.begin
+    }
   else {WARN(F("Don't know how to set i2c frequency for non Wire"));WARN();}
 
   // NB. desired-frequency and actual, may not match

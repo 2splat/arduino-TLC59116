@@ -24,6 +24,18 @@
 
   TLC59208F : 4channel, similar, pin changes, up to 64 devices, etc.
 
+  Dandelion address jumpers:
+    These are unassigned:
+    A B C D
+    0-7
+    0 0 0 0
+    0 0 0 1 = 0x61
+      ...
+    0 1 1 1
+    D-F
+    1 1 0 1
+    1 1 1 1
+
   !! erratic flashes seen when using GRPPWM and decreasing it over time
       claimed to happen at same point every time (speed dependant I think)
   !! I see flickering when: many LEDs (14) are pwm on fairly dim (20), and I on/off blink another LED.
@@ -363,7 +375,7 @@ class TLC59116_Unmanaged {
         // You should call TLC59116.reset() first (as appropriate),
         // Otherwise, this reads the current state.
         // Scan::scanner.print() is useful with this.
-        Scan& rescan(); 
+        Scan& rescan();  // FIXME: not defined, steal back from TLC59116?
 
       private:
         Scan() {
@@ -374,7 +386,7 @@ class TLC59116_Unmanaged {
         byte addresses[Max_Addr - Base_Addr - 2]; // reset/all are excluded, so only 16 possible
     };
 
-    static Scan& scan(void) { // convenience, same as TLC59116::Scan::scanner();
+    static Scan& scan(void) { // convenience, same as TLC59116_Unmanaged::Scan::scanner();
       return Scan::scanner();
       };
 
