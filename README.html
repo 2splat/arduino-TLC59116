@@ -1,53 +1,20 @@
 <h1>define TLC59116_h</h1>
 
-<p>// Shadow the devices state, take them into account for high-level operations
-// So you don't have to: less bugs, more convenience.
-// Less confusion by allowing "." instead of "->"
-// Useful "default" forms to get started easier.
-// Warnings/Info available</p>
+<p>// demo commentz
+// FIXME: insert version here</p>
 
-<h1>include <Arduino.h></h1>
+<p>/* Description: High-level Arduino library for TI TLC59116 LED Driver over I2C</p>
 
-<h1>include <avr/pgmspace.h></h1>
+<p>See: TLC59116_Unmanaged for lower level library.</p>
 
-<h1>include <Wire.h></h1>
+<p>This interface provides a high level interface:
+  * So it's easier to get started (provides useful defaults, etc.).
+  * With supposedly friendly functions.
+  * And allowing the friendlier ".", instead of remembering when to use "->".</p>
 
-<h1>include "TLC59116_Unmanaged.h"</h1>
+<p>This interface keeps track of the device(s) state (i.e. output-channel 4 is already "on"):
+  * So you don't have to, which minimizes bugs 
+(i.e.: only update the bits to turn channel 5 on, without stomping the other channels).
+  * And to optimize communication with the device(s).</p>
 
-<p>extern TwoWire Wire;
-class TLC59116Manager;</p>
-
-<h1>define WARN TLC59116Warn</h1>
-
-<h1>define DEV TLC59116Dev</h1>
-
-<h1>define LOWD TLC59116LowLevel</h1>
-
-<p>class TLC59116 : public TLC59116_Unmanaged {
-  // High level operations,
-  // Relieves you from having to track/manage the modes/state of each device.
-  // Get one from TLC59116Manager x[]</p>
-
-<p>public:
-// No constructor, get from a TLC59116Manager[i]</p>
-
-<p>virtual TLC59116&amp; enable<em>outputs(bool yes = true, bool with</em>delay = true); // delay if doing something immediately
-bool is<em>enable</em>outputs() { return !is<em>OSC</em>bit(shadow<em>registers[MODE1</em>Register]); };
-bool is<em>enabled() { return is</em>enable_outputs(); }</p>
-
-<p>// High level</p>
-
-<p>// Digital
-TLC59116&amp; set<em>outputs(word pattern, word which=0xFFFF); // Only change bits marked in which: to bits in pattern
-TLC59116&amp; pattern(word pattern, word which=0xFFFF) { return set</em>outputs(pattern, which); }
-TLC59116&amp; set<em>pattern(word pattern) { return set</em>outputs(pattern, pattern); } // only set those indicated
-TLC59116&amp; reset<em>pattern(word pattern) { return set</em>outputs(~pattern, pattern); } // only turn-off those indicated
-TLC59116&amp; set(int led<em>num, bool offon) {  // only turn-off one
-  word bits = 1 &lt;&lt; led</em>num;
-  return set<em>outputs(offon ? bits : ~bits, bits); 
-  }
-TLC59116&amp; on(int led</em>num) { return set(led<em>num, true); } // turn one on
-TLC59116&amp; off(int led</em>num) { return set(led_num, false); } // turn one off</p>
-
-<p>// PWM
-TLC59116&amp; set<em>outputs(byte led</em>num<em>start, byte led</em>num<em>end, const byte brightness[] /*[start..end]*/); // A list of PWM values. Tolerates led</em>num_end>15 which wraps around</p>
+<p>See: README.*, doc/index.html</p>

@@ -1,10 +1,12 @@
 Obtaining:
 Should be in github as https://github.com/2splat/arduino-TLC59116
 You only need the arduino_TLC59116.zip if you are a user. NOT the "download zip" button!
+Developers, of course, should checkout (or download the .zip).
 
 Installing:
 All Platforms:
 Download the arduino_TLC59116.zip (not the "download zip" button).
+    https://github.com/2splat/arduino-TLC59116/raw/layers/arduino_TLC59116.zip
 In the arduino-ide, use the "sketch" menu, 'import library...:add library' entry,
 navigate to the downloaded .zip (usually in your Downloads folder), 'open'.
 
@@ -15,6 +17,7 @@ located in your "sketchbooks" directory.
     On windows, it should be in your Documents,
     On linux it's in ~/sketchbooks,
     On mac, ?
+Quit restart the Arduino IDE.
 Then do Installing above.
 
 Making. Assumes linux.
