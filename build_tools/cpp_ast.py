@@ -119,8 +119,12 @@ class CppDoc:
         pprint(('diags', map(get_diag_info, (d for d in self.tu.diagnostics if not re.search('__progmem__',d.spelling)))))
         # pprint(('nodes', get_info(this.tu.cursor)))
         self.visit(self.tu.cursor)
+        print("---REVISIT");
+        self.revisit_for_toplevel_comments()
 
     def visit(self, node, depth=[]):
+        if self._visits > 25:
+            return
         if self.max_depth is not None and len(depth) > self.max_depth:
             print "<skip>"
             return
@@ -128,51 +132,10 @@ class CppDoc:
                 pass
         elif ((node.location.file and self.filename == node.location.file.name)
                 or node.kind == clang.cindex.CursorKind.TRANSLATION_UNIT):
+            self._visits = self._visits + 1
             if node.location.file:
                 print "Insert thingy"
                 print "RC: %s" % node.raw_comment
-                
-                # first statement, there may be comments before this, and clang doesn't ast them
-                if False and self.first_statement:
-                    self.first_statement = False
-                    with open(self.filename) as f:
-                        block_start = None
-                        for i,l in enumerate(f):
-                            if i+1 >= node.extent.start.line:
-                                break
-
-                            if block_start:
-                                line_comment = l.find('*/')
-                                if line_comment != -1:
-                                    was = self.source_text.insert_extent(
-                                        CppDoc_Extents.Minimalist_SourceRange(
-                                            CppDoc_Extents.Minimalist_SourceLocation(block_start[0]+1, block_start[1]+1),
-                                            CppDoc_Extents.Minimalist_SourceLocation(i+1, line_comment+1)
-                                            )
-                                        )
-                                    print "Pre block: %s" % was
-                                    block_start = None
-
-                                continue
-
-                            # if re.match('\s*#',l): # pre-processor. FIXME: pick these off for #include, etc.
-                            #    continue
-
-                            line_comment = l.find('//')
-                            if line_comment != -1:
-                                self.source_text.insert_extent(
-                                    CppDoc_Extents.Minimalist_SourceRange(
-                                        CppDoc_Extents.Minimalist_SourceLocation(i+1, line_comment+1),
-                                        CppDoc_Extents.Minimalist_SourceLocation(i+1, len(l))
-                                        )
-                                    )
-                                continue;
-
-                            line_comment = l.find('/*')
-                            if line_comment != -1:
-                                block_start = [i, line_comment]
-
-                            sys.stdout.write( "PRE %s: %s" % (i+1,l))
                     
                 pprint(self.visitor.describe(node,[]))
                 this_extent_o = self.source_text.insert_extent(node.extent, node)
@@ -180,7 +143,11 @@ class CppDoc:
                     # if tok.spelling.startswith('//') or tok.spelling.startswith('/*'):
                     if tok.kind == clang.cindex.TokenKind.COMMENT:
                         # print "  T %s" % tok.spelling
-                        print "Insert "+CppDoc_Visitors.Raw.describe_short(tok,False)
+                        sys.stdout.write("@%s['%s'] %s" % (
+                            self._visits, 
+                            CppDoc_Visitors.Raw.describe_extent(tok), 
+                            CppDoc_Visitors.Raw.describe_short(tok,False)
+                            ))
                         this_extent_o.insert_extent(tok.extent)
                     else:
                         # print "Insert parsed %s" % CppDoc_Visitors.Raw.describe_short(tok)
@@ -191,11 +158,6 @@ class CppDoc:
                         
             sys.stdout.write("@%s" % self._visits)
             print_node_short(node, depth) if self.visitor==None else self.visitor.print_node(node, depth)
-            self._visits = self._visits + 1
-            if self._visits > 25:
-                print("---%s-" % (self._visits-1))
-                self.print_extents()
-                exit(1)
 
             # only for method/fn decl/def/use:
             for arg_element in node.get_arguments():
@@ -206,6 +168,9 @@ class CppDoc:
                 path = depth[:]
                 path.append(node)
                 self.visit(x, path)
+
+            if node.kind == clang.cindex.CursorKind.TRANSLATION_UNIT:
+                print "END TU"
 
     @property
     def file_lines(self):
@@ -223,16 +188,109 @@ class CppDoc:
             # for a_line in self.file_lines[ source_range.start.line-1 : source_range.end.line ]:
             source_first = source_range.start.line-1
             source_last = source_range.end.line-1
-            print "source_last %s" % source_last
+            # print "source_last %s" % source_last
             for i in range( source_first,source_last+1):
                 a_line = self.file_lines[i]
                 line_start = source_range.start.column-1 if i==source_first else 0
                 line_end = source_range.end.column if i==source_last else len(a_line)
-                print ":: %s:%s<%s> %s" % (line_start, line_end, i, a_line[ line_start:  line_end ])
+                # print ":: %s:%s<%s> %s" % (line_start, line_end, i, a_line[ line_start:  line_end ])
                 rez.append( a_line[ line_start :  line_end])
             return(rez)
         else:
-            print "Noooo: have %s lines from %s, but wanted %s" % (len(self.file_lines),self.filename, source_range)
+            raise Exception(
+                "Noooo: have %s lines from %s, but wanted %s" % (len(self.file_lines),self.filename, source_range)
+                )
+
+    def revisit_for_toplevel_comments(self):
+        # only for top level
+        print self.source_text.describe_short(full_token=False)
+        
+        prev_end = CppDoc_Extents.Minimalist_SourceLocation(
+            self.source_text.start.line,
+            self.source_text.start.column-1
+            )
+        for sub_extent in self.source_text.internal_extent:
+            print "  " + sub_extent.describe_short(full_token=False)
+            if CppDoc_Extents.Minimalist_SourceLocation.__gt__(sub_extent.start, prev_end):
+                gap = CppDoc_Extents.Minimalist_SourceRange(
+                    CppDoc_Extents.Minimalist_SourceLocation(prev_end.line, prev_end.column+1),
+                    CppDoc_Extents.Minimalist_SourceLocation(sub_extent.start.line, sub_extent.start.column-1)
+                    )
+                print "    gap %s" % gap
+                gap_lines = self.file_chunk(gap)
+                for l in gap_lines:
+                    sys.stdout.write("::")
+                    sys.stdout.write(l)
+                for c in self.comments_in_lines(gap.start,gap_lines):
+                    # print "C:",c.spelling # describe
+                    print "[%s] %s" % (
+                            CppDoc_Visitors.Raw.describe_extent(c), 
+                            CppDoc_Visitors.Raw.describe_short(c,False)
+                            )
+            prev_end = sub_extent.end
+
+    def comments_in_lines(self, start_location, lines):
+        # generator returning comments
+        comment_node = None # in block (multi-line) comment?
+
+        for i,l in enumerate(lines):
+            if comment_node:
+                block_end = re.search('\*/',l)
+                if block_end:
+                    comment_node.spelling.append( l[0:block_end.end()] )
+                    comment_node.extent.end = CppDoc_Extents.Minimalist_SourceLocation(
+                        start_location.line + i, block_end.end()
+                        )
+                    comment_node.spelling = "".join(comment_node.spelling)
+                    yield comment_node
+                    print "<endblock>"
+                    comment_node = None
+
+                    # fall through, might have // at end!
+                    l = l[block_end.end()+1:]
+                else:
+                    comment_node.spelling.append(l)
+                    continue
+
+            linecomment = re.search('//',l)
+            if linecomment:
+                lc_extent = CppDoc_Extents.Minimalist_SourceRange.from_line_columns(
+                        start_location.line + i, start_location.column + linecomment.start(),
+                         start_location.line + i, len(l)
+                        )
+                print lc_extent.__class__.__name__
+                yield CppDoc.Comment_Node(
+                    spelling = l[linecomment.start():],
+                    extent = lc_extent,
+                    location = lc_extent.start,
+                    )
+                continue
+
+            block_start = re.search('/\*',l)
+            if block_start:
+                print "<blockstart>"
+                block_end = re.search('\*/',l)
+                bend = block_end.end() if block_end else len(l)
+                ### 
+                extent = CppDoc_Extents.Minimalist_SourceRange.from_line_columns(
+                        start_location.line + i, start_location.column + block_start.start(),
+                        0,0
+                        )
+                comment_node = CppDoc.Comment_Node(
+                    spelling = [ l[block_start.start():bend] ], # list of strings, join later
+                    extent = extent,
+                    location = extent.start,
+                    )
+                if block_end:
+                    # 1 line
+                    comment_node.extent.end = CppDoc_Extents.Minimalist_SourceLocation(
+                        start_location.line + i, bend + (start_location.column if i==0 else 0)
+                        )
+                    comment_node.spelling = "".join(comment_node.spelling)
+                    yield comment_node
+                    print "<shortblock>"
+                    comment_node = None
+                continue
 
     def print_extents(self, extent=None, depth=0):
         if not extent:
@@ -240,6 +298,17 @@ class CppDoc:
         print ("  " * depth) + extent.describe_short(full_token=False)
         for sub_extent in extent.internal_extent:
             self.print_extents(sub_extent, depth+1)
+
+    class Comment_Node:
+        def __init__(self, location, spelling, extent):
+            self.location = location
+            self.extent = extent
+            self.spelling = spelling
+
+        @property
+        def kind(self):
+            return clang.cindex.TokenKind.COMMENT
+
 
 def range_diff(a,b):
     print "diff %s - %s" % (a,b)
@@ -251,6 +320,13 @@ class CppDoc_Extents:
 
 
     class Minimalist_SourceRange:
+        @classmethod
+        def from_line_columns(self, start_line, start_column, end_line, end_column):
+            return CppDoc_Extents.Minimalist_SourceRange(
+                CppDoc_Extents.Minimalist_SourceLocation(start_line, start_column),
+                CppDoc_Extents.Minimalist_SourceLocation(end_line, end_column)
+                )
+
         def __init__(self, start=None, end=None):
             self.start = start if start else CppDoc_Extents.Minimalist_SourceLocation()
             self.end = end if end else CppDoc_Extents.Minimalist_SourceLocation()
@@ -270,6 +346,10 @@ class CppDoc_Extents:
 
         def __repr__(self):
             return "<%s %s:%s>" % (self.__class__.__name__, self.line,self.column)
+
+        @classmethod
+        def __gt__(self,a,b):
+            return a.line > b.line or a.column > b.column
 
     def __sub__(a,b):
         print "diff %s - %s" % (a,b)
@@ -683,7 +763,7 @@ def main():
             vc = getattr(vc, pieces.pop(0))
     print "Visitor %s" % vc
     parsed = CppDoc(args[0], opts.includePaths.split(','), visitor=vc)
-    print "---"
+    print("---%s-" % (parsed._visits-1))
     parsed.print_extents()
 
 if __name__ == '__main__':

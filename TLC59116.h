@@ -35,19 +35,22 @@
 #include <avr/pgmspace.h> // Usage.Include+: You have to do this in your .ino also
 #include "TLC59116_Unmanaged.h"
 
-// more dumy comments
+// dumy before 1st statement - captured
 /* dumy */
 extern TwoWire Wire;
-class TLC59116Manager;
+/* dumy- block comments not captured after first statement */
+class TLC59116Manager; /* dumy trailing block */
 
 #define WARN TLC59116Warn // FIXME: how about a include? or 2 copies (sed'ed)?
 #define DEV TLC59116Dev
 #define LOWD TLC59116LowLevel
+// dumy - captured
 
 /* dumy */
-// more dumy comments
+// dumy - not captured (after block?)
 
 class TLC59116 : public TLC59116_Unmanaged {
+  // inside a block, all comments captured
   /* Description: High Level interface to a single TLC59116 over Wire interface.
   */
 
@@ -225,12 +228,13 @@ class TLC59116 : public TLC59116_Unmanaged {
   };
 
 class TLC59116::Broadcast : public TLC59116 {
-  public: //
+  public:
     Broadcast(TwoWire &bus, TLC59116Manager& m) : TLC59116(bus, TLC59116::AllCall_Addr, m) {}
 
     Broadcast& enable_outputs(bool yes = true, bool with_delay = true);
 
   private:
+    // odd, the trailing comment next is not captured (cons/decons?)
     Broadcast(); // none
     Broadcast(const Broadcast&); // none
     Broadcast& operator=(const TLC59116&); // none
@@ -300,7 +304,7 @@ class TLC59116Manager {
         return *(devices[index]);
         } 
       }
-    byte device_count() { return device_ct; } // you can iterate
+    byte device_count() { return device_ct; } // you can iterate. FIXME: implement interator protocol
 
   public: // global things
     // Protocol: * OR get the .broadcast() object that sends the same command to all devices
