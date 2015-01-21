@@ -10,10 +10,10 @@ class BlinkTracking {
   // At time=at, set the output-channels to on/off depending on 'to'.
   // Then set the next 'at' (based in 'index') and 'to'
 
-  const static int On_Time = 3; // elapsed from beginning of cycle. empirical to keep led on very short
-  const static int Interblink = 300; // off time
-  const static int Intercount = 500; // the pause
-  const static long Output_Bits = 0xF; // just the first 4 (0..3). several, so it's easy to alligator clip.
+  static const int On_Time = 3; // elapsed from beginning of cycle. empirical to keep led on very short
+  static const int Interblink = 300; // off time
+  static const int Intercount = 500; // the pause
+  static const long Output_Bits = 0xF; // just the first 4 (0..3). several, so it's easy to alligator clip.
 
   unsigned long at;
   byte to;   // 0 is intercount, odd is on, even is off
