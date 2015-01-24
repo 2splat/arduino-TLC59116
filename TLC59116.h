@@ -42,7 +42,7 @@ extern TwoWire Wire;
 class TLC59116Manager; /* dumy trailing block */
 
 #define WARN TLC59116Warn // FIXME: how about a include? or 2 copies (sed'ed)?
-#define DEV TLC59116Dev
+#define DEV TLC59116Dev 
 #define LOWD TLC59116LowLevel
 // dumy - captured
 

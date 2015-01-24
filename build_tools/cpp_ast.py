@@ -91,7 +91,7 @@ def inside_range(a,b):
 class CppDoc:
     # we know about c++
     
-    def __init__(self, filename, include_paths=[], clang_args=[], visitor=None, max_depth=None):
+    def __init__(self, filename, include_paths=[], clang_args=[], visitor=None, max_depth=None, debug_limit=None):
         from glob import glob
 
         for x in include_paths:
@@ -115,6 +115,7 @@ class CppDoc:
         self.visitor = visitor(self)
         self._visits = 0
         self.first_statement = True 
+        self.debug_limit = debug_limit
 
         pprint(('diags', map(get_diag_info, (d for d in self.tu.diagnostics if not re.search('__progmem__',d.spelling)))))
         # pprint(('nodes', get_info(this.tu.cursor)))
@@ -123,7 +124,17 @@ class CppDoc:
         self.revisit_for_toplevel_comments()
 
     def visit(self, node, depth=[]):
-        if self._visits > 25:
+        # Not actually "visit", but "build ast"
+        # NB: a node may be visited more than once.
+        # Specifically, comments (seen as node.getTokens()) will be seen
+        #       for a class (all internal comments)
+        #       then again for a declaration
+        #       and again for elements of the declaration
+        # Further, there seems to be a bug where a macro use will give
+        #       the token stream starting at the #define!
+        #       Each time!
+        #       Thus, you'll see the comments n times
+        if self.debug_limit and self._visits > self.debug_limit:
             return
         if self.max_depth is not None and len(depth) > self.max_depth:
             print "<skip>"
@@ -140,15 +151,19 @@ class CppDoc:
                 pprint(self.visitor.describe(node,[]))
                 this_extent_o = self.source_text.insert_extent(node.extent, node)
                 for tok in node.get_tokens():
-                    # if tok.spelling.startswith('//') or tok.spelling.startswith('/*'):
                     if tok.kind == clang.cindex.TokenKind.COMMENT:
                         # print "  T %s" % tok.spelling
-                        sys.stdout.write("@%s['%s'] %s" % (
+                        outline = "@%s['%s'] %s" % (
                             self._visits, 
                             CppDoc_Visitors.Raw.describe_extent(tok), 
                             CppDoc_Visitors.Raw.describe_short(tok,False)
-                            ))
-                        this_extent_o.insert_extent(tok.extent)
+                            )
+                        sys.stdout.write(outline)
+                        if outline[-1] != "\n":
+                            print ''
+                        # this_extent_o.insert_extent(tok.extent)
+                        self.insert_toplevel_node(tok)
+                        # sys.stdout.write("-comment inserted")
                     else:
                         # print "Insert parsed %s" % CppDoc_Visitors.Raw.describe_short(tok)
                         # this_extent_o.insert_extent(tok.extent, tok)
@@ -209,8 +224,9 @@ class CppDoc:
             self.source_text.start.line,
             self.source_text.start.column-1
             )
-        for sub_extent in self.source_text.internal_extent:
-            print "  " + sub_extent.describe_short(full_token=False)
+        to_insert = []
+        for si, sub_extent in enumerate(self.next_used_chunk(self.source_text)): # was sub_extent
+            print "  <%s> %s" % (si, sub_extent.describe_extents())
             if CppDoc_Extents.Minimalist_SourceLocation.__gt__(sub_extent.start, prev_end):
                 gap = CppDoc_Extents.Minimalist_SourceRange(
                     CppDoc_Extents.Minimalist_SourceLocation(prev_end.line, prev_end.column+1),
@@ -218,36 +234,81 @@ class CppDoc:
                     )
                 print "    gap %s" % gap
                 gap_lines = self.file_chunk(gap)
-                for l in gap_lines:
-                    sys.stdout.write("::")
-                    sys.stdout.write(l)
+                # for l in gap_lines:
+                #     sys.stdout.write("::")
+                #     sys.stdout.write(l)
                 for c in self.comments_in_lines(gap.start,gap_lines):
                     # print "C:",c.spelling # describe
                     print "[%s] %s" % (
                             CppDoc_Visitors.Raw.describe_extent(c), 
                             CppDoc_Visitors.Raw.describe_short(c,False)
                             )
+                    to_insert.append(c)
             prev_end = sub_extent.end
+        for c in to_insert:
+            self.insert_toplevel_node(c)
+        print "<end revisit>"
+
+    def next_used_chunk(self, extent):
+        print "used for [%s]..." % CppDoc_Visitors.Raw.describe_extent(extent)
+        for n in extent.internal_extent:
+            print "  used [%s], has %s[]" % (CppDoc_Visitors.Raw.describe_extent(n), len(n.internal_extent))
+            yield n.extent # top level...
+            if len(n.internal_extent) > 0:
+                print "    0th is %s" % CppDoc_Visitors.Raw.describe_extent(n.internal_extent[0])
+            if (
+                len(n.internal_extent) > 0 
+                and CppDoc_Extents.Minimalist_SourceLocation.__gt__(
+                    n.internal_extent[0].start,n.end
+                )):
+                print "    not encompassed in used: [%s]" % CppDoc_Visitors.Raw.describe_extent(n.internal_extent[0])
+                for x in self.next_used_chunk(n):
+                    yield x
+
+    def insert_toplevel_node(self,node):
+        inserted = False
+        for i,tn in enumerate(self.source_text.internal_extent):
+            if CppDoc_Extents.Minimalist_SourceLocation.__gt__(tn.start, node.location):
+                # print tn.node.describe_short()
+                # print "insert " + CppDoc_Visitors.Raw.describe_extent(node)
+                # print "before [%s] %s" % (i, CppDoc_Visitors.Raw.describe_short(tn.node))
+                # print "Make ccpde w %s %s" % (tn.extent,tn)
+                new_e = CppDoc_Extents(node.extent,None,self)
+                self.source_text.internal_extent.insert(i,new_e)
+                inserted = True
+                break
+            elif tn.extent == node.extent:
+                # print "Duplicate comment %s" % tn
+                inserted = True
+                break
+
+        if not inserted:
+            new_e = CppDoc_Extents(node.extent,None,self)
+            self.source_text.internal_extent.append(new_e)
 
     def comments_in_lines(self, start_location, lines):
         # generator returning comments
         comment_node = None # in block (multi-line) comment?
 
         for i,l in enumerate(lines):
-            if comment_node:
+            start_offset = start_location.column - 1 if i==0 else 0
+            if comment_node: # in /*...*/
                 block_end = re.search('\*/',l)
                 if block_end:
-                    comment_node.spelling.append( l[0:block_end.end()] )
+                    comment_node.spelling.append( l[start_offset:block_end.end()+start_offset] )
                     comment_node.extent.end = CppDoc_Extents.Minimalist_SourceLocation(
-                        start_location.line + i, block_end.end()
+                        start_location.line + i, block_end.end() + start_offset
                         )
                     comment_node.spelling = "".join(comment_node.spelling)
+
                     yield comment_node
-                    print "<endblock>"
+
+                    # print "<endblock>"
                     comment_node = None
 
                     # fall through, might have // at end!
-                    l = l[block_end.end()+1:]
+                    start_offset = block_end.end()+start_offset
+                    l = l[start_offset+1:]
                 else:
                     comment_node.spelling.append(l)
                     continue
@@ -255,10 +316,9 @@ class CppDoc:
             linecomment = re.search('//',l)
             if linecomment:
                 lc_extent = CppDoc_Extents.Minimalist_SourceRange.from_line_columns(
-                        start_location.line + i, start_location.column + linecomment.start(),
-                         start_location.line + i, len(l)
+                        start_location.line + i, start_offset + linecomment.start()+1,
+                        start_location.line + i, len(l)-1 + start_offset +1
                         )
-                print lc_extent.__class__.__name__
                 yield CppDoc.Comment_Node(
                     spelling = l[linecomment.start():],
                     extent = lc_extent,
@@ -268,12 +328,12 @@ class CppDoc:
 
             block_start = re.search('/\*',l)
             if block_start:
-                print "<blockstart>"
+                # print "<blockstart>"
                 block_end = re.search('\*/',l)
                 bend = block_end.end() if block_end else len(l)
-                ### 
+
                 extent = CppDoc_Extents.Minimalist_SourceRange.from_line_columns(
-                        start_location.line + i, start_location.column + block_start.start(),
+                        start_location.line + i, block_start.start() + start_offset + 1,
                         0,0
                         )
                 comment_node = CppDoc.Comment_Node(
@@ -284,11 +344,11 @@ class CppDoc:
                 if block_end:
                     # 1 line
                     comment_node.extent.end = CppDoc_Extents.Minimalist_SourceLocation(
-                        start_location.line + i, bend + (start_location.column if i==0 else 0)
+                        start_location.line + i, bend + start_offset +1
                         )
                     comment_node.spelling = "".join(comment_node.spelling)
                     yield comment_node
-                    print "<shortblock>"
+                    # print "<shortblock>"
                     comment_node = None
                 continue
 
@@ -349,7 +409,8 @@ class CppDoc_Extents:
 
         @classmethod
         def __gt__(self,a,b):
-            return a.line > b.line or a.column > b.column
+            # print "gt: %s (%s) > %s (%s) ? %s" % (a, a.line.__class__.__name__, b, b.line.__class__.__name__, a.line>b.line)
+            return a.line > b.line or (a.line==b.line and a.column > b.column)
 
     def __sub__(a,b):
         print "diff %s - %s" % (a,b)
@@ -381,7 +442,6 @@ class CppDoc_Extents:
 
     # a tree of extents, for one file, with lookup
     # has 'parsed' and 'unparsed' pieces
-    # Answers given(node), what unparsed is before/after that
     def __init__(self, extent, node=None, parent=None, cppdoc=None):
         # node=None means "unparsed"
         # extents must answer to .start|end.line|column
@@ -390,13 +450,12 @@ class CppDoc_Extents:
         self.internal_extent = []
         self.parent=parent
         self.cppdoc=cppdoc
-        print "  made %s" % self.extent
+        #print "  made %s" % self.extent
 
     def __repr__(self):
         return "<%s %s>" % (self.__class__.__name__,self.describe_extents())
 
-    def describe_extents(self):
-        return "%s:%s - %s:%s" % (self.start.line,self.start.column,self.end.line,self.end.column)
+    # def describe_extents(self): monkey patched
 
     def describe_short(self,indent=0, full_token=True):
         out = []
@@ -428,43 +487,10 @@ class CppDoc_Extents:
         else:
             raise Exception("No parent.cppdoc!")
 
-    def find_comments_before(self,i):
-        print "find comments before %s[%s]" % (self,i)
-        print "in total lines %s" % len(self.file_lines)
-        before = None
-        if i != 0:
-            before = self.internal_extent[i-1] 
-        elif self.parent:
-            before = CppDoc_Extents.Minimalist_SourceRange(
-                self.start,
-                self.start
-                )
-        else:
-            CppDoc_Extents.Minimalist_SourceRange()
-        after = self.internal_extent[i]
-
-        print "find comments in %s - %s" % (before,after)
-        try:
-            between = before - after
-        except TypeError, e:
-            print "Tried %s - %s, couldn't" % (before,after)
-            raise e
-
-        print "find comments in %s" % between
-        for i in range(between.start.line, between.end.line + 1):
-            l = self.file_lines[i-1]
-            if i == between.start.line:
-                l = l[between.start.column:]
-            print "  commen? %s:%s|" % (i,l)
-            comment_i = l.find('//')
-            if comment_i != -1:
-                print "    eolcomment @%s:" % comment_i
-            
-
     def insert_extent(self, extent, node=None):
         # returns the CppDoc_Extents inserted
         inserted = False
-        #print "Insert %s" % extent
+        # print "Insert %s Node %s" % (extent,node)
         for i,current_extent in enumerate(self.internal_extent):
             # find the internal it is in,before or after, overlaps
             # print "  %s ?? %s" % (i, current_extent)
@@ -476,10 +502,9 @@ class CppDoc_Extents:
 
             # before
             if es.line < cs.line or (es.line == cs.line and es.column < cs.column):
-                #print "  Before"
+                # print "  Before %s" % current_extent
                 new_e = CppDoc_Extents(extent,node,self)
                 self.internal_extent.insert(i, new_e)
-                self.find_comments_before(i)
                 inserted = True
                 break
 
@@ -489,17 +514,28 @@ class CppDoc_Extents:
                 # one line
                 if ce.line == cs.line:
                     #print "vs one line, [%s:%s] in [%s:%s]" % (es.column, ee.column,cs.column, ce.column)
-                    if inside_range([es.column, ee.column], [cs.column, ce.column]):
-                        #print "Inside %s" % ce
+                    if not node and cs.line == es.line and cs.column == es.column and ce.column == ee.column:
+                        # print("Duplicate comment at %s" % extent)
+                        new_e = current_extent
+                        inserted = True # discarded, actually
+                        break
+                    elif inside_range([es.column, ee.column], [cs.column, ce.column]):
+                        # print "Inside %s" % current_extent
                         new_e = current_extent.insert_extent(extent, node)
                         inserted = True
                         break
                     elif inside_range(es.column, [cs.column, ce.column]) or inside_range(ee.column, [cs.column, ce.column]):
                         # raise Exception("Overlap at %s" % extent)
-                        sys.stderr.write("Overlap at %s\n" % extent)
+                        print("Overlap at %s" % extent)
 
                 # multiline
                 else:
+                    if not node and es == cs:
+                        inserted = True
+                        new_e = current_extent
+                        # print("Duplicate (m) comment at %s" % extent)
+                        break
+
                     starts_in = False
                     # on first line
                     if es.line == cs.line:
@@ -520,7 +556,7 @@ class CppDoc_Extents:
                         ends_in = True
 
                     if starts_in and ends_in:
-                        #print "  Inside (m) %s" % current_extent
+                        # print "  Inside (m) %s" % current_extent
                         new_e = current_extent.insert_extent(extent, node)
                         inserted = True
                         break
@@ -528,12 +564,22 @@ class CppDoc_Extents:
                         raise Exception("Overlap at %s" % extent)
 
         if not inserted:
-            #print "  After %s" % (self.internal_extent[-1] if len(self.internal_extent)>0 else '[]')
+            # print "  After %s" % (self.internal_extent[-1] if len(self.internal_extent)>0 else '[]')
             new_e = CppDoc_Extents(extent,node,self)
             self.internal_extent.append(new_e)
-        #print "--done"
+        # print "--done at %s" % new_e
         return new_e
 
+def describe_extents(self):
+    return "%s:%s - %s:%s" % (self.start.line,self.start.column,self.end.line,self.end.column)
+CppDoc_Extents.describe_extents = describe_extents
+SourceRange.describe_extents = describe_extents
+# OMG, c++ foreign classes: can't make one ourselves, and it won't do '==' with our pseudo class.
+def sreq(a,b):
+    return ( a.start.line == b.start.line and a.start.column == b.start.column
+    and a.end.line == b.end.line and a.end.column == b.end.column)
+SourceRange.__eq__ = sreq
+    
 class CppDoc_Empty:
     def __init__():
         pass
@@ -737,6 +783,9 @@ def main():
     parser.add_option("", "--max-depth", dest="maxDepth",
                       help="Limit cursor expansion to depth N",
                       metavar="N", type=int, default=None)
+    parser.add_option("", "--debug_limit-depth", dest="debugLimit",
+                      help="Limit to approximately this many statements",
+                      metavar="N", type=int, default=None)
     parser.add_option("", "--visitor", dest="visitorClass",
                       help="File/class to process each node",
                       metavar="class/file", type=str, default=CppDoc_Visitors.DeclVisitor)
@@ -762,8 +811,9 @@ def main():
             print "..next %s.%s" % (vc,pieces)
             vc = getattr(vc, pieces.pop(0))
     print "Visitor %s" % vc
-    parsed = CppDoc(args[0], opts.includePaths.split(','), visitor=vc)
+    parsed = CppDoc(args[0], opts.includePaths.split(','), visitor=vc, debug_limit=opts.debugLimit)
     print("---%s-" % (parsed._visits-1))
+    print("---")
     parsed.print_extents()
 
 if __name__ == '__main__':
