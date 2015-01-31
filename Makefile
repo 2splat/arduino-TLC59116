@@ -1,7 +1,9 @@
 Device := TLC59116
 lib_files := $(shell find . -type f -a -not -path './build/*' -a -not -path './_Inline/*' -a \( -name '*.cpp' -o -name '*.h' -o -name '*.ino' \) ) keywords.txt VERSION README.md README.html library.properties
+h_files = $(shell /bin/ls $(Device)*.h)
+doc_input := $(shell /bin/ls *.h | xargs -n 1 -iX echo build/Xpp; /bin/ls *.cpp)
 arduino_dir := $(shell which arduino | xargs --no-run-if-empty realpath | xargs --no-run-if-empty dirname)
-arduino_inc_dir := $(arduino_dir)/hardware
+arduino_inc_dirs := $(arduino_dir)/hardware/arduino/cores/arduino,$(arduino_dir)/hardware/tools/avr/lib/avr/include,$(arduino_dir)/hardware/arduino/variants/standard,$(arduino_dir)/libraries/*
 ino_link := $(shell basename `/bin/pwd`).ino
 test_example_srcs := $(shell find examples/test_features -name '*.h' -o -name '*.cpp' | xargs basename )
 
@@ -21,6 +23,9 @@ lib_files :
 build_dir :
 	@mkdir -p build
 	@rm -rf build/*
+
+build/%.hpp : %.h
+	ln -s ../$< $@
 
 # makes this directory work as an .ino for testing
 .PHONY : inoify
@@ -53,7 +58,15 @@ preproc :
 
 # documentation, section 1, is in .cpp
 # the first /* ... */ as markdown
-README.md : $(Device).h
+.PHONY : doc
+doc : README.md debugdoc
+
+.PHONY : debugdoc
+debugdoc : $(doc_input)
+	build_tools/extract_doc --include-paths '.,$(arduino_inc_dirs)' $(doc_input)
+	wc -l t.ast
+
+README.md : $(doc_input)
 	awk 'FNR==2,/*\// {if ($$0 != "*/") {print}}' $< | sed 's/^    //' > $@
 	echo >> $@
 	awk '/\/* Use:/,/*\// {if ($$0 == "*/") {next}; sub(/^\/\*/, ""); print}' $< | sed 's/^ //' >> $@

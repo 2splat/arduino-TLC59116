@@ -1,13 +1,5 @@
-env LD_LIBRARY_PATH=`llvm-config-3.4 --libdir` python - "$@" <<EOF
 #!/usr/bin/env python
-#===- cindex-dump.py - cindex/Python Source Dump -------------*- python -*--===#
-#
-#                     The LLVM Compiler Infrastructure
-#
-# This file is distributed under the University of Illinois Open Source
-# License. See LICENSE.TXT for details.
-#
-#===------------------------------------------------------------------------===#
+# env LD_LIBRARY_PATH=`llvm-config-3.4 --libdir` python - "$@" <<EOF
 
 """
 A simple command line tool for dumping a source file using the Clang Index
@@ -98,7 +90,7 @@ class CppDoc:
             for p in glob(x):
                 clang_args.extend( ('-I', p) )
         index = clang.cindex.Index.create()
-        # print "FNAME %s\n" % filename
+        print "FNAME %s\n" % filename
         self.tu = index.parse(
             filename, 
             clang_args, 
@@ -764,58 +756,3 @@ class CppDoc_Visitors:
 
         def print_node(self,node,depth):
             pprint(self.describe(node,depth))
-
-
-
-
-def main():
-    from optparse import OptionParser, OptionGroup
-
-    global opts
-
-    parser = OptionParser("usage: %prog [options] {filename} [clang-args*]")
-    parser.add_option("", "--show-ids", dest="showIDs",
-                      help="Don't compute cursor IDs (very slow)",
-                      default=False)
-    parser.add_option("", "--include-paths", dest="includePaths",
-                      help="Where to look for #includes (comma list w/globs)",
-                      metavar="dirs", type=str, default=None)
-    parser.add_option("", "--max-depth", dest="maxDepth",
-                      help="Limit cursor expansion to depth N",
-                      metavar="N", type=int, default=None)
-    parser.add_option("", "--debug_limit-depth", dest="debugLimit",
-                      help="Limit to approximately this many statements",
-                      metavar="N", type=int, default=None)
-    parser.add_option("", "--visitor", dest="visitorClass",
-                      help="File/class to process each node",
-                      metavar="class/file", type=str, default=CppDoc_Visitors.DeclVisitor)
-    parser.disable_interspersed_args()
-    (opts, args) = parser.parse_args()
-
-    if len(args) == 0:
-        parser.error('Expected input-file-name')
-
-    vc = opts.visitorClass
-    if isinstance(vc,basestring):
-        pieces = vc.split('.')
-        print "pieces %s" % pieces
-        first_piece = pieces.pop(0)
-        vc = None
-        if first_piece in globals():
-            vc = globals()[first_piece] # getattr(__main__, pieces.pop(0))
-        elif hasattr(CppDoc_Visitors, first_piece):
-            vc = getattr(CppDoc_Visitors, first_piece)
-        if vc==None:
-            raise Exception("No such class %s (or CppDoc_Visitors.%s)" % (first_piece,first_piece))
-        while len(pieces) > 0:
-            print "..next %s.%s" % (vc,pieces)
-            vc = getattr(vc, pieces.pop(0))
-    print "Visitor %s" % vc
-    parsed = CppDoc(args[0], opts.includePaths.split(','), visitor=vc, debug_limit=opts.debugLimit)
-    print("---%s-" % (parsed._visits-1))
-    print("---")
-    parsed.print_extents()
-
-if __name__ == '__main__':
-    main()
-EOF
