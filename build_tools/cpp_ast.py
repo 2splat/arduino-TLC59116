@@ -7,9 +7,11 @@ Library.
 """
 import re
 import sys
+import inspect # inspect.currentframe().f_lineno
 import clang
     # https://github.com/llvm-mirror/clang/blob/release_34/bindings/python/clang/cindex.py
 from pprint import pprint
+from clang.cindex import SourceRange,Cursor,Token
 
 # not a class/nor instance method
 def inside_range(a,b):
@@ -26,10 +28,199 @@ def _describe_extent(self):
 class _extents_extensions:
     pass
 _extents_extensions.describe = _describe_extent # because "unbound..." in SourceRange monkey-patch below
+SourceRange.describe = _describe_extent
+
+# OMG, c++ foreign classes: can't make one ourselves, and it won't do '==' with our pseudo class.
+def sreq(a,b):
+    return ( a.start.line == b.start.line and a.start.column == b.start.column
+    and a.end.line == b.end.line and a.end.column == b.end.column)
+SourceRange.__eq__ = sreq
+    
+def _describe_node(self,depth=None):
+    out = []
+    if hasattr(self,'extent'):
+        out.append(self.extent.describe())
+    name = []
+    if hasattr(self,'displayname') and self.displayname:
+        name.append(self.displayname)
+    if hasattr(self,'spelling') and self.spelling:
+        name.append('spelling:%s' % self.spelling)
+    if len(name) > 0:
+        out.append(name)
+
+    # We never get either of these
+    if hasattr(self,'brief_comment') and self.brief_comment:
+        out.append("// " + brief_comment)
+    if hasattr(self,'raw_comment') and self.raw_comment:
+        out.append(["raw_comment",raw_comment])
+
+    # get_arguments is an iter of cursor
+    args = []
+    if hasattr(self,'get_arguments'):
+        for arg_element in self.get_arguments():
+            args.append(arg_element.describe(depth))
+        if len(args) > 0:
+            out.append(["(",args,")"])
+
+    if hasattr(self,'result_type') and self.result_type and self.result_type.kind != clang.cindex.TypeKind.INVALID:
+        # gives a Class Type
+        out.append(['result_type',self.result_type.describe()])
+
+    type = []
+    if hasattr(self,'access_specifier') and self.access_specifier:
+        type.append("access_specifier:%s" % self.access_specifier)
+    if hasattr(self,'is_static_method') and self.is_static_method():
+        type.append('static')
+    if hasattr(self,'storage_class') and self.storage_class:
+        type.append("storage_class:%s" % storage_class)
+    if hasattr(self,'is_definition') and self.is_definition():
+        type.append('defn')
+        # seems redundant
+    if hasattr(self.kind,'is_attribute') and self.kind.is_attribute():
+        type.append('attr')
+    if hasattr(self.kind,'is_preprocessing') and self.kind.is_preprocessing():
+        type.append('preproc')
+    if self.kind == clang.cindex.CursorKind.ENUM_DECL:
+        # a Class Type...
+        type.append("enum_type=%s",self.enum_type)
+    if self.kind == clang.cindex.CursorKind.ENUM_CONSTANT_DECL:
+        type.append("enum_value=%s",self.enum_value)
+    if hasattr(self,'is_bitfield') and self.is_bitfield():
+        type.append("bitfield[%s]" % self.get_bitfield_width())
+    if len(type)>0:
+        out.append(" ".join(type))
+    if depth != -1 and hasattr(self,'type') and self.type and self.type.kind != clang.cindex.TypeKind.INVALID :
+        # out.append( self.type.describe())
+        out.append(self.type.describe())
+
+    # get_definition gives a cursor if is_definition?
+    general_kind=[]
+    if hasattr(self.kind,'is_reference'):
+        if self.kind.is_reference():
+            general_kind.append('ref')
+        if self.kind.is_expression():
+            general_kind.append('expr')
+        if self.kind.is_declaration():
+            general_kind.append('decl')
+        if self.kind.is_statement():
+            general_kind.append('stmt')
+        if self.kind.is_statement():
+            general_kind.append('stmt')
+    # more general_kind
+    out.append([self.kind, " ".join(general_kind)])
+
+    return out
+
+def _describe_type_short(self):
+    out = []
+    if self.is_const_qualified():
+        out.append('const')
+    if self.is_volatile_qualified():
+        out.append('volatile')
+    if self.is_restrict_qualified():
+        out.append('restrict')
+    if hasattr(self,'get_ref_qualifier') and self.get_ref_qualifier() and self.get_ref_qualifier() != clang.cindex.RefQualifierKind.NONE:
+        out.append("%s" % self.get_ref_qualifier())
+    if self.get_pointee() and self.get_pointee().kind != clang.cindex.TypeKind.INVALID:
+        out.extend(["(*", self.get_pointee().describe_short(),")"])
+    if self.get_array_element_type() and self.get_array_element_type().kind != clang.cindex.TypeKind.INVALID:
+       out.extend(['[%s]' % self.get_array_size(), self.get_array_element_type().describe_short()])
+    out.append(self.describe_name_short())
+    return " ".join(out)
+
+def _describe_type(self):
+    out = []
+    out.append(self.kind)
+    if self.get_declaration() and self.get_declaration().displayname:
+        out.append(self.get_declaration().displayname)
+    if hasattr(self,'spelling') and self.spelling:
+        out.append("SP:"+self.spelling)
+    # out.append(self.element_type)
+    if self.is_const_qualified():
+        out.append('const')
+    if self.is_volatile_qualified():
+        out.append('volatile')
+    if self.is_restrict_qualified():
+        out.append('restrict')
+    if hasattr(self,'get_ref_qualifier') and self.get_ref_qualifier() and self.get_ref_qualifier() != clang.cindex.RefQualifierKind.NONE:
+        out.append(['ref_qualifier', self.get_ref_qualifier()])
+    if self.get_pointee() and self.get_pointee().kind != clang.cindex.TypeKind.INVALID:
+        out.append(["*", self.get_pointee().describe()])
+    if self.get_array_element_type() and self.get_array_element_type().kind != clang.cindex.TypeKind.INVALID:
+        out.append(['[%s]' % self.get_array_size(), self.get_array_element_type().describe()])
+    if hasattr(self,'get_class_type') and self.get_class_type():
+        out.append(['class_type', self.get_class_type()])
+
+    return out
+
+def _describe_name_short(self):
+    if hasattr(self,'displayname') and self.displayname:
+        return(self.displayname)
+    elif hasattr(self,'spelling') and self.spelling:
+        return(self.spelling)
+    elif hasattr(self,'name') and self.name:
+        return(self.name)
+
+def _describe_short(self, with_extent=True):
+    out = []
+    # if len(out)> 0: print "### %s for [%s] @ %s" % (out[-1].__class__.__name__,len(out),inspect.currentframe().f_lineno)
+    if with_extent:
+        out.append(self.extent.describe())
+    # if len(out)> 0: print "### %s for [%s] @ %s" % (out[-1].__class__.__name__,len(out),inspect.currentframe().f_lineno)
+
+    # e.g. CursorKind.TRANSLATION_UNIT
+    # print "try: %s" % self.kind
+    ckind= re.match('(CursorKind|TokenKind)\.(.+)', str(self.kind)).group(2)
+    out.append(ckind)
+    # print "### %s for [%s] @ %s" % (out[-1].__class__.__name__,len(out),inspect.currentframe().f_lineno)
+
+    if hasattr(self,'result_type') and self.result_type and self.result_type.kind != clang.cindex.TypeKind.INVALID:
+        # gives a Class Type
+        out.append(self.result_type.describe_short())
+        # print "### %s for [%s] @ %s" % (out[-1].__class__.__name__,len(out),inspect.currentframe().f_lineno)
+
+    elif hasattr(self,'type') and self.type and self.type.kind != clang.cindex.TypeKind.INVALID :
+        out.append( "%s" % self.type.describe_short())
+        # print "### %s for [%s] @ %s" % (out[-1].__class__.__name__,len(out),inspect.currentframe().f_lineno)
+
+    name = self.describe_name_short()
+    if name:
+        out.append(name)
+    # print "### %s for [%s] @ %s" % (out[-1].__class__.__name__,len(out),inspect.currentframe().f_lineno)
+        
+    for i,x in enumerate(out):
+        if isinstance(x,list):
+            # print "#### %s" % i
+            pprint(x)
+    return " ".join(out)
+    
+def _print_node(self,depth):
+    pprint(self.describe(depth))
+
+class _node_extensions:
+    pass
+_node_extensions.describe=_describe_node
+_node_extensions.describe_short=_describe_short
+_node_extensions.describe_type=_describe_type
+_node_extensions.describe_type_short=_describe_type_short
+_node_extensions.describe_name_short=_describe_name_short
+_node_extensions.print_node=_print_node
+Cursor.describe=_describe_node
+Cursor.describe_short=_describe_short
+Cursor.describe_type=_describe_type
+Cursor.describe_type_short=_describe_type_short
+Cursor.describe_name_short=_describe_name_short
+Cursor.print_node=_print_node
+Token.describe_short=_describe_short
+Token.describe_name_short=_describe_name_short
+clang.cindex.Type.describe=_describe_type
+clang.cindex.Type.describe_short=_describe_type_short
+clang.cindex.Type.describe_name_short=_describe_name_short
+
 
 class CppDoc:
     # we know about c++
-    
+
     def __init__(self, filename, include_paths=[], clang_args=[], visitor=None, max_depth=None, debug_limit=None):
         from glob import glob
 
@@ -47,7 +238,7 @@ class CppDoc:
             )
         if not self.tu:
             raise Exception("unable to load input")
-        
+            
         self.max_depth = max_depth
         self.filename = filename
         self.source_text = None
@@ -90,9 +281,9 @@ class CppDoc:
             self._visits = self._visits + 1
             if node.location.file:
                 print "Insert thingy"
-                print "RC: %s" % node.raw_comment
+                # print "RC: %s" % node.raw_comment # we never see a raw_comment, whatever that is
                     
-                pprint(self.visitor.describe(node,[]))
+                pprint(node.describe())
                 this_extent_o = self.source_text.insert_extent(node.extent, node)
                 for tok in node.get_tokens():
                     if tok.kind == clang.cindex.TokenKind.COMMENT:
@@ -100,7 +291,7 @@ class CppDoc:
                         outline = "@%s['%s'] %s" % (
                             self._visits, 
                             tok.extent.describe(),
-                            CppDoc_Visitors.Raw.describe_short(tok,False)
+                            tok.describe_short(False)
                             )
                         sys.stdout.write(outline)
                         if outline[-1] != "\n":
@@ -109,14 +300,14 @@ class CppDoc:
                         self.insert_toplevel_node(tok)
                         # sys.stdout.write("-comment inserted")
                     else:
-                        # print "Insert parsed %s" % CppDoc_Visitors.Raw.describe_short(tok)
+                        # print "Insert parsed %s" % tok.describe_short()
                         # this_extent_o.insert_extent(tok.extent, tok)
                         pass
             elif node.kind == clang.cindex.CursorKind.TRANSLATION_UNIT:
                 self.source_text = CppDoc_Extents(node.extent, node, cppdoc=self)
                         
             sys.stdout.write("@%s" % self._visits)
-            print_node_short(node, depth) if self.visitor==None else self.visitor.print_node(node, depth)
+            node.print_node(depth)
 
             # only for method/fn decl/def/use:
             for arg_element in node.get_arguments():
@@ -185,7 +376,7 @@ class CppDoc:
                     # print "C:",c.spelling # describe
                     print "[%s] %s" % (
                             c.describe_extents(),
-                            CppDoc_Visitors.Raw.describe_short(c,False)
+                            c.describe_short(False)
                             )
                     to_insert.append(c)
             prev_end = sub_extent.end
@@ -215,7 +406,7 @@ class CppDoc:
             if CppDoc_Extents.Minimalist_SourceLocation.__gt__(tn.start, node.location):
                 # print tn.node.describe_short()
                 # print "insert " + node.extent.describe()
-                # print "before [%s] %s" % (i, CppDoc_Visitors.Raw.describe_short(tn.node))
+                # print "before [%s] %s" % (i, tn.node.describe_short())
                 # print "Make ccpde w %s %s" % (tn.extent,tn)
                 new_e = CppDoc_Extents(node.extent,None,self)
                 self.source_text.internal_extent.insert(i,new_e)
@@ -303,7 +494,7 @@ class CppDoc:
         for sub_extent in extent.internal_extent:
             self.print_extents(sub_extent, depth+1)
 
-    class Comment_Node:
+    class Comment_Node(_node_extensions):
         def __init__(self, location, spelling, extent):
             self.location = location
             self.extent = extent
@@ -317,7 +508,6 @@ class CppDoc:
             return clang.cindex.TokenKind.COMMENT
 
 
-from clang.cindex import SourceRange
 
 class CppDoc_Extents:
 
@@ -409,7 +599,7 @@ class CppDoc_Extents:
         if self.node:
             if isinstance(self.node, clang.cindex.Token) and not full_token:
                 out.append("token")
-            out.append(CppDoc_Visitors.Raw.describe_short(self.node, with_extent=False))
+            out.append(self.node.describe_short(False))
         else:
             out.append('comment')
         return ("  " * indent) + " ".join(out)
@@ -514,13 +704,6 @@ class CppDoc_Extents:
         # print "--done at %s" % new_e
         return new_e
 
-SourceRange.describe = _describe_extent
-# OMG, c++ foreign classes: can't make one ourselves, and it won't do '==' with our pseudo class.
-def sreq(a,b):
-    return ( a.start.line == b.start.line and a.start.column == b.start.column
-    and a.end.line == b.end.line and a.end.column == b.end.column)
-SourceRange.__eq__ = sreq
-    
 class CppDoc_Empty:
     def __init__():
         pass
@@ -530,173 +713,7 @@ class CppDoc_Visitors:
         def __init__(self,translationUnit):
             self.tu = translationUnit
 
-        def print_node(self,node,depth):
-            # print "visited %s" % node
-            if node.kind.is_declaration:
-                text = " ".join(x.spelling for x in node.get_tokens())
-                print "[%d] %s" % (node.extent.start.line,text)
-            else:
-                print "skip"
-            # print_node(node,depth)
-
     class Raw:
         def __init__(self,translationUnit):
             self.tu = translationUnit
 
-        @classmethod
-        def describe_extents(self, node):
-            return self.extent.describe()
-
-        @classmethod
-        def describe_name_short(self,node):
-            if hasattr(node,'displayname') and node.displayname:
-                return(node.displayname)
-            elif hasattr(node,'spelling') and node.spelling:
-                return(node.spelling)
-            elif hasattr(node,'name') and node.name:
-                return(node.name)
-
-        @classmethod
-        def describe_short(self, node, with_extent=True):
-            out = []
-            if with_extent:
-                out.append(node.extent.describe)
-
-            # e.g. CursorKind.TRANSLATION_UNIT
-            # print "try: %s" % node.kind
-            ckind= re.match('(CursorKind|TokenKind)\.(.+)', str(node.kind)).group(2)
-            out.append(ckind)
-
-            if hasattr(node,'result_type') and node.result_type and node.result_type.kind != clang.cindex.TypeKind.INVALID:
-                # gives a Class Type
-                out.append(self.describe_type_short(node.result_type))
-
-            elif hasattr(node,'type') and node.type and node.type.kind != clang.cindex.TypeKind.INVALID :
-                out.append( self.describe_type_short(node.type))
-
-            name = self.describe_name_short(node)
-            if name:
-                out.append(name)
-                
-            return " ".join(out)
-            
-        @classmethod
-        def describe(self,node,depth):
-            out = []
-            out.append(node.extent.describe())
-            name = []
-            if hasattr(node,'displayname') and node.displayname:
-                name.append(node.displayname)
-            if hasattr(node,'spelling') and node.spelling:
-                name.append('spelling:%s' % node.spelling)
-            if len(name) > 0:
-                out.append(name)
-
-            # We never get either of these
-            if hasattr(node,'brief_comment') and node.brief_comment:
-                out.append("// " + brief_comment)
-            if hasattr(node,'raw_comment') and node.raw_comment:
-                out.append(["raw_comment",raw_comment])
-
-            # get_arguments is an iter of cursor
-            args = []
-            for arg_element in node.get_arguments():
-                # args.append("%s" % self.describe(arg_element,depth))
-                args.append(self.describe(arg_element,depth))
-            if len(args) > 0:
-                out.append(["(",args,")"])
-
-            type = []
-            if hasattr(node,'result_type') and node.result_type and node.result_type.kind != clang.cindex.TypeKind.INVALID:
-                # gives a Class Type
-                out.append(['result_type',self.describe_type(node.result_type)])
-            if hasattr(node,'access_specifier') and node.access_specifier:
-                type.append("access_specifier:%s" % node.access_specifier)
-            if node.is_static_method():
-                type.append('static')
-            if hasattr(node,'storage_class') and node.storage_class:
-                type.append("storage_class:%s" % storage_class)
-            if node.is_definition():
-                type.append('defn')
-                # seems redundant
-                # if depth != -1:
-                #    type.append("%s" % self.describe(node.get_definition(),-1))
-            if node.kind.is_attribute():
-                type.append('attr')
-            if node.kind.is_preprocessing():
-                type.append('preproc')
-            if node.kind == clang.cindex.CursorKind.ENUM_DECL:
-                # a Class Type...
-                type.append("enum_type=%s",node.enum_type)
-            if node.kind == clang.cindex.CursorKind.ENUM_CONSTANT_DECL:
-                type.append("enum_value=%s",node.enum_value)
-            if node.is_bitfield():
-                type.append("bitfield[%s]" % node.get_bitfield_width())
-            if len(type)>0:
-                out.append(" ".join(type))
-            if depth != -1 and node.type and node.type.kind != clang.cindex.TypeKind.INVALID :
-                out.append( self.describe_type(node.type))
-
-            # get_definition gives a cursor if is_definition?
-            general_kind=[]
-            if node.kind.is_reference():
-                general_kind.append('ref')
-            if node.kind.is_expression():
-                general_kind.append('expr')
-            if node.kind.is_declaration():
-                general_kind.append('decl')
-            if node.kind.is_statement():
-                general_kind.append('stmt')
-            if node.kind.is_statement():
-                general_kind.append('stmt')
-            # more general_kind
-            out.append([node.kind, " ".join(general_kind)])
-            # out.append( ['methods' ," ".join(sorted(list(x for x in node.__class__.__dict__.keys() if not (x in self.x_standard_methods()))))])
-            return out
-
-        @classmethod
-        def describe_type_short(self,node):
-            out = []
-            if node.is_const_qualified():
-                out.append('const')
-            if node.is_volatile_qualified():
-                out.append('volatile')
-            if node.is_restrict_qualified():
-                out.append('restrict')
-            if hasattr(node,'get_ref_qualifier') and node.get_ref_qualifier() and node.get_ref_qualifier() != clang.cindex.RefQualifierKind.NONE:
-                out.append("%s" % node.get_ref_qualifier())
-            if node.get_pointee() and node.get_pointee().kind != clang.cindex.TypeKind.INVALID:
-                out.extend(["(*", self.describe_type_short(node.get_pointee()),")"])
-            if node.get_array_element_type() and node.get_array_element_type().kind != clang.cindex.TypeKind.INVALID:
-               out.extend(['[%s]' % node.get_array_size(), self.describe_type_short(node.get_array_element_type())])
-            out.append(self.describe_name_short(node))
-            return " ".join(out)
-
-        @classmethod
-        def describe_type(self,node):
-            out = []
-            out.append(node.kind)
-            if node.get_declaration() and node.get_declaration().displayname:
-                out.append(node.get_declaration().displayname)
-            if hasattr(node,'spelling') and node.spelling:
-                out.append("SP:"+node.spelling)
-            # out.append(node.element_type)
-            if node.is_const_qualified():
-                out.append('const')
-            if node.is_volatile_qualified():
-                out.append('volatile')
-            if node.is_restrict_qualified():
-                out.append('restrict')
-            if hasattr(node,'get_ref_qualifier') and node.get_ref_qualifier() and node.get_ref_qualifier() != clang.cindex.RefQualifierKind.NONE:
-                out.append(['ref_qualifier', node.get_ref_qualifier()])
-            if node.get_pointee() and node.get_pointee().kind != clang.cindex.TypeKind.INVALID:
-                out.append(["*", self.describe_type(node.get_pointee())])
-            if node.get_array_element_type() and node.get_array_element_type().kind != clang.cindex.TypeKind.INVALID:
-                out.append(['[%s]' % node.get_array_size(), self.describe_type(node.get_array_element_type())])
-            if hasattr(node,'get_class_type') and node.get_class_type():
-                out.append(['class_type', node.get_class_type()])
-
-            return out
-
-        def print_node(self,node,depth):
-            pprint(self.describe(node,depth))
