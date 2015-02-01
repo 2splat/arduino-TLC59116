@@ -79,10 +79,12 @@ def main():
     print "Visitor %s" % vc
     inc_paths = opts.includePaths.split(',') if opts.includePaths else []
     # print "Inc %s" % inc_paths
-    parsed = CppDoc(args[0], inc_paths, clang_args=['-D__AVR_ATmega328P__'],visitor=vc, debug_limit=opts.debugLimit)
-    print("---%s-" % (parsed._visits-1))
+    parsed = [ CppDoc(f, inc_paths, clang_args=['-D__AVR_ATmega328P__'],visitor=vc, debug_limit=opts.debugLimit)
+        for f in args]
+    print("CPPDOC %s" % len(parsed))
     print("---")
-    parsed.print_extents()
+    for p in parsed:
+        p.print_extents()
 
 if __name__ == '__main__':
     main()

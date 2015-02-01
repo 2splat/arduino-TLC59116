@@ -11,74 +11,21 @@ import clang
     # https://github.com/llvm-mirror/clang/blob/release_34/bindings/python/clang/cindex.py
 from pprint import pprint
 
-def get_diag_info(diag):
-    return [ diag.spelling, diag.location, "severity:%s" % diag.severity ]
-    return { 'severity' : diag.severity,
-             'location' : diag.location,
-             'spelling' : diag.spelling,
-             # 'ranges' : diag.ranges,
-             # 'fixits' : diag.fixits 
-             }
-
-def get_cursor_id(cursor, cursor_list = []):
-    if not opts.showIDs:
-        return None
-
-    if cursor is None:
-        return None
-
-    # FIXME: This is really slow. It would be nice if the index API exposed
-    # something that let us hash cursors.
-    for i,c in enumerate(cursor_list):
-        if cursor == c:
-            return i
-    cursor_list.append(cursor)
-    return len(cursor_list) - 1
-
-        
-def print_node(node, depth):
-    path = [ (x.spelling if x.spelling else '') for x in depth]
-    pprint({ 
-             '||' : len(depth),
-             '.' : ".".join(path),
-             'kind' : node.kind,
-             'usr' : node.get_usr(),
-             'spelling' : node.spelling,
-             'displayname' : node.displayname,
-             'raw_comment' : (node.brief_comment if hasattr(node, 'brief_comment') else ''),
-             'location' : node.location,
-             'extent.start' : node.extent.start,
-             'extent.end' : node.extent.end,
-             'is_definition' : node.is_definition(),
-             'definition id' : get_cursor_id(node.get_definition()),
-             })
-
-def get_info(node, depth=0):
-    if opts.maxDepth is not None and depth >= opts.maxDepth:
-        children = None
-    else:
-        children = [get_info(c, depth+1)
-                    for c in node.get_children()]
-    return { 'id' : get_cursor_id(node),
-             'kind' : node.kind,
-             'usr' : node.get_usr(),
-             'spelling' : node.spelling,
-             'location' : node.location,
-             'extent.start' : node.extent.start,
-             'extent.end' : node.extent.end,
-             'is_definition' : node.is_definition(),
-             'definition id' : get_cursor_id(node.get_definition()),
-             'children' : children }
-
 # not a class/nor instance method
 def inside_range(a,b):
-    # a in [x,y]
-    # a can also be [j,k]
+    # a in-the-range [x,y]
+    # a can also be [j,k]: a overlaps b
     # print "test %s in %s" % (a,b)
     if isinstance(a,list):
         return (b[0] <= a[0] <= b[1]) and (b[0] <= a[1] <= b[1])
     else:
         return b[0] >= a >= b[1]
+
+def _describe_extent(self):
+    return "%s:%s - %s:%s" % (self.start.line,self.start.column,self.end.line,self.end.column)
+class _extents_extensions:
+    pass
+_extents_extensions.describe = _describe_extent # because "unbound..." in SourceRange monkey-patch below
 
 class CppDoc:
     # we know about c++
@@ -99,7 +46,7 @@ class CppDoc:
                 + clang.cindex.TranslationUnit.PARSE_INCLUDE_BRIEF_COMMENTS_IN_CODE_COMPLETION
             )
         if not self.tu:
-            parser.error("unable to load input")
+            raise Exception("unable to load input")
         
         self.max_depth = max_depth
         self.filename = filename
@@ -109,8 +56,13 @@ class CppDoc:
         self.first_statement = True 
         self.debug_limit = debug_limit
 
-        pprint(('diags', map(get_diag_info, (d for d in self.tu.diagnostics if not re.search('__progmem__',d.spelling)))))
-        # pprint(('nodes', get_info(this.tu.cursor)))
+        print "diags"
+        # for d in ([d for d in self.tu.diagnostics if not re.search('__progmem__',d.spelling]):
+        for diag in self.tu.diagnostics:
+            if re.search('__progmem__',diag.spelling):
+                next
+            pprint( [ diag.spelling, diag.location, "severity:%s" % diag.severity ])
+
         self.visit(self.tu.cursor)
         print("---REVISIT");
         self.revisit_for_toplevel_comments()
@@ -147,7 +99,7 @@ class CppDoc:
                         # print "  T %s" % tok.spelling
                         outline = "@%s['%s'] %s" % (
                             self._visits, 
-                            CppDoc_Visitors.Raw.describe_extent(tok), 
+                            tok.extent.describe(),
                             CppDoc_Visitors.Raw.describe_short(tok,False)
                             )
                         sys.stdout.write(outline)
@@ -218,7 +170,7 @@ class CppDoc:
             )
         to_insert = []
         for si, sub_extent in enumerate(self.next_used_chunk(self.source_text)): # was sub_extent
-            print "  <%s> %s" % (si, sub_extent.describe_extents())
+            print "  <%s> %s" % (si, sub_extent.describe())
             if CppDoc_Extents.Minimalist_SourceLocation.__gt__(sub_extent.start, prev_end):
                 gap = CppDoc_Extents.Minimalist_SourceRange(
                     CppDoc_Extents.Minimalist_SourceLocation(prev_end.line, prev_end.column+1),
@@ -232,7 +184,7 @@ class CppDoc:
                 for c in self.comments_in_lines(gap.start,gap_lines):
                     # print "C:",c.spelling # describe
                     print "[%s] %s" % (
-                            CppDoc_Visitors.Raw.describe_extent(c), 
+                            c.describe_extents(),
                             CppDoc_Visitors.Raw.describe_short(c,False)
                             )
                     to_insert.append(c)
@@ -242,18 +194,18 @@ class CppDoc:
         print "<end revisit>"
 
     def next_used_chunk(self, extent):
-        print "used for [%s]..." % CppDoc_Visitors.Raw.describe_extent(extent)
+        print "used for [%s]..." % extent.describe_extents()
         for n in extent.internal_extent:
-            print "  used [%s], has %s[]" % (CppDoc_Visitors.Raw.describe_extent(n), len(n.internal_extent))
+            print "  used [%s], has %s[]" % (n.describe_extents(), len(n.internal_extent))
             yield n.extent # top level...
             if len(n.internal_extent) > 0:
-                print "    0th is %s" % CppDoc_Visitors.Raw.describe_extent(n.internal_extent[0])
+                print "    0th is %s" % n.internal_extent[0].describe_extents()
             if (
                 len(n.internal_extent) > 0 
                 and CppDoc_Extents.Minimalist_SourceLocation.__gt__(
                     n.internal_extent[0].start,n.end
                 )):
-                print "    not encompassed in used: [%s]" % CppDoc_Visitors.Raw.describe_extent(n.internal_extent[0])
+                print "    not encompassed in used: [%s]" % n.internal_extent[0].describe_extents()
                 for x in self.next_used_chunk(n):
                     yield x
 
@@ -262,7 +214,7 @@ class CppDoc:
         for i,tn in enumerate(self.source_text.internal_extent):
             if CppDoc_Extents.Minimalist_SourceLocation.__gt__(tn.start, node.location):
                 # print tn.node.describe_short()
-                # print "insert " + CppDoc_Visitors.Raw.describe_extent(node)
+                # print "insert " + node.extent.describe()
                 # print "before [%s] %s" % (i, CppDoc_Visitors.Raw.describe_short(tn.node))
                 # print "Make ccpde w %s %s" % (tn.extent,tn)
                 new_e = CppDoc_Extents(node.extent,None,self)
@@ -357,21 +309,20 @@ class CppDoc:
             self.extent = extent
             self.spelling = spelling
 
+        def describe_extents(self):
+            return self.extent.describe()
+
         @property
         def kind(self):
             return clang.cindex.TokenKind.COMMENT
 
 
-def range_diff(a,b):
-    print "diff %s - %s" % (a,b)
-
 from clang.cindex import SourceRange
-SourceRange.__sub__ = range_diff
 
 class CppDoc_Extents:
 
 
-    class Minimalist_SourceRange:
+    class Minimalist_SourceRange(_extents_extensions):
         @classmethod
         def from_line_columns(self, start_line, start_column, end_line, end_column):
             return CppDoc_Extents.Minimalist_SourceRange(
@@ -447,7 +398,8 @@ class CppDoc_Extents:
     def __repr__(self):
         return "<%s %s>" % (self.__class__.__name__,self.describe_extents())
 
-    # def describe_extents(self): monkey patched
+    def describe_extents(self):
+        return self.extent.describe()
 
     def describe_short(self,indent=0, full_token=True):
         out = []
@@ -553,7 +505,7 @@ class CppDoc_Extents:
                         inserted = True
                         break
                     elif starts_in or ends_in:
-                        raise Exception("Overlap at %s" % extent)
+                        sys.stderr.write("Warning: Overlap at %s\nn" % extent)
 
         if not inserted:
             # print "  After %s" % (self.internal_extent[-1] if len(self.internal_extent)>0 else '[]')
@@ -562,10 +514,7 @@ class CppDoc_Extents:
         # print "--done at %s" % new_e
         return new_e
 
-def describe_extents(self):
-    return "%s:%s - %s:%s" % (self.start.line,self.start.column,self.end.line,self.end.column)
-CppDoc_Extents.describe_extents = describe_extents
-SourceRange.describe_extents = describe_extents
+SourceRange.describe = _describe_extent
 # OMG, c++ foreign classes: can't make one ourselves, and it won't do '==' with our pseudo class.
 def sreq(a,b):
     return ( a.start.line == b.start.line and a.start.column == b.start.column
@@ -594,14 +543,9 @@ class CppDoc_Visitors:
         def __init__(self,translationUnit):
             self.tu = translationUnit
 
-        def x_standard_methods(self):
-            if not hasattr(self,'_standard_methods'):
-                self._standard_methods = CppDoc_Empty.__dict__.keys()
-            return self._standard_methods
-
         @classmethod
-        def describe_extent(self, node):
-            return("%s:%s - %s:%s" % (node.extent.start.line,node.extent.start.column,node.extent.end.line,node.extent.end.column))
+        def describe_extents(self, node):
+            return self.extent.describe()
 
         @classmethod
         def describe_name_short(self,node):
@@ -616,7 +560,7 @@ class CppDoc_Visitors:
         def describe_short(self, node, with_extent=True):
             out = []
             if with_extent:
-                out.append(self.describe_extent(node))
+                out.append(node.extent.describe)
 
             # e.g. CursorKind.TRANSLATION_UNIT
             # print "try: %s" % node.kind
@@ -639,7 +583,7 @@ class CppDoc_Visitors:
         @classmethod
         def describe(self,node,depth):
             out = []
-            out.append(self.describe_extent(node))
+            out.append(node.extent.describe())
             name = []
             if hasattr(node,'displayname') and node.displayname:
                 name.append(node.displayname)
