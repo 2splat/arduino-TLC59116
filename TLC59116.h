@@ -1,7 +1,6 @@
 #ifndef TLC59116_h
 #define TLC59116_h
 
-// demo commentz
 // FIXME: insert version here
 
 /* Description: High-level Arduino library for TI TLC59116 LED Driver over I2C
@@ -35,22 +34,14 @@
 #include <avr/pgmspace.h> // Usage.Include+: You have to do this in your .ino also
 #include "TLC59116_Unmanaged.h"
 
-// dumy before 1st statement - captured
-/* dumy */
 extern TwoWire Wire;
-/* dumy- block comments not captured after first statement */
 class TLC59116Manager; /* dumy trailing block */
 
 #define WARN TLC59116Warn // FIXME: how about a include? or 2 copies (sed'ed)?
 #define DEV TLC59116Dev 
 #define LOWD TLC59116LowLevel
-// dumy - captured
-
-/* dumy */
-// dumy - not captured (after block?)
 
 class TLC59116 : public TLC59116_Unmanaged {
-  // inside a block, all comments captured
   /* Description: High Level interface to a single TLC59116 over Wire interface.
   */
 

@@ -63,14 +63,18 @@ doc : README.md debugdoc
 
 .PHONY : debugdoc
 debugdoc : $(doc_input)
-	build_tools/extract_doc --include-paths '.,$(arduino_inc_dirs)' $(doc_input)
+	build_tools/extract_doc --include-paths '.,$(arduino_inc_dirs)' --processor CppDoc_Processor_Dump build/TLC59116.hpp
+	# build_tools/extract_doc --include-paths '.,$(arduino_inc_dirs)' $(doc_input)
 	wc -l t.ast
+
+README : $(doc_input)
+	build_tools/extract_doc --include-paths '.,$(arduino_inc_dirs)' --processor CppDoc_Processor_TopComment build/TLC59116.hpp > $@
 
 README.md : $(doc_input)
 	awk 'FNR==2,/*\// {if ($$0 != "*/") {print}}' $< | sed 's/^    //' > $@
 	echo >> $@
 	awk '/\/* Use:/,/*\// {if ($$0 == "*/") {next}; sub(/^\/\*/, ""); print}' $< | sed 's/^ //' >> $@
-	cat build_src/README.* >> @
+	cat build_src/README.* >> $@
 
 README.html : README.md
 ifeq ($(shell which markdown),)

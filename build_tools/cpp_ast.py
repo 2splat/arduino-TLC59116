@@ -10,7 +10,7 @@ import sys
 import inspect # inspect.currentframe().f_lineno
 import clang
     # https://github.com/llvm-mirror/clang/blob/release_34/bindings/python/clang/cindex.py
-from pprint import pprint
+from pprint import pprint,pformat
 from clang.cindex import SourceRange,Cursor,Token
 
 # not a class/nor instance method
@@ -218,17 +218,26 @@ clang.cindex.Type.describe_short=_describe_type_short
 clang.cindex.Type.describe_name_short=_describe_name_short
 
 
+import os
+
+if os.environ.get('DEBUG'):
+    def debug(msg):
+        print msg
+else:
+    def debug(msg):
+        pass
+
 class CppDoc:
     # we know about c++
 
-    def __init__(self, filename, include_paths=[], clang_args=[], visitor=None, max_depth=None, debug_limit=None):
+    def __init__(self, filename, include_paths=[], clang_args=[], max_depth=None, debug_limit=None):
         from glob import glob
 
         for x in include_paths:
             for p in glob(x):
                 clang_args.extend( ('-I', p) )
         index = clang.cindex.Index.create()
-        print "FNAME %s\n" % filename
+        debug( "FNAME %s\n" % filename )
         self.tu = index.parse(
             filename, 
             clang_args, 
@@ -242,20 +251,19 @@ class CppDoc:
         self.max_depth = max_depth
         self.filename = filename
         self.source_text = None
-        self.visitor = visitor(self)
         self._visits = 0
         self.first_statement = True 
         self.debug_limit = debug_limit
 
-        print "diags"
         # for d in ([d for d in self.tu.diagnostics if not re.search('__progmem__',d.spelling]):
         for diag in self.tu.diagnostics:
             if re.search('__progmem__',diag.spelling):
                 next
-            pprint( [ diag.spelling, diag.location, "severity:%s" % diag.severity ])
+            sys.stderr.write(pformat( [ diag.spelling, diag.location, "severity:%s" % diag.severity ]))
+            sys.stderr.write("\n")
 
         self.visit(self.tu.cursor)
-        print("---REVISIT");
+        debug("---REVISIT");
         self.revisit_for_toplevel_comments()
 
     def visit(self, node, depth=[]):
@@ -270,9 +278,10 @@ class CppDoc:
         #       Each time!
         #       Thus, you'll see the comments n times
         if self.debug_limit and self._visits > self.debug_limit:
+            debug( "Debug limit %s reached" % self.debug_limit)
             return
         if self.max_depth is not None and len(depth) > self.max_depth:
-            print "<skip>"
+            debug( "<skip>")
             return
         if node.kind == clang.cindex.CursorKind.MACRO_INSTANTIATION:
                 pass
@@ -280,10 +289,10 @@ class CppDoc:
                 or node.kind == clang.cindex.CursorKind.TRANSLATION_UNIT):
             self._visits = self._visits + 1
             if node.location.file:
-                print "Insert thingy"
+                debug( "Insert thingy")
                 # print "RC: %s" % node.raw_comment # we never see a raw_comment, whatever that is
                     
-                pprint(node.describe())
+                debug(pformat(node.describe()))
                 this_extent_o = self.source_text.insert_extent(node.extent, node)
                 for tok in node.get_tokens():
                     if tok.kind == clang.cindex.TokenKind.COMMENT:
@@ -293,9 +302,7 @@ class CppDoc:
                             tok.extent.describe(),
                             tok.describe_short(False)
                             )
-                        sys.stdout.write(outline)
-                        if outline[-1] != "\n":
-                            print ''
+                        debug(outline.rstrip())
                         # this_extent_o.insert_extent(tok.extent)
                         self.insert_toplevel_node(tok)
                         # sys.stdout.write("-comment inserted")
@@ -306,8 +313,9 @@ class CppDoc:
             elif node.kind == clang.cindex.CursorKind.TRANSLATION_UNIT:
                 self.source_text = CppDoc_Extents(node.extent, node, cppdoc=self)
                         
-            sys.stdout.write("@%s" % self._visits)
-            node.print_node(depth)
+            if os.environ.get('DEBUG'):
+                sys.stdout.write("@%s" % self._visits)
+                node.print_node(depth)
 
             # only for method/fn decl/def/use:
             for arg_element in node.get_arguments():
@@ -320,7 +328,7 @@ class CppDoc:
                 self.visit(x, path)
 
             if node.kind == clang.cindex.CursorKind.TRANSLATION_UNIT:
-                print "END TU"
+                debug( "END TU")
 
     @property
     def file_lines(self):
@@ -353,7 +361,7 @@ class CppDoc:
 
     def revisit_for_toplevel_comments(self):
         # only for top level
-        print self.source_text.describe_short(full_token=False)
+        debug( self.source_text.describe_short(full_token=False))
         
         prev_end = CppDoc_Extents.Minimalist_SourceLocation(
             self.source_text.start.line,
@@ -361,42 +369,42 @@ class CppDoc:
             )
         to_insert = []
         for si, sub_extent in enumerate(self.next_used_chunk(self.source_text)): # was sub_extent
-            print "  <%s> %s" % (si, sub_extent.describe())
+            debug( "  <%s> %s" % (si, sub_extent.describe()))
             if CppDoc_Extents.Minimalist_SourceLocation.__gt__(sub_extent.start, prev_end):
                 gap = CppDoc_Extents.Minimalist_SourceRange(
                     CppDoc_Extents.Minimalist_SourceLocation(prev_end.line, prev_end.column+1),
                     CppDoc_Extents.Minimalist_SourceLocation(sub_extent.start.line, sub_extent.start.column-1)
                     )
-                print "    gap %s" % gap
+                debug( "    gap %s" % gap)
                 gap_lines = self.file_chunk(gap)
                 # for l in gap_lines:
                 #     sys.stdout.write("::")
                 #     sys.stdout.write(l)
                 for c in self.comments_in_lines(gap.start,gap_lines):
                     # print "C:",c.spelling # describe
-                    print "[%s] %s" % (
+                    debug( "[%s] %s" % (
                             c.describe_extents(),
                             c.describe_short(False)
-                            )
+                            ))
                     to_insert.append(c)
             prev_end = sub_extent.end
         for c in to_insert:
             self.insert_toplevel_node(c)
-        print "<end revisit>"
+        debug("<end revisit>")
 
     def next_used_chunk(self, extent):
-        print "used for [%s]..." % extent.describe_extents()
+        debug( "used for [%s]..." % extent.describe_extents())
         for n in extent.internal_extent:
-            print "  used [%s], has %s[]" % (n.describe_extents(), len(n.internal_extent))
+            debug( "  used [%s], has %s[]" % (n.describe_extents(), len(n.internal_extent)))
             yield n.extent # top level...
             if len(n.internal_extent) > 0:
-                print "    0th is %s" % n.internal_extent[0].describe_extents()
+                debug( "    0th is %s" % n.internal_extent[0].describe_extents())
             if (
                 len(n.internal_extent) > 0 
                 and CppDoc_Extents.Minimalist_SourceLocation.__gt__(
                     n.internal_extent[0].start,n.end
                 )):
-                print "    not encompassed in used: [%s]" % n.internal_extent[0].describe_extents()
+                debug( "    not encompassed in used: [%s]" % n.internal_extent[0].describe_extents())
                 for x in self.next_used_chunk(n):
                     yield x
 
@@ -488,6 +496,7 @@ class CppDoc:
                 continue
 
     def print_extents(self, extent=None, depth=0):
+        raise Exception("Bob")
         if not extent:
             extent = self.source_text 
         print ("  " * depth) + extent.describe_short(full_token=False)
@@ -511,7 +520,6 @@ class CppDoc:
 
 class CppDoc_Extents:
 
-
     class Minimalist_SourceRange(_extents_extensions):
         @classmethod
         def from_line_columns(self, start_line, start_column, end_line, end_column):
@@ -528,7 +536,7 @@ class CppDoc_Extents:
             return "<%s %s:%s - %s:%s>" % (self.__class__.__name__, self.start.line,self.start.column,self.end.line,self.end.column)
 
         def __sub__(a,b):
-            print "diff %s - %s" % (a,b)
+            # print "diff %s - %s" % (a,b)
             if isinstance(b,CppDoc_Extents):
                 return b-a
 
@@ -546,17 +554,17 @@ class CppDoc_Extents:
             return a.line > b.line or (a.line==b.line and a.column > b.column)
 
     def __sub__(a,b):
-        print "diff %s - %s" % (a,b)
+        # print "diff %s - %s" % (a,b)
         self_like = a
         if a.start > b.end:
-            print "a>b"
+            # print "a>b"
             a,b = b,a
         elif b.end > a.end > b.start:
-            print "a==b"
+            # print "a==b"
             return None
     
         before_line = self_like.file_lines[a.end.line-1]
-        print "b>=a %s|" % before_line
+        # print "b>=a %s|" % before_line
         start = None
         if a.end.column >= len(before_line):
             start = CppDoc_Extents.Minimalist_SourceLocation(a.end.line+1,0)
@@ -570,7 +578,7 @@ class CppDoc_Extents:
             end = CppDoc_Extents.Minimalist_SourceLocation(b.start.line, b.start.column -1)
 
         rez = CppDoc_Extents.Minimalist_SourceRange(start,end)
-        print "a-b = %s" % rez
+        # print "a-b = %s" % rez
         return rez
 
     # a tree of extents, for one file, with lookup
@@ -660,7 +668,7 @@ class CppDoc_Extents:
                         break
                     elif inside_range(es.column, [cs.column, ce.column]) or inside_range(ee.column, [cs.column, ce.column]):
                         # raise Exception("Overlap at %s" % extent)
-                        print("Overlap at %s" % extent)
+                        sys.stderr.write("Overlap at %s\n" % extent)
 
                 # multiline
                 else:
@@ -703,17 +711,4 @@ class CppDoc_Extents:
             self.internal_extent.append(new_e)
         # print "--done at %s" % new_e
         return new_e
-
-class CppDoc_Empty:
-    def __init__():
-        pass
-
-class CppDoc_Visitors:
-    class DeclVisitor:
-        def __init__(self,translationUnit):
-            self.tu = translationUnit
-
-    class Raw:
-        def __init__(self,translationUnit):
-            self.tu = translationUnit
 
