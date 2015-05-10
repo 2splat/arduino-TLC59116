@@ -145,6 +145,8 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a513cc233a1398925cf0a4d015606124f"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116__Unmanaged.html#a513cc233a1398925cf0a4d015606124f">is_SUBADR_bit</a> (byte mode1_value, byte which)</td></tr>
 <tr class="separator:a513cc233a1398925cf0a4d015606124f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader">Global Functions</div></td></tr>
+<tr><td colspan="2"><div class="groupText"><p>Software current control </p>
+</div></td></tr>
 <tr class="memitem:abc2c406250904c9ef33a908589a37561"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#abc2c406250904c9ef33a908589a37561">is_enable_outputs</a> ()</td></tr>
 <tr class="memdesc:abc2c406250904c9ef33a908589a37561"><td class="mdescLeft">&#160;</td><td class="mdescRight">Is master power on?  <a href="#abc2c406250904c9ef33a908589a37561">More...</a><br/></td></tr>
 <tr class="separator:abc2c406250904c9ef33a908589a37561"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -155,13 +157,15 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a7b12a12e134df87bfdc477cbc9153db6"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a7b12a12e134df87bfdc477cbc9153db6">milliamps</a> (int Rext=<a class="el" href="classTLC59116__Unmanaged.html#a02efe10b964887296918703d388d762e">Rext_Min</a>)</td></tr>
 <tr class="separator:a7b12a12e134df87bfdc477cbc9153db6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader">Digital Functions</div></td></tr>
-<tr><td colspan="2"><div class="groupText"><p>Analogous to DigitalWrite </p>
+<tr><td colspan="2"><div class="groupText"><p>Analogous to DigitalWrite.</p>
+<p>Arduino DigitalWrite uses HIGH and LOW, but the device is a "sink", so "on" is actually a LOW. Thus, this library uses "on" and "off" for terminology.</p>
+<p>There are several aliases, and overloaded functions here (and for the pwm functions below). The intention was to provide natural overloads and aliases. I've shied away from using the Arduino DigitalWrite and AnalogWrite so far. </p>
 </div></td></tr>
 <tr class="memitem:a6122fb43d940c057fc6a5459e9dbd89b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a6122fb43d940c057fc6a5459e9dbd89b">set_outputs</a> (word <a class="el" href="classTLC59116.html#a0ee3fae95f6eecdde3f20166e566c4ae">pattern</a>, word which=0xFFFF)</td></tr>
-<tr class="memdesc:a6122fb43d940c057fc6a5459e9dbd89b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Only change the channels (that are marked in <em>bit_which</em>) to HIGH/LOW as marked in <em>bit_pattern</em>  <a href="#a6122fb43d940c057fc6a5459e9dbd89b">More...</a><br/></td></tr>
+<tr class="memdesc:a6122fb43d940c057fc6a5459e9dbd89b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Only change the channels (that are marked in <em>bit_which</em>) to on/off as marked in <em>bit_pattern</em>  <a href="#a6122fb43d940c057fc6a5459e9dbd89b">More...</a><br/></td></tr>
 <tr class="separator:a6122fb43d940c057fc6a5459e9dbd89b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0ee3fae95f6eecdde3f20166e566c4ae"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a0ee3fae95f6eecdde3f20166e566c4ae">pattern</a> (word bit_pattern, word bit_which=0xFFFF)</td></tr>
-<tr class="memdesc:a0ee3fae95f6eecdde3f20166e566c4ae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Alias for <a class="el" href="classTLC59116.html#a6122fb43d940c057fc6a5459e9dbd89b" title="Only change the channels (that are marked in bit_which) to HIGH/LOW as marked in bit_pattern ...">set_outputs()</a>  <a href="#a0ee3fae95f6eecdde3f20166e566c4ae">More...</a><br/></td></tr>
+<tr class="memdesc:a0ee3fae95f6eecdde3f20166e566c4ae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Alias for <a class="el" href="classTLC59116.html#a6122fb43d940c057fc6a5459e9dbd89b" title="Only change the channels (that are marked in bit_which) to on/off as marked in bit_pattern ...">set_outputs()</a>  <a href="#a0ee3fae95f6eecdde3f20166e566c4ae">More...</a><br/></td></tr>
 <tr class="separator:a0ee3fae95f6eecdde3f20166e566c4ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a088e3396b527714b0ca679de2f889b3d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a088e3396b527714b0ca679de2f889b3d">on_pattern</a> (word <a class="el" href="classTLC59116.html#a0ee3fae95f6eecdde3f20166e566c4ae">pattern</a>)</td></tr>
 <tr class="memdesc:a088e3396b527714b0ca679de2f889b3d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Turn on by bit pattern.  <a href="#a088e3396b527714b0ca679de2f889b3d">More...</a><br/></td></tr>
@@ -169,25 +173,34 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:ab74add573a7d422715bc418becd7834b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#ab74add573a7d422715bc418becd7834b">off_pattern</a> (word <a class="el" href="classTLC59116.html#a0ee3fae95f6eecdde3f20166e566c4ae">pattern</a>)</td></tr>
 <tr class="separator:ab74add573a7d422715bc418becd7834b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7dd7c2beaa0e7926caee771b5439f130"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a7dd7c2beaa0e7926caee771b5439f130">set</a> (int led_num, bool offon)</td></tr>
-<tr class="memdesc:a7dd7c2beaa0e7926caee771b5439f130"><td class="mdescLeft">&#160;</td><td class="mdescRight">On/Off by channel-number.  <a href="#a7dd7c2beaa0e7926caee771b5439f130">More...</a><br/></td></tr>
+<tr class="memdesc:a7dd7c2beaa0e7926caee771b5439f130"><td class="mdescLeft">&#160;</td><td class="mdescRight">Turn one on/off.  <a href="#a7dd7c2beaa0e7926caee771b5439f130">More...</a><br/></td></tr>
 <tr class="separator:a7dd7c2beaa0e7926caee771b5439f130"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab0456a6a0f1127df48bb6f2977a9eb00"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#ab0456a6a0f1127df48bb6f2977a9eb00">on</a> (int led_num)</td></tr>
 <tr class="memdesc:ab0456a6a0f1127df48bb6f2977a9eb00"><td class="mdescLeft">&#160;</td><td class="mdescRight">Turn one on.  <a href="#ab0456a6a0f1127df48bb6f2977a9eb00">More...</a><br/></td></tr>
 <tr class="separator:ab0456a6a0f1127df48bb6f2977a9eb00"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad5e48f003949da34ef99623767005429"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#ad5e48f003949da34ef99623767005429">off</a> (int led_num)</td></tr>
+<tr class="memdesc:ad5e48f003949da34ef99623767005429"><td class="mdescLeft">&#160;</td><td class="mdescRight">Turn one off.  <a href="#ad5e48f003949da34ef99623767005429">More...</a><br/></td></tr>
 <tr class="separator:ad5e48f003949da34ef99623767005429"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader">PWM Functions</div></td></tr>
-<tr><td colspan="2"><div class="groupText"><p>Analogous to AnalogWrite </p>
+<tr><td colspan="2"><div class="groupText"><dl class="bug"><dt><b><a class="el" href="bug.html#_bug000002">Bug:</a></b></dt><dd>Be careful with start/end arguments, if they are out of range (0..15) you will have mysterious problems. </dd></dl>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000002">Todo:</a></b></dt><dd>Put in range checking </dd></dl>
 </div></td></tr>
 <tr class="memitem:a51b5676a3105114176b81dc2b9fd937c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a51b5676a3105114176b81dc2b9fd937c">set_outputs</a> (byte led_num_start, byte led_num_end, const byte brightness[])</td></tr>
+<tr class="memdesc:a51b5676a3105114176b81dc2b9fd937c"><td class="mdescLeft">&#160;</td><td class="mdescRight">PWM, start..end, list-of-brightness.  <a href="#a51b5676a3105114176b81dc2b9fd937c">More...</a><br/></td></tr>
 <tr class="separator:a51b5676a3105114176b81dc2b9fd937c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aba11b6ffe8f5315d2685eaa898b3a310"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#aba11b6ffe8f5315d2685eaa898b3a310">set_outputs</a> (const byte brightness[16])</td></tr>
+<tr class="memdesc:aba11b6ffe8f5315d2685eaa898b3a310"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set all 16 PWM according to the brightness list.  <a href="#aba11b6ffe8f5315d2685eaa898b3a310">More...</a><br/></td></tr>
+<tr class="separator:aba11b6ffe8f5315d2685eaa898b3a310"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae910495809497c9ba15bfdbd1e805e17"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#ae910495809497c9ba15bfdbd1e805e17">pwm</a> (byte led_num_start, byte led_num_end, const byte brightness[])</td></tr>
+<tr class="memdesc:ae910495809497c9ba15bfdbd1e805e17"><td class="mdescLeft">&#160;</td><td class="mdescRight">Alias of set_outputs.  <a href="#ae910495809497c9ba15bfdbd1e805e17">More...</a><br/></td></tr>
+<tr class="separator:ae910495809497c9ba15bfdbd1e805e17"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8d6069720cefe5bc8f587844d2cbc64c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a8d6069720cefe5bc8f587844d2cbc64c">pwm</a> (byte led_num, byte brightness)</td></tr>
 <tr class="separator:a8d6069720cefe5bc8f587844d2cbc64c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae910495809497c9ba15bfdbd1e805e17"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#ae910495809497c9ba15bfdbd1e805e17">pwm</a> (byte led_num_start, byte led_num_end, const byte brightness[])</td></tr>
-<tr class="separator:ae910495809497c9ba15bfdbd1e805e17"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae0a62b62969347832901f315d79ba069"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#ae0a62b62969347832901f315d79ba069">pwm</a> (byte led_num_start, byte led_num_end, byte pwm_value)</td></tr>
+<tr class="memdesc:ae0a62b62969347832901f315d79ba069"><td class="mdescLeft">&#160;</td><td class="mdescRight">PWM, start..end same brightness.  <a href="#ae0a62b62969347832901f315d79ba069">More...</a><br/></td></tr>
 <tr class="separator:ae0a62b62969347832901f315d79ba069"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaa3d1c346dcfcc23dd63156196ea4217"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#aaa3d1c346dcfcc23dd63156196ea4217">pwm</a> (const byte brightness[16])</td></tr>
+<tr class="memdesc:aaa3d1c346dcfcc23dd63156196ea4217"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set all 16 PWM according to the brightness list.  <a href="#aaa3d1c346dcfcc23dd63156196ea4217">More...</a><br/></td></tr>
 <tr class="separator:aaa3d1c346dcfcc23dd63156196ea4217"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader">Group Functions</div></td></tr>
 <tr><td colspan="2"><div class="groupText"><dl class="section warning"><dt>Warning</dt><dd>The <a class="el" href="classTLC59116.html" title="High Level interface to a single TLC59116 using Wire (I2C) interface. ">TLC59116</a> has a hardware bug:</dd></dl>
@@ -201,27 +214,32 @@ Public Member Functions</h2></td></tr>
 <p>Of course, you could <a class="el" href="classTLC59116Manager.html#a4f36fbb60b668b13d837a8f8705c8c4b">TLC59116Manager::reset()</a> everytime, too. </p>
 </div></td></tr>
 <tr class="memitem:ae7627e27217f48424fc470c46d984408"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#ae7627e27217f48424fc470c46d984408">group_pwm</a> (word bit_pattern, byte brightness)</td></tr>
-<tr class="memdesc:ae7627e27217f48424fc470c46d984408"><td class="mdescLeft">&#160;</td><td class="mdescRight">Superpose group-pwm on current pwm setting (but, current should be 255 for best results)  <a href="#ae7627e27217f48424fc470c46d984408">More...</a><br/></td></tr>
 <tr class="separator:ae7627e27217f48424fc470c46d984408"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a733c11fc244a4b93b29f1ba90c81be8f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a733c11fc244a4b93b29f1ba90c81be8f">group_blink</a> (byte blink_delay, byte on_ratio=128)</td></tr>
-<tr class="separator:a733c11fc244a4b93b29f1ba90c81be8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a692e0217553872561f9667aff49852c5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a692e0217553872561f9667aff49852c5">group_blink</a> (byte blink_period, byte on_ratio=128)</td></tr>
+<tr class="memdesc:a692e0217553872561f9667aff49852c5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Blink all the LEDs, at their current/last PWM setting.  <a href="#a692e0217553872561f9667aff49852c5">More...</a><br/></td></tr>
+<tr class="separator:a692e0217553872561f9667aff49852c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aee8072c3386b44ad81f629796ac129ef"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#aee8072c3386b44ad81f629796ac129ef">group_blink</a> (word bit_pattern, int blink_delay, int on_ratio=128)</td></tr>
+<tr class="separator:aee8072c3386b44ad81f629796ac129ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7a4248ddfb1cc622684aea205aecaf7d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a7a4248ddfb1cc622684aea205aecaf7d">group_blink</a> (double blink_length_secs, double on_percent=50.0)</td></tr>
 <tr class="separator:a7a4248ddfb1cc622684aea205aecaf7d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac6af0fa0f9af8900865430be0be81672"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#ac6af0fa0f9af8900865430be0be81672">group_blink</a> (word bit_pattern, double blink_length_secs, double on_percent=50.0)</td></tr>
 <tr class="separator:ac6af0fa0f9af8900865430be0be81672"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1e9644aee95d5a1209f06abe691e6fa0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a1e9644aee95d5a1209f06abe691e6fa0">group_blink</a> (unsigned int bit_pattern, int blink_length_secs, double on_percent=50.0)</td></tr>
 <tr class="separator:a1e9644aee95d5a1209f06abe691e6fa0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aee8072c3386b44ad81f629796ac129ef"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#aee8072c3386b44ad81f629796ac129ef">group_blink</a> (word bit_pattern, int blink_delay, int on_ratio=128)</td></tr>
-<tr class="separator:aee8072c3386b44ad81f629796ac129ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader">Group/Broadcast Addresses</div></td></tr>
-<tr><td colspan="2"><div class="groupText"><p>Addresses should be specified as 0x60..0x6F </p>
+<tr><td colspan="2"><div class="groupText"><p>Addresses for broadcast (<em>allcall_address</em>) and group-broadcase (<em>SUBADR_x</em>).</p>
+<p>Addresses should be specified as 0x60..0x6F.</p>
+<p>It is illegal to set any address to Reset_Addr (0x6B), it will be ignored with warning. </p>
 </div></td></tr>
 <tr class="memitem:a6c3cb4034fa697c86d972f262208f9d0"><td class="memItemLeft" align="right" valign="top">byte&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a6c3cb4034fa697c86d972f262208f9d0">Reset_address</a> ()</td></tr>
+<tr class="memdesc:a6c3cb4034fa697c86d972f262208f9d0"><td class="mdescLeft">&#160;</td><td class="mdescRight">The reset-address, unchangeable.  <a href="#a6c3cb4034fa697c86d972f262208f9d0">More...</a><br/></td></tr>
 <tr class="separator:a6c3cb4034fa697c86d972f262208f9d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ada90a7d8f2d6bdb452e6c45b84d3d7b9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#ada90a7d8f2d6bdb452e6c45b84d3d7b9">allcall_address</a> (byte <a class="el" href="classTLC59116__Unmanaged.html#a6139f45bea0929e07c5549ef40fd1d6b">address</a>, bool enable=true)</td></tr>
-<tr class="separator:ada90a7d8f2d6bdb452e6c45b84d3d7b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a55bfed7ff3932b7300c58830f99cbbce"><td class="memItemLeft" align="right" valign="top">byte&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a55bfed7ff3932b7300c58830f99cbbce">allcall_address</a> ()</td></tr>
+<tr class="memdesc:a55bfed7ff3932b7300c58830f99cbbce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get broadcast address, see below to set/enable.  <a href="#a55bfed7ff3932b7300c58830f99cbbce">More...</a><br/></td></tr>
 <tr class="separator:a55bfed7ff3932b7300c58830f99cbbce"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a585896343d75e73e9bf99a366f1e15ab"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a585896343d75e73e9bf99a366f1e15ab">allcall_address</a> (byte <a class="el" href="classTLC59116__Unmanaged.html#a6139f45bea0929e07c5549ef40fd1d6b">address</a>, bool enable=true)</td></tr>
+<tr class="memdesc:a585896343d75e73e9bf99a366f1e15ab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set and enable/disable the broadcast address (<em>allcall_addr</em>).  <a href="#a585896343d75e73e9bf99a366f1e15ab">More...</a><br/></td></tr>
+<tr class="separator:a585896343d75e73e9bf99a366f1e15ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6998e155661f477d79d290b5b5266ae8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a6998e155661f477d79d290b5b5266ae8">allcall_address_enable</a> ()</td></tr>
 <tr class="memdesc:a6998e155661f477d79d290b5b5266ae8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enable broadcast.  <a href="#a6998e155661f477d79d290b5b5266ae8">More...</a><br/></td></tr>
 <tr class="separator:a6998e155661f477d79d290b5b5266ae8"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -229,20 +247,37 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a55621702303ff89c6aa6c75533ac4192"><td class="mdescLeft">&#160;</td><td class="mdescRight">Disable broadcast.  <a href="#a55621702303ff89c6aa6c75533ac4192">More...</a><br/></td></tr>
 <tr class="separator:a55621702303ff89c6aa6c75533ac4192"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4db0408c3d6d5181ad987a76ae5c21c2"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a4db0408c3d6d5181ad987a76ae5c21c2">is_allcall_address</a> ()</td></tr>
+<tr class="memdesc:a4db0408c3d6d5181ad987a76ae5c21c2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Is broadcast enabled?  <a href="#a4db0408c3d6d5181ad987a76ae5c21c2">More...</a><br/></td></tr>
 <tr class="separator:a4db0408c3d6d5181ad987a76ae5c21c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a61c8184dbddd3a6d90e7cd2524b96277"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a61c8184dbddd3a6d90e7cd2524b96277">SUBADR_address</a> (byte which, byte <a class="el" href="classTLC59116__Unmanaged.html#a6139f45bea0929e07c5549ef40fd1d6b">address</a>, bool enable=true)</td></tr>
-<tr class="separator:a61c8184dbddd3a6d90e7cd2524b96277"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8c25a1d8d06346ce48e108ae2bc435be"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a8c25a1d8d06346ce48e108ae2bc435be">SUBADR_address</a> (byte which, bool enable)</td></tr>
-<tr class="separator:a8c25a1d8d06346ce48e108ae2bc435be"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af10faab6bc072d4bbdd985980803f0b3"><td class="memItemLeft" align="right" valign="top">byte&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#af10faab6bc072d4bbdd985980803f0b3">SUBADR_address</a> (byte which)</td></tr>
+<tr class="memdesc:af10faab6bc072d4bbdd985980803f0b3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the SUBADR_n address.  <a href="#af10faab6bc072d4bbdd985980803f0b3">More...</a><br/></td></tr>
 <tr class="separator:af10faab6bc072d4bbdd985980803f0b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a61c8184dbddd3a6d90e7cd2524b96277"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a61c8184dbddd3a6d90e7cd2524b96277">SUBADR_address</a> (byte which, byte <a class="el" href="classTLC59116__Unmanaged.html#a6139f45bea0929e07c5549ef40fd1d6b">address</a>, bool enable=true)</td></tr>
+<tr class="memdesc:a61c8184dbddd3a6d90e7cd2524b96277"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the SUBADR_n address.  <a href="#a61c8184dbddd3a6d90e7cd2524b96277">More...</a><br/></td></tr>
+<tr class="separator:a61c8184dbddd3a6d90e7cd2524b96277"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a392f9b8794eb9d50767f01f7b2061b33"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a392f9b8794eb9d50767f01f7b2061b33">is_SUBADR_address</a> (byte which)</td></tr>
+<tr class="memdesc:a392f9b8794eb9d50767f01f7b2061b33"><td class="mdescLeft">&#160;</td><td class="mdescRight">Is SUBADR_n enabled?  <a href="#a392f9b8794eb9d50767f01f7b2061b33">More...</a><br/></td></tr>
 <tr class="separator:a392f9b8794eb9d50767f01f7b2061b33"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac6239daf0a26d22f1cfba8150b257567"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#ac6239daf0a26d22f1cfba8150b257567">SUBADR_address_enable</a> (byte which)</td></tr>
+<tr class="memdesc:ac6239daf0a26d22f1cfba8150b257567"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enable SUBADR_n.  <a href="#ac6239daf0a26d22f1cfba8150b257567">More...</a><br/></td></tr>
+<tr class="separator:ac6239daf0a26d22f1cfba8150b257567"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a365e02e443ac0dfad0b9a92ce3a315bf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a365e02e443ac0dfad0b9a92ce3a315bf">SUBADR_address_disable</a> (byte which)</td></tr>
+<tr class="separator:a365e02e443ac0dfad0b9a92ce3a315bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader">Convenience</div></td></tr>
+<tr><td colspan="2"><div class="groupText"><p>Since we allow function-chaining, it seems like a few convenience functions might be nice.</p>
+<p>Note all the functions (not just these convenience functions) that look like</p>
+<p><a class="el" href="classTLC59116.html" title="High Level interface to a single TLC59116 using Wire (I2C) interface. ">TLC59116</a>&amp; xxx(...)</p>
+<p>They return a reference to the device, so you can chain functions. </p>
+</div></td></tr>
 <tr class="memitem:a87fc1d373025f18665fe7244922718a8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a87fc1d373025f18665fe7244922718a8">delay</a> (int msec)</td></tr>
 <tr class="separator:a87fc1d373025f18665fe7244922718a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader">Debugging</div></td></tr>
+<tr><td colspan="2"><div class="groupText"><p>You can enable debug output by editing <a class="el" href="TLC59116_8cpp.html">TLC59116.cpp</a>, and <a class="el" href="TLC59116__Unmanaged_8cpp.html">TLC59116_Unmanaged.cpp</a>. Add one or both: </p>
+<div class="fragment"><div class="line"><span class="preprocessor">#define TLC59116_LOWLEVEL 1</span></div>
+<div class="line"><span class="preprocessor">#define TLC59116_DEV 1</span></div>
+</div><!-- fragment --> </div></td></tr>
 <tr class="memitem:a68f754b83544356e9194d950ecac841e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a68f754b83544356e9194d950ecac841e">describe_shadow</a> ()</td></tr>
+<tr class="memdesc:a68f754b83544356e9194d950ecac841e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print the registers, as we've cached them. cf. <a class="el" href="classTLC59116__Unmanaged.html#afdab6558e28a80a7be27282c5f6fdad3">describe_actual()</a>  <a href="#a68f754b83544356e9194d950ecac841e">More...</a><br/></td></tr>
 <tr class="separator:a68f754b83544356e9194d950ecac841e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a404babbe19ecdbe89b3ce9d6f86032dd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a404babbe19ecdbe89b3ce9d6f86032dd">resync_shadow_registers</a> ()</td></tr>
 <tr class="separator:a404babbe19ecdbe89b3ce9d6f86032dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -576,7 +611,7 @@ Here is the caller graph for this function:</div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Alias for is_enable_outputs </p>
+<p>Alias for <a class="el" href="classTLC59116.html#abc2c406250904c9ef33a908589a37561" title="Is master power on? ">is_enable_outputs()</a> </p>
 
 <p><div class="dynheader">
 Here is the call graph for this function:</div>
@@ -621,8 +656,8 @@ Here is the call graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p>Only change the channels (that are marked in <em>bit_which</em>) to HIGH/LOW as marked in <em>bit_pattern</em> </p>
-<p>(cf. <a class="el" href="classTLC59116.html#a088e3396b527714b0ca679de2f889b3d" title="Turn on by bit pattern. ">on_pattern(word)</a>, <a class="el" href="classTLC59116.html#ab0456a6a0f1127df48bb6f2977a9eb00" title="Turn one on. ">on()</a>, <a class="el" href="classTLC59116.html#ad5e48f003949da34ef99623767005429">off()</a> )</p>
+<p>Only change the channels (that are marked in <em>bit_which</em>) to on/off as marked in <em>bit_pattern</em> </p>
+<p>(cf. <a class="el" href="classTLC59116.html#a088e3396b527714b0ca679de2f889b3d" title="Turn on by bit pattern. ">on_pattern(word)</a>, <a class="el" href="classTLC59116.html#ab0456a6a0f1127df48bb6f2977a9eb00" title="Turn one on. ">on()</a>, <a class="el" href="classTLC59116.html#ad5e48f003949da34ef99623767005429" title="Turn one off. ">off()</a> )</p>
 <p>Examples: </p>
 <div class="fragment"><div class="line">    <span class="comment">// Bit patterns are conveniently written using hex or binary:</span></div>
 <div class="line">    <span class="comment">// Each &quot;digit&quot; of a hex number is 4 bits, so 0xF is binary &quot;1111&quot;</span></div>
@@ -647,7 +682,7 @@ Here is the call graph for this function:</div>
 <div class="line">    first_device.<a class="code" href="classTLC59116.html#a6122fb43d940c057fc6a5459e9dbd89b">set_outputs</a>(random(0xF), 0x000F); <span class="comment">// randomly _change_ the first 4 channels</span></div>
 </div><!-- fragment --><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">pattern</td><td>HIGH/LOW for each channel by bit </td></tr>
+    <tr><td class="paramname">pattern</td><td>on/off for each channel by bit </td></tr>
     <tr><td class="paramname">which</td><td>But, only change these bits </td></tr>
   </table>
   </dd>
@@ -711,12 +746,55 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
+<p>PWM, start..end, list-of-brightness. </p>
+<p>Analogous to AnalogWrite </p>
+
 <p><div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classTLC59116_a51b5676a3105114176b81dc2b9fd937c_cgraph.png" border="0" usemap="#classTLC59116_a51b5676a3105114176b81dc2b9fd937c_cgraph" alt=""/></div>
 <map name="classTLC59116_a51b5676a3105114176b81dc2b9fd937c_cgraph" id="classTLC59116_a51b5676a3105114176b81dc2b9fd937c_cgraph">
 <area shape="rect" id="node2" href="classTLC59116__Unmanaged.html#ae52bca032bf3a5ad3137cfa37bc907cf" title="TLC59116_Unmanaged\l::LEDOUTx_Register" alt="" coords="214,37,373,78"/><area shape="rect" id="node3" href="classTLC59116__Unmanaged.html#ae15c27d8f55bf9a1d1e147f861860065" title="TLC59116_Unmanaged\l::LEDx_set_mode" alt="" coords="214,102,373,144"/><area shape="rect" id="node9" href="classTLC59116__Unmanaged.html#abd4690ab3e44f21ec2bee2f7c3841359" title="TLC59116_Unmanaged\l::PWMx_Register" alt="" coords="214,197,373,238"/><area shape="rect" id="node4" href="classTLC59116__Unmanaged.html#a437e3817f378c57b895ad99d29105c5c" title="TLC59116_Unmanaged\l::LEDOUTx_CHECK" alt="" coords="635,37,794,78"/><area shape="rect" id="node6" href="classTLC59116__Unmanaged.html#a1b34867e93dc76d3379e9f9fea1ba4f6" title="TLC59116_Unmanaged\l::LEDx_Register_mask" alt="" coords="425,37,583,78"/><area shape="rect" id="node7" href="classTLC59116__Unmanaged.html#a025a7e444437a01fecb8b398a6091faa" title="TLC59116_Unmanaged\l::LEDx_to_Register_bits" alt="" coords="421,102,587,144"/><area shape="rect" id="node8" href="classTLC59116__Unmanaged.html#a1dd4a181567c7ccf57301c9bd53a5305" title="TLC59116_Unmanaged\l::set_with_mask" alt="" coords="425,168,583,209"/><area shape="rect" id="node5" href="TLC59116__Unmanaged_8h.html#ab2ce20589d924c815fc785c51f49b0b7" title="TLC59116Warn" alt="" coords="843,44,957,71"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="aba11b6ffe8f5315d2685eaa898b3a310"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classTLC59116.html">TLC59116</a>&amp; TLC59116::set_outputs </td>
+          <td>(</td>
+          <td class="paramtype">const byte&#160;</td>
+          <td class="paramname"><em>brightness</em>[16]</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">inherited</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Set all 16 PWM according to the brightness list. </p>
+
+<p><div class="dynheader">
+Here is the call graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="classTLC59116_aba11b6ffe8f5315d2685eaa898b3a310_cgraph.png" border="0" usemap="#classTLC59116_aba11b6ffe8f5315d2685eaa898b3a310_cgraph" alt=""/></div>
+</div>
+</p>
+
+<p><div class="dynheader">
+Here is the caller graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="classTLC59116_aba11b6ffe8f5315d2685eaa898b3a310_icgraph.png" border="0" usemap="#classTLC59116_aba11b6ffe8f5315d2685eaa898b3a310_icgraph" alt=""/></div>
 </div>
 </p>
 
@@ -754,7 +832,7 @@ Here is the call graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p>Alias for <a class="el" href="classTLC59116.html#a6122fb43d940c057fc6a5459e9dbd89b" title="Only change the channels (that are marked in bit_which) to HIGH/LOW as marked in bit_pattern ...">set_outputs()</a> </p>
+<p>Alias for <a class="el" href="classTLC59116.html#a6122fb43d940c057fc6a5459e9dbd89b" title="Only change the channels (that are marked in bit_which) to on/off as marked in bit_pattern ...">set_outputs()</a> </p>
 
 <p><div class="dynheader">
 Here is the call graph for this function:</div>
@@ -823,6 +901,7 @@ Here is the call graph for this function:</div>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>Turn off by bit pattern </p>
 
 <p><div class="dynheader">
 Here is the call graph for this function:</div>
@@ -867,7 +946,7 @@ Here is the call graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p>On/Off by channel-number. </p>
+<p>Turn one on/off. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">offon</td><td><em>true</em> for on </td></tr>
@@ -951,7 +1030,8 @@ Here is the call graph for this function:</div>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Turn one off </p>
+
+<p>Turn one off. </p>
 
 <p><div class="dynheader">
 Here is the call graph for this function:</div>
@@ -959,49 +1039,6 @@ Here is the call graph for this function:</div>
 <div class="center"><img src="classTLC59116_ad5e48f003949da34ef99623767005429_cgraph.png" border="0" usemap="#classTLC59116_ad5e48f003949da34ef99623767005429_cgraph" alt=""/></div>
 <map name="classTLC59116_ad5e48f003949da34ef99623767005429_cgraph" id="classTLC59116_ad5e48f003949da34ef99623767005429_cgraph">
 <area shape="rect" id="node2" href="classTLC59116.html#a7dd7c2beaa0e7926caee771b5439f130" title="TLC59116::set" alt="" coords="161,45,269,72"/><area shape="rect" id="node3" href="classTLC59116.html#a6122fb43d940c057fc6a5459e9dbd89b" title="TLC59116::set_outputs" alt="" coords="318,45,477,72"/><area shape="rect" id="node4" href="classTLC59116__Unmanaged.html#ae52bca032bf3a5ad3137cfa37bc907cf" title="TLC59116_Unmanaged\l::LEDOUTx_Register" alt="" coords="526,5,685,46"/><area shape="rect" id="node5" href="classTLC59116__Unmanaged.html#ae15c27d8f55bf9a1d1e147f861860065" title="TLC59116_Unmanaged\l::LEDx_set_mode" alt="" coords="526,70,685,111"/><area shape="rect" id="node6" href="classTLC59116__Unmanaged.html#a437e3817f378c57b895ad99d29105c5c" title="TLC59116_Unmanaged\l::LEDOUTx_CHECK" alt="" coords="947,7,1106,49"/><area shape="rect" id="node8" href="classTLC59116__Unmanaged.html#a1b34867e93dc76d3379e9f9fea1ba4f6" title="TLC59116_Unmanaged\l::LEDx_Register_mask" alt="" coords="737,37,895,78"/><area shape="rect" id="node9" href="classTLC59116__Unmanaged.html#a025a7e444437a01fecb8b398a6091faa" title="TLC59116_Unmanaged\l::LEDx_to_Register_bits" alt="" coords="733,102,899,143"/><area shape="rect" id="node10" href="classTLC59116__Unmanaged.html#a1dd4a181567c7ccf57301c9bd53a5305" title="TLC59116_Unmanaged\l::set_with_mask" alt="" coords="737,167,895,209"/><area shape="rect" id="node7" href="TLC59116__Unmanaged_8h.html#ab2ce20589d924c815fc785c51f49b0b7" title="TLC59116Warn" alt="" coords="1155,15,1269,41"/></map>
-</div>
-</p>
-
-</div>
-</div>
-<a class="anchor" id="a8d6069720cefe5bc8f587844d2cbc64c"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="classTLC59116.html">TLC59116</a>&amp; TLC59116::pwm </td>
-          <td>(</td>
-          <td class="paramtype">byte&#160;</td>
-          <td class="paramname"><em>led_num</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">byte&#160;</td>
-          <td class="paramname"><em>brightness</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">inherited</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p><div class="dynheader">
-Here is the call graph for this function:</div>
-<div class="dyncontent">
-<div class="center"><img src="classTLC59116_a8d6069720cefe5bc8f587844d2cbc64c_cgraph.png" border="0" usemap="#classTLC59116_a8d6069720cefe5bc8f587844d2cbc64c_cgraph" alt=""/></div>
-<map name="classTLC59116_a8d6069720cefe5bc8f587844d2cbc64c_cgraph" id="classTLC59116_a8d6069720cefe5bc8f587844d2cbc64c_cgraph">
-<area shape="rect" id="node2" href="classTLC59116.html#a6122fb43d940c057fc6a5459e9dbd89b" title="TLC59116::set_outputs" alt="" coords="174,45,333,72"/><area shape="rect" id="node3" href="classTLC59116__Unmanaged.html#ae52bca032bf3a5ad3137cfa37bc907cf" title="TLC59116_Unmanaged\l::LEDOUTx_Register" alt="" coords="382,5,541,46"/><area shape="rect" id="node4" href="classTLC59116__Unmanaged.html#ae15c27d8f55bf9a1d1e147f861860065" title="TLC59116_Unmanaged\l::LEDx_set_mode" alt="" coords="382,70,541,111"/><area shape="rect" id="node5" href="classTLC59116__Unmanaged.html#a437e3817f378c57b895ad99d29105c5c" title="TLC59116_Unmanaged\l::LEDOUTx_CHECK" alt="" coords="803,7,962,49"/><area shape="rect" id="node7" href="classTLC59116__Unmanaged.html#a1b34867e93dc76d3379e9f9fea1ba4f6" title="TLC59116_Unmanaged\l::LEDx_Register_mask" alt="" coords="593,37,751,78"/><area shape="rect" id="node8" href="classTLC59116__Unmanaged.html#a025a7e444437a01fecb8b398a6091faa" title="TLC59116_Unmanaged\l::LEDx_to_Register_bits" alt="" coords="589,102,755,143"/><area shape="rect" id="node9" href="classTLC59116__Unmanaged.html#a1dd4a181567c7ccf57301c9bd53a5305" title="TLC59116_Unmanaged\l::set_with_mask" alt="" coords="593,167,751,209"/><area shape="rect" id="node6" href="TLC59116__Unmanaged_8h.html#ab2ce20589d924c815fc785c51f49b0b7" title="TLC59116Warn" alt="" coords="1011,15,1125,41"/></map>
 </div>
 </p>
 
@@ -1045,11 +1082,57 @@ Here is the call graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
+<p>Alias of set_outputs. </p>
+
 <p><div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classTLC59116_ae910495809497c9ba15bfdbd1e805e17_cgraph.png" border="0" usemap="#classTLC59116_ae910495809497c9ba15bfdbd1e805e17_cgraph" alt=""/></div>
 <map name="classTLC59116_ae910495809497c9ba15bfdbd1e805e17_cgraph" id="classTLC59116_ae910495809497c9ba15bfdbd1e805e17_cgraph">
+<area shape="rect" id="node2" href="classTLC59116.html#a6122fb43d940c057fc6a5459e9dbd89b" title="TLC59116::set_outputs" alt="" coords="174,45,333,72"/><area shape="rect" id="node3" href="classTLC59116__Unmanaged.html#ae52bca032bf3a5ad3137cfa37bc907cf" title="TLC59116_Unmanaged\l::LEDOUTx_Register" alt="" coords="382,5,541,46"/><area shape="rect" id="node4" href="classTLC59116__Unmanaged.html#ae15c27d8f55bf9a1d1e147f861860065" title="TLC59116_Unmanaged\l::LEDx_set_mode" alt="" coords="382,70,541,111"/><area shape="rect" id="node5" href="classTLC59116__Unmanaged.html#a437e3817f378c57b895ad99d29105c5c" title="TLC59116_Unmanaged\l::LEDOUTx_CHECK" alt="" coords="803,7,962,49"/><area shape="rect" id="node7" href="classTLC59116__Unmanaged.html#a1b34867e93dc76d3379e9f9fea1ba4f6" title="TLC59116_Unmanaged\l::LEDx_Register_mask" alt="" coords="593,37,751,78"/><area shape="rect" id="node8" href="classTLC59116__Unmanaged.html#a025a7e444437a01fecb8b398a6091faa" title="TLC59116_Unmanaged\l::LEDx_to_Register_bits" alt="" coords="589,102,755,143"/><area shape="rect" id="node9" href="classTLC59116__Unmanaged.html#a1dd4a181567c7ccf57301c9bd53a5305" title="TLC59116_Unmanaged\l::set_with_mask" alt="" coords="593,167,751,209"/><area shape="rect" id="node6" href="TLC59116__Unmanaged_8h.html#ab2ce20589d924c815fc785c51f49b0b7" title="TLC59116Warn" alt="" coords="1011,15,1125,41"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a8d6069720cefe5bc8f587844d2cbc64c"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classTLC59116.html">TLC59116</a>&amp; TLC59116::pwm </td>
+          <td>(</td>
+          <td class="paramtype">byte&#160;</td>
+          <td class="paramname"><em>led_num</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">byte&#160;</td>
+          <td class="paramname"><em>brightness</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">inherited</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>PWM for one channel </p>
+
+<p><div class="dynheader">
+Here is the call graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="classTLC59116_a8d6069720cefe5bc8f587844d2cbc64c_cgraph.png" border="0" usemap="#classTLC59116_a8d6069720cefe5bc8f587844d2cbc64c_cgraph" alt=""/></div>
+<map name="classTLC59116_a8d6069720cefe5bc8f587844d2cbc64c_cgraph" id="classTLC59116_a8d6069720cefe5bc8f587844d2cbc64c_cgraph">
 <area shape="rect" id="node2" href="classTLC59116.html#a6122fb43d940c057fc6a5459e9dbd89b" title="TLC59116::set_outputs" alt="" coords="174,45,333,72"/><area shape="rect" id="node3" href="classTLC59116__Unmanaged.html#ae52bca032bf3a5ad3137cfa37bc907cf" title="TLC59116_Unmanaged\l::LEDOUTx_Register" alt="" coords="382,5,541,46"/><area shape="rect" id="node4" href="classTLC59116__Unmanaged.html#ae15c27d8f55bf9a1d1e147f861860065" title="TLC59116_Unmanaged\l::LEDx_set_mode" alt="" coords="382,70,541,111"/><area shape="rect" id="node5" href="classTLC59116__Unmanaged.html#a437e3817f378c57b895ad99d29105c5c" title="TLC59116_Unmanaged\l::LEDOUTx_CHECK" alt="" coords="803,7,962,49"/><area shape="rect" id="node7" href="classTLC59116__Unmanaged.html#a1b34867e93dc76d3379e9f9fea1ba4f6" title="TLC59116_Unmanaged\l::LEDx_Register_mask" alt="" coords="593,37,751,78"/><area shape="rect" id="node8" href="classTLC59116__Unmanaged.html#a025a7e444437a01fecb8b398a6091faa" title="TLC59116_Unmanaged\l::LEDx_to_Register_bits" alt="" coords="589,102,755,143"/><area shape="rect" id="node9" href="classTLC59116__Unmanaged.html#a1dd4a181567c7ccf57301c9bd53a5305" title="TLC59116_Unmanaged\l::set_with_mask" alt="" coords="593,167,751,209"/><area shape="rect" id="node6" href="TLC59116__Unmanaged_8h.html#ab2ce20589d924c815fc785c51f49b0b7" title="TLC59116Warn" alt="" coords="1011,15,1125,41"/></map>
 </div>
 </p>
@@ -1094,6 +1177,8 @@ Here is the call graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
+<p>PWM, start..end same brightness. </p>
+
 <p><div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1126,6 +1211,8 @@ Here is the call graph for this function:</div>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Set all 16 PWM according to the brightness list. </p>
 
 <p><div class="dynheader">
 Here is the call graph for this function:</div>
@@ -1169,9 +1256,15 @@ Here is the call graph for this function:</div>
   </tr>
 </table>
 </div><div class="memdoc">
-
 <p>Superpose group-pwm on current pwm setting (but, current should be 255 for best results) </p>
 <dl class="section warning"><dt>Warning</dt><dd>Hardware Bug, see Group Functions </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">bit_pattern</td><td>channels by bit </td></tr>
+    <tr><td class="paramname">brightness</td><td>superposed PWM </td></tr>
+  </table>
+  </dd>
+</dl>
 
 <p><div class="dynheader">
 Here is the call graph for this function:</div>
@@ -1184,7 +1277,7 @@ Here is the call graph for this function:</div>
 
 </div>
 </div>
-<a class="anchor" id="a733c11fc244a4b93b29f1ba90c81be8f"></a>
+<a class="anchor" id="a692e0217553872561f9667aff49852c5"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -1195,7 +1288,7 @@ Here is the call graph for this function:</div>
           <td class="memname"><a class="el" href="classTLC59116.html">TLC59116</a>&amp; TLC59116::group_blink </td>
           <td>(</td>
           <td class="paramtype">byte&#160;</td>
-          <td class="paramname"><em>blink_delay</em>, </td>
+          <td class="paramname"><em>blink_period</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -1215,19 +1308,76 @@ Here is the call graph for this function:</div>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Blink all the LEDs, at their current/last PWM setting. </p>
+<p>Set PWM values first. To turn off blink, set channels to PWM or digital-on/off</p>
+<p>See <a class="el" href="classTLC59116.html" title="High Level interface to a single TLC59116 using Wire (I2C) interface. ">TLC59116</a>&amp; <a class="el" href="classTLC59116.html#a7a4248ddfb1cc622684aea205aecaf7d">group_blink(double, double)</a> for a version in seconds/percent.</p>
+<dl class="section warning"><dt>Warning</dt><dd>Hardware Bug, see Group Functions </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">blink_period</td><td>blink-length secs = (blink_period + 1)/24 </td></tr>
+    <tr><td class="paramname">on_ratio</td><td>ratio that the blink is on: on_ratio/256 </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p><div class="dynheader">
+Here is the caller graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="classTLC59116_a692e0217553872561f9667aff49852c5_icgraph.png" border="0" usemap="#classTLC59116_a692e0217553872561f9667aff49852c5_icgraph" alt=""/></div>
+<map name="classTLC59116_a692e0217553872561f9667aff49852c5_icgraph" id="classTLC59116_a692e0217553872561f9667aff49852c5_icgraph">
+<area shape="rect" id="node2" href="classTLC59116.html#a7a4248ddfb1cc622684aea205aecaf7d" title="TLC59116::group_blink" alt="" coords="211,5,367,32"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="aee8072c3386b44ad81f629796ac129ef"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classTLC59116.html">TLC59116</a> &amp; TLC59116::group_blink </td>
+          <td>(</td>
+          <td class="paramtype">word&#160;</td>
+          <td class="paramname"><em>bit_pattern</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>blink_delay</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>on_ratio</em> = <code>128</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inherited</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>As <a class="el" href="classTLC59116.html" title="High Level interface to a single TLC59116 using Wire (I2C) interface. ">TLC59116</a>&amp; <a class="el" href="classTLC59116.html#a692e0217553872561f9667aff49852c5" title="Blink all the LEDs, at their current/last PWM setting. ">group_blink(byte,byte)</a>, but you can specify the channels by bit-pattern </p>
 <dl class="section warning"><dt>Warning</dt><dd>Hardware Bug, see Group Functions </dd></dl>
 
 <p><div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="classTLC59116_a733c11fc244a4b93b29f1ba90c81be8f_cgraph.png" border="0" usemap="#classTLC59116_a733c11fc244a4b93b29f1ba90c81be8f_cgraph" alt=""/></div>
-</div>
-</p>
-
-<p><div class="dynheader">
-Here is the caller graph for this function:</div>
-<div class="dyncontent">
-<div class="center"><img src="classTLC59116_a733c11fc244a4b93b29f1ba90c81be8f_icgraph.png" border="0" usemap="#classTLC59116_a733c11fc244a4b93b29f1ba90c81be8f_icgraph" alt=""/></div>
+<div class="center"><img src="classTLC59116_aee8072c3386b44ad81f629796ac129ef_cgraph.png" border="0" usemap="#classTLC59116_aee8072c3386b44ad81f629796ac129ef_cgraph" alt=""/></div>
+<map name="classTLC59116_aee8072c3386b44ad81f629796ac129ef_cgraph" id="classTLC59116_aee8072c3386b44ad81f629796ac129ef_cgraph">
+<area shape="rect" id="node2" href="classTLC59116__Unmanaged.html#ae52bca032bf3a5ad3137cfa37bc907cf" title="TLC59116_Unmanaged\l::LEDOUTx_Register" alt="" coords="211,42,370,84"/><area shape="rect" id="node3" href="classTLC59116__Unmanaged.html#ae15c27d8f55bf9a1d1e147f861860065" title="TLC59116_Unmanaged\l::LEDx_set_mode" alt="" coords="211,108,370,149"/><area shape="rect" id="node8" href="classTLC59116__Unmanaged.html#a1dd4a181567c7ccf57301c9bd53a5305" title="TLC59116_Unmanaged\l::set_with_mask" alt="" coords="422,173,581,214"/><area shape="rect" id="node4" href="classTLC59116__Unmanaged.html#a437e3817f378c57b895ad99d29105c5c" title="TLC59116_Unmanaged\l::LEDOUTx_CHECK" alt="" coords="633,13,791,54"/><area shape="rect" id="node6" href="classTLC59116__Unmanaged.html#a1b34867e93dc76d3379e9f9fea1ba4f6" title="TLC59116_Unmanaged\l::LEDx_Register_mask" alt="" coords="422,42,581,84"/><area shape="rect" id="node7" href="classTLC59116__Unmanaged.html#a025a7e444437a01fecb8b398a6091faa" title="TLC59116_Unmanaged\l::LEDx_to_Register_bits" alt="" coords="419,108,584,149"/><area shape="rect" id="node5" href="TLC59116__Unmanaged_8h.html#ab2ce20589d924c815fc785c51f49b0b7" title="TLC59116Warn" alt="" coords="841,20,954,47"/></map>
 </div>
 </p>
 
@@ -1264,7 +1414,15 @@ Here is the caller graph for this function:</div>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>Blink all the LEDs, at their current/last PWM setting by len/%. </p>
 <dl class="section warning"><dt>Warning</dt><dd>Hardware Bug, see Group Functions </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">blink_length_secs</td><td>0.041secs (24.00384hz) to 10.54secs (.09375hz) in steps of .04166secs </td></tr>
+    <tr><td class="paramname">on_percent</td><td>% of blink-cycle that is on </td></tr>
+  </table>
+  </dd>
+</dl>
 
 <p><div class="dynheader">
 Here is the call graph for this function:</div>
@@ -1314,6 +1472,7 @@ Here is the call graph for this function:</div>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>As <a class="el" href="classTLC59116.html" title="High Level interface to a single TLC59116 using Wire (I2C) interface. ">TLC59116</a>&amp; <a class="el" href="classTLC59116.html#a7a4248ddfb1cc622684aea205aecaf7d">group_blink(double,double)</a>, but you can specify the channels by bit-pattern </p>
 <dl class="section warning"><dt>Warning</dt><dd>Hardware Bug, see Group Functions </dd></dl>
 
 <p><div class="dynheader">
@@ -1364,6 +1523,7 @@ Here is the call graph for this function:</div>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>Same as <a class="el" href="classTLC59116.html" title="High Level interface to a single TLC59116 using Wire (I2C) interface. ">TLC59116</a>&amp; <a class="el" href="classTLC59116.html#ac6af0fa0f9af8900865430be0be81672">group_blink(word, double, double)</a>, but blink_length is an integer (1..10 secs) </p>
 <dl class="section warning"><dt>Warning</dt><dd>Hardware Bug, see Group Functions </dd></dl>
 
 <p><div class="dynheader">
@@ -1372,56 +1532,6 @@ Here is the call graph for this function:</div>
 <div class="center"><img src="classTLC59116_a1e9644aee95d5a1209f06abe691e6fa0_cgraph.png" border="0" usemap="#classTLC59116_a1e9644aee95d5a1209f06abe691e6fa0_cgraph" alt=""/></div>
 <map name="classTLC59116_a1e9644aee95d5a1209f06abe691e6fa0_cgraph" id="classTLC59116_a1e9644aee95d5a1209f06abe691e6fa0_cgraph">
 <area shape="rect" id="node2" href="classTLC59116.html#a733c11fc244a4b93b29f1ba90c81be8f" title="TLC59116::group_blink" alt="" coords="211,29,367,56"/></map>
-</div>
-</p>
-
-</div>
-</div>
-<a class="anchor" id="aee8072c3386b44ad81f629796ac129ef"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="classTLC59116.html">TLC59116</a> &amp; TLC59116::group_blink </td>
-          <td>(</td>
-          <td class="paramtype">word&#160;</td>
-          <td class="paramname"><em>bit_pattern</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>blink_delay</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>on_ratio</em> = <code>128</code>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inherited</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<dl class="section warning"><dt>Warning</dt><dd>Hardware Bug, see Group Functions </dd></dl>
-
-<p><div class="dynheader">
-Here is the call graph for this function:</div>
-<div class="dyncontent">
-<div class="center"><img src="classTLC59116_aee8072c3386b44ad81f629796ac129ef_cgraph.png" border="0" usemap="#classTLC59116_aee8072c3386b44ad81f629796ac129ef_cgraph" alt=""/></div>
-<map name="classTLC59116_aee8072c3386b44ad81f629796ac129ef_cgraph" id="classTLC59116_aee8072c3386b44ad81f629796ac129ef_cgraph">
-<area shape="rect" id="node2" href="classTLC59116__Unmanaged.html#ae52bca032bf3a5ad3137cfa37bc907cf" title="TLC59116_Unmanaged\l::LEDOUTx_Register" alt="" coords="211,42,370,84"/><area shape="rect" id="node3" href="classTLC59116__Unmanaged.html#ae15c27d8f55bf9a1d1e147f861860065" title="TLC59116_Unmanaged\l::LEDx_set_mode" alt="" coords="211,108,370,149"/><area shape="rect" id="node8" href="classTLC59116__Unmanaged.html#a1dd4a181567c7ccf57301c9bd53a5305" title="TLC59116_Unmanaged\l::set_with_mask" alt="" coords="422,173,581,214"/><area shape="rect" id="node4" href="classTLC59116__Unmanaged.html#a437e3817f378c57b895ad99d29105c5c" title="TLC59116_Unmanaged\l::LEDOUTx_CHECK" alt="" coords="633,13,791,54"/><area shape="rect" id="node6" href="classTLC59116__Unmanaged.html#a1b34867e93dc76d3379e9f9fea1ba4f6" title="TLC59116_Unmanaged\l::LEDx_Register_mask" alt="" coords="422,42,581,84"/><area shape="rect" id="node7" href="classTLC59116__Unmanaged.html#a025a7e444437a01fecb8b398a6091faa" title="TLC59116_Unmanaged\l::LEDx_to_Register_bits" alt="" coords="419,108,584,149"/><area shape="rect" id="node5" href="TLC59116__Unmanaged_8h.html#ab2ce20589d924c815fc785c51f49b0b7" title="TLC59116Warn" alt="" coords="841,20,954,47"/></map>
 </div>
 </p>
 
@@ -1448,39 +1558,8 @@ Here is the call graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-</div>
-</div>
-<a class="anchor" id="ada90a7d8f2d6bdb452e6c45b84d3d7b9"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="classTLC59116.html">TLC59116</a> &amp; TLC59116::allcall_address </td>
-          <td>(</td>
-          <td class="paramtype">byte&#160;</td>
-          <td class="paramname"><em>address</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>enable</em> = <code>true</code>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inherited</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
+<p>The reset-address, unchangeable. </p>
+<p>Not much you should do with this. See <a class="el" href="classTLC59116Manager.html#a4f36fbb60b668b13d837a8f8705c8c4b">TLC59116Manager::reset()</a> </p>
 
 </div>
 </div>
@@ -1504,6 +1583,47 @@ Here is the call graph for this function:</div>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Get broadcast address, see below to set/enable. </p>
+
+</div>
+</div>
+<a class="anchor" id="a585896343d75e73e9bf99a366f1e15ab"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classTLC59116.html">TLC59116</a>&amp; TLC59116::allcall_address </td>
+          <td>(</td>
+          <td class="paramtype">byte&#160;</td>
+          <td class="paramname"><em>address</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>enable</em> = <code>true</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inherited</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Set and enable/disable the broadcast address (<em>allcall_addr</em>). </p>
+<p>Each device can have a different allcall_address, and have it disabled/enabled.</p>
+<p>By default, the <a class="el" href="classTLC59116Manager.html" title="Holds all of the devices. ">TLC59116Manager</a> arranges for the broadcast address to be enabled.</p>
+<dl class="bug"><dt><b><a class="el" href="bug.html#_bug000003">Bug:</a></b></dt><dd>However, the <a class="el" href="classTLC59116Manager.html#accc69d6286a6e8052cee7e717b54dc1f">TLC59116Manager.broadcast()</a> object <em>only</em> assumes the default allcall_address 0x68. So, it won't work if you change the allcall_address. </dd></dl>
 
 </div>
 </div>
@@ -1530,15 +1650,6 @@ Here is the call graph for this function:</div>
 
 <p>Enable broadcast. </p>
 
-<p><div class="dynheader">
-Here is the call graph for this function:</div>
-<div class="dyncontent">
-<div class="center"><img src="classTLC59116_a6998e155661f477d79d290b5b5266ae8_cgraph.png" border="0" usemap="#classTLC59116_a6998e155661f477d79d290b5b5266ae8_cgraph" alt=""/></div>
-<map name="classTLC59116_a6998e155661f477d79d290b5b5266ae8_cgraph" id="classTLC59116_a6998e155661f477d79d290b5b5266ae8_cgraph">
-<area shape="rect" id="node2" href="classTLC59116__Unmanaged.html#a1dd4a181567c7ccf57301c9bd53a5305" title="TLC59116_Unmanaged\l::set_with_mask" alt="" coords="230,5,389,46"/></map>
-</div>
-</p>
-
 </div>
 </div>
 <a class="anchor" id="a55621702303ff89c6aa6c75533ac4192"></a>
@@ -1564,15 +1675,6 @@ Here is the call graph for this function:</div>
 
 <p>Disable broadcast. </p>
 
-<p><div class="dynheader">
-Here is the call graph for this function:</div>
-<div class="dyncontent">
-<div class="center"><img src="classTLC59116_a55621702303ff89c6aa6c75533ac4192_cgraph.png" border="0" usemap="#classTLC59116_a55621702303ff89c6aa6c75533ac4192_cgraph" alt=""/></div>
-<map name="classTLC59116_a55621702303ff89c6aa6c75533ac4192_cgraph" id="classTLC59116_a55621702303ff89c6aa6c75533ac4192_cgraph">
-<area shape="rect" id="node2" href="classTLC59116__Unmanaged.html#a1dd4a181567c7ccf57301c9bd53a5305" title="TLC59116_Unmanaged\l::set_with_mask" alt="" coords="230,5,389,46"/></map>
-</div>
-</p>
-
 </div>
 </div>
 <a class="anchor" id="a4db0408c3d6d5181ad987a76ae5c21c2"></a>
@@ -1595,6 +1697,46 @@ Here is the call graph for this function:</div>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Is broadcast enabled? </p>
+
+</div>
+</div>
+<a class="anchor" id="af10faab6bc072d4bbdd985980803f0b3"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">byte TLC59116::SUBADR_address </td>
+          <td>(</td>
+          <td class="paramtype">byte&#160;</td>
+          <td class="paramname"><em>which</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">inherited</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get the SUBADR_n address. </p>
+<p>Each device can have a 3 more broadcast addresses. Thus you can form various groups of the devices.</p>
+<p>By default, the SUBADR's are disabled. You must enable them if you want to use them (see <a class="el" href="classTLC59116.html#a61c8184dbddd3a6d90e7cd2524b96277" title="Set the SUBADR_n address. ">SUBADR_address(byte, byte, bool)</a>, <a class="el" href="classTLC59116.html#ac6239daf0a26d22f1cfba8150b257567" title="Enable SUBADR_n. ">SUBADR_address_enable(byte)</a>, <a class="el" href="classTLC59116.html#a365e02e443ac0dfad0b9a92ce3a315bf">SUBADR_address_disable(byte)</a> ).</p>
+<p>The default addresses are: are 0x69, 0x6a, 0x6b </p>
+
+<p><div class="dynheader">
+Here is the call graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="classTLC59116_af10faab6bc072d4bbdd985980803f0b3_cgraph.png" border="0" usemap="#classTLC59116_af10faab6bc072d4bbdd985980803f0b3_cgraph" alt=""/></div>
+<map name="classTLC59116_af10faab6bc072d4bbdd985980803f0b3_cgraph" id="classTLC59116_af10faab6bc072d4bbdd985980803f0b3_cgraph">
+<area shape="rect" id="node2" href="classTLC59116__Unmanaged.html#a7b115c9538a731fd925dfd5dd44b3dc9" title="TLC59116_Unmanaged\l::SUBADRx_Register" alt="" coords="254,5,413,46"/><area shape="rect" id="node3" href="TLC59116__Unmanaged_8h.html#aa3f3157e61b6d64526e7bf2016c6d799" title="TLC59116Dev" alt="" coords="461,12,568,39"/></map>
+</div>
+</p>
 
 </div>
 </div>
@@ -1636,72 +1778,10 @@ Here is the call graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-</div>
-</div>
-<a class="anchor" id="a8c25a1d8d06346ce48e108ae2bc435be"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="classTLC59116.html">TLC59116</a>&amp; TLC59116::SUBADR_address </td>
-          <td>(</td>
-          <td class="paramtype">byte&#160;</td>
-          <td class="paramname"><em>which</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>enable</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inherited</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a class="anchor" id="af10faab6bc072d4bbdd985980803f0b3"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">byte TLC59116::SUBADR_address </td>
-          <td>(</td>
-          <td class="paramtype">byte&#160;</td>
-          <td class="paramname"><em>which</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">inherited</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p><div class="dynheader">
-Here is the call graph for this function:</div>
-<div class="dyncontent">
-<div class="center"><img src="classTLC59116_af10faab6bc072d4bbdd985980803f0b3_cgraph.png" border="0" usemap="#classTLC59116_af10faab6bc072d4bbdd985980803f0b3_cgraph" alt=""/></div>
-<map name="classTLC59116_af10faab6bc072d4bbdd985980803f0b3_cgraph" id="classTLC59116_af10faab6bc072d4bbdd985980803f0b3_cgraph">
-<area shape="rect" id="node2" href="classTLC59116__Unmanaged.html#a7b115c9538a731fd925dfd5dd44b3dc9" title="TLC59116_Unmanaged\l::SUBADRx_Register" alt="" coords="254,5,413,46"/><area shape="rect" id="node3" href="TLC59116__Unmanaged_8h.html#aa3f3157e61b6d64526e7bf2016c6d799" title="TLC59116Dev" alt="" coords="461,12,568,39"/></map>
-</div>
-</p>
+<p>Set the SUBADR_n address. </p>
+<dl class="bug"><dt><b><a class="el" href="bug.html#_bug000004">Bug:</a></b></dt><dd>We don't track commands on SUBADR_n's, so this library will get very confused about the state of the devices and do confusing things if you mix broadcasts to SUBADR_n devices, and individual devices in that SUBADR_n group.</dd></dl>
+<dl class="bug"><dt><b><a class="el" href="bug.html#_bug000005">Bug:</a></b></dt><dd>Also, this library provides no easy access to broadcast to a SUBADR_n group.</dd></dl>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000003">Todo:</a></b></dt><dd>Provide SUBADR_n broadcast functionality. </dd></dl>
 
 </div>
 </div>
@@ -1727,6 +1807,8 @@ Here is the call graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
+<p>Is SUBADR_n enabled? </p>
+
 <p><div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1735,6 +1817,57 @@ Here is the call graph for this function:</div>
 <area shape="rect" id="node2" href="classTLC59116__Unmanaged.html#a513cc233a1398925cf0a4d015606124f" title="TLC59116_Unmanaged\l::is_SUBADR_bit" alt="" coords="219,5,378,46"/></map>
 </div>
 </p>
+
+</div>
+</div>
+<a class="anchor" id="ac6239daf0a26d22f1cfba8150b257567"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classTLC59116.html">TLC59116</a>&amp; TLC59116::SUBADR_address_enable </td>
+          <td>(</td>
+          <td class="paramtype">byte&#160;</td>
+          <td class="paramname"><em>which</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inherited</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Enable SUBADR_n. </p>
+
+</div>
+</div>
+<a class="anchor" id="a365e02e443ac0dfad0b9a92ce3a315bf"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classTLC59116.html">TLC59116</a>&amp; TLC59116::SUBADR_address_disable </td>
+          <td>(</td>
+          <td class="paramtype">byte&#160;</td>
+          <td class="paramname"><em>which</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inherited</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Disable SUBADR_n </p>
 
 </div>
 </div>
@@ -1769,6 +1902,13 @@ Here is the call graph for this function:</div>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>We need a Rext value (the resistor attached to the Rext pin) to calculate this, e.g. 156ohms gives 120mA at reset (default), 937ohms gives 20mA. This function can use a default value of 156ohms to do the calculation.</p>
+<p>By default, this is set to maximum current (e.g. 120mA for 156ohm).</p>
+<p>Note that this will tend to set the output 1milliamp low (due to rounding).</p>
+<p>This will also clip the calculated mA to the minimum..120mA range (for Rext).</p>
+<p>Check the extant/calculated value with <a class="el" href="classTLC59116.html#a7b12a12e134df87bfdc477cbc9153db6">milliamps()</a>.</p>
+<p>See the section "The TLC59116 Device" for some short notes on "constant current".</p>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000004">Todo:</a></b></dt><dd>the example showing software current setup before power on </dd></dl>
 
 <p><div class="dynheader">
 Here is the call graph for this function:</div>
@@ -1802,6 +1942,7 @@ Here is the call graph for this function:</div>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>The calculated current setting </p>
 
 <p><div class="dynheader">
 Here is the call graph for this function:</div>
@@ -1835,6 +1976,7 @@ Here is the call graph for this function:</div>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>Just like the Arduino <a class="el" href="classTLC59116.html#a87fc1d373025f18665fe7244922718a8">delay()</a> function </p>
 
 </div>
 </div>
@@ -1858,6 +2000,8 @@ Here is the call graph for this function:</div>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Print the registers, as we've cached them. cf. <a class="el" href="classTLC59116__Unmanaged.html#afdab6558e28a80a7be27282c5f6fdad3">describe_actual()</a> </p>
 
 <p><div class="dynheader">
 Here is the call graph for this function:</div>
@@ -1890,6 +2034,7 @@ Here is the call graph for this function:</div>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>Fetch the actual into our cached registers </p>
 
 <p><div class="dynheader">
 Here is the call graph for this function:</div>
@@ -4627,13 +4772,13 @@ Here is the call graph for this function:</div>
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following files:<ul>
-<li><a class="el" href="TLC59116_8h_source.html">TLC59116.h (Sun May 10 10:25:17 2015 -0400)</a></li>
-<li><a class="el" href="TLC59116_8cpp.html">TLC59116.cpp (Sun May 10 10:25:17 2015 -0400)</a></li>
+<li><a class="el" href="TLC59116_8h_source.html">TLC59116.h (Sun May 10 11:46:17 2015 -0400)</a></li>
+<li><a class="el" href="TLC59116_8cpp.html">TLC59116.cpp (Sun May 10 11:46:17 2015 -0400)</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun May 10 2015 11:43:03 for TLC59116 Library by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun May 10 2015 13:42:56 for TLC59116 Library by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

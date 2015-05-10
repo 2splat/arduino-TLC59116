@@ -80,13 +80,26 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><dl class="reflist">
+<dt><a class="anchor" id="_bug000002"></a>Group <a class="el" href="classTLC59116.html#amgrpce0793e3f00fe2f32e8c3b0de7133f93">PWM Functions</a>  </dt>
+<dd>Be careful with start/end arguments, if they are out of range (0..15) you will have mysterious problems.  </dd>
+<dt><a class="anchor" id="_bug000002"></a>Group <a class="el" href="classTLC59116.html#amgrpce0793e3f00fe2f32e8c3b0de7133f93">PWM Functions</a>  </dt>
+<dd>Be careful with start/end arguments, if they are out of range (0..15) you will have mysterious problems.  </dd>
+<dt><a class="anchor" id="_bug000003"></a>Member <a class="el" href="classTLC59116.html#a585896343d75e73e9bf99a366f1e15ab">TLC59116::allcall_address</a>  (byte address, bool enable=true)</dt>
+<dd>However, the <a class="el" href="classTLC59116Manager.html#accc69d6286a6e8052cee7e717b54dc1f">TLC59116Manager.broadcast()</a> object <em>only</em> assumes the default allcall_address 0x68. So, it won't work if you change the allcall_address.  </dd>
+<dt><a class="anchor" id="_bug000004"></a>Member <a class="el" href="classTLC59116.html#a61c8184dbddd3a6d90e7cd2524b96277">TLC59116::SUBADR_address</a>  (byte which, byte address, bool enable=true)</dt>
+<dd><p class="startdd">We don't track commands on SUBADR_n's, so this library will get very confused about the state of the devices and do confusing things if you mix broadcasts to SUBADR_n devices, and individual devices in that SUBADR_n group.</p>
+<p>Also, this library provides no easy access to broadcast to a SUBADR_n group.</p>
+<p>Also, this library provides no easy access to broadcast to a SUBADR_n group.</p>
+<p>Also, this library provides no easy access to broadcast to a SUBADR_n group.</p>
+<p class="enddd">Also, this library provides no easy access to broadcast to a SUBADR_n group. </p>
+</dd>
 <dt><a class="anchor" id="_bug000001"></a>Class <a class="el" href="classTLC59116Manager.html">TLC59116Manager</a>  </dt>
 <dd>This collects all I2C devices between 0x60 and 0x6E. Non <a class="el" href="classTLC59116.html" title="High Level interface to a single TLC59116 using Wire (I2C) interface. ">TLC59116</a> devices can appear in our list! The <a class="el" href="classTLC59116.html" title="High Level interface to a single TLC59116 using Wire (I2C) interface. ">TLC59116</a> doesn't have a feature that identifies it, so we just assume.</dd>
 </dl>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun May 10 2015 11:43:03 for TLC59116 Library by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun May 10 2015 13:42:56 for TLC59116 Library by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>
