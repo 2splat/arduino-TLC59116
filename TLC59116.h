@@ -3,31 +3,8 @@
 
 // FIXME: insert version here
 
-/* Description: High-level Arduino library for TI TLC59116 LED Driver over I2C
 
-  See: TLC59116_Unmanaged for lower level library.
-
-  This interface provides a high level interface:
-  * So it's easier to get started (provides useful defaults, etc.).
-  * With supposedly friendly functions.
-  * And allowing the friendlier ".", instead of remembering when to use "->".
-  
-  This interface keeps track of the device(s) state (i.e. output-channel 4 is already "on"):
-  * So you don't have to, which minimizes bugs 
-    (i.e.: only update the bits to turn channel 5 on, without stomping the other channels).
-  * And to optimize communication with the device(s).
-
-  See: README.*, doc/index.html
-
-*/
-
-/* Documentation:
-
-  Documentation is spread throughout these various .h, .cpp, and other files.
-  The full documentation is made/assembled by "make documentation".
-
-  See: Documentation Format
-*/
+/* Documentation assumes Doxygen */
 
 #include <Arduino.h>
 #include <Wire.h> // Usage.Include+: You have to do this in your .ino also
@@ -35,47 +12,119 @@
 #include "TLC59116_Unmanaged.h"
 
 extern TwoWire Wire;
-class TLC59116Manager; /* dumy trailing block */
+class TLC59116Manager;
 
 #define WARN TLC59116Warn // FIXME: how about a include? or 2 copies (sed'ed)?
 #define DEV TLC59116Dev 
 #define LOWD TLC59116LowLevel
 
+/// High Level interface to a single TLC59116 using Wire (I2C) interface.
+/** 
+
+  (see TLC59116_Unmanaged for lower level library)
+
+  ### Usage:
+
+  \include basic_usage_single/basic_usage_single.ino
+
+  ### The TLC59116 Device
+  See the TI spec sheet for much detail: http://www.ti.com/lit/ds/symlink/tlc59116.pdf
+
+  - Output pins ("channels") are numbered 0..15.
+  - Channels are "sinks", acting like Arduino pins that are LOW, even for PWM.
+    - Connect the minus side of LEDs to the output pins.
+    - Channels are considered ON, or OFF, instead of HIGH/LOW (or, at some PWM value)
+    - PWM is 8 bit.
+  - I2C addresses start at 0x60. See TLC59116_Unmanaged for the available addresses (up to 14).
+  - This library discovers the devices on the I2C bus and keeps them in a list.
+    - Use the _index_ in this library: e.g. "0" is the device with the lowest address, 
+      "1" is the next highest, etc.
+  - Individual devices cannot be "reset", all devices on the I2C bus are affected by a reset.
+  - By default, all devices respond to broadcast ("allcall") commands (a special address).
+    - This can be changed, or turned off, for each device (see TLC59116::allcall_address())
+    - Three additional "broadcast" addresses can be set. See TLC59116::SUBADR_address()
+    - Thus, a device can participate in 4 different broadcast groups (or none):
+      - allcall_address()
+      - SUBADR_address(0)
+      - SUBADR_address(1)
+      - SUBADR_address(2)
+  - See the various groupings of the functions (below) for functionality.
+  
+  ### Protocol:
+
+  - Setting up
+    - Declare a static TLC59116Manager(static scope, or "static" keyword if you are very clever)
+      \snippet allfeatures/allfeatures.ino Need a manager
+    - Execute \ref TLC59116Manager::init() ".init()" the manager once (usually in setup())
+      \snippet allfeatures/allfeatures.ino Init the manager
+    - The devices should be in a ready state (by default, outputs are enabled, but all channels are off)
+  - Obtain a reference from yourmanager\[i],  0..device_count()-1
+    - This library passes and returns references so that "." can always be used.
+      \snippet allfeatures/allfeatures.ino Static referencing devices
+      \snippet allfeatures/allfeatures.ino Index referencing devices
+  - Get information about the device as needed from the \ref Info Functions
+      \snippet allfeatures/allfeatures.ino device info
+  - Set device \ref Global Functions, \ref Group/Broadcast Addresses, typically in setup()
+      \code{.cpp}
+      void setup() {
+      \endcode
+      \snippet allfeatures/allfeatures.ino device setup
+  - Initial \ref Digital Functions, \ref PWM Functions, typically in setup()
+      \snippet allfeatures/allfeatures.ino initial channel settings
+  - During loop, mess with \ref Global Functions, \re Group/Broadcast Addresses, \ref Digital Functions, \ref PWM Functions
+    - This library returns the device-reference for most calls, so you can chain functions
+      \snippet allfeatures/allfeatures.ino chain functions together
+
+  FIXME: group the unmanaged
+  FIXME: a beginner protocol, reveal advanced: advanced -> folded
+
+    - config-thingy-description, it's protocol, in-constructor?, defaults, method 
+  - FIXME: configure methods should note the default
+  - FIXME: configure methods should include constructor-args
+
+
+  This high-level interface tracks each device's state so that commands appear to be independant.
+  For example, you can set the digital-on of a channel without worrying about the 
+  other 4 mode settings in each LEDOUTx_Register.
+
+  Some optimization of the data sent to the devices is also done.
+
+*/
 class TLC59116 : public TLC59116_Unmanaged {
-  /* Description: High Level interface to a single TLC59116 over Wire interface.
-  */
-
-  /* Protocol:
-
-    FIXME: a beginner protocol, reveal advanced: <advanced> -> folded
-    See @TLC59116Manager.Protocol
-    then
-    * Configure the TLC59116, if needed:
-      FIXME: assemble a list from methods taggged as Configuration (@Tag.Configuration)
-      * config-thingy-description, it's protocol, in-constructor?, defaults, method 
-      FIXME: configure methods should note the default
-      FIXME: configure methods should @include constructor-args
-    * Use the various @Tag.Output methods to control the outputs
-    * Use the @Tag.Miscellaneous methods
-  */
 
   public:
     // No constructor, get from a TLC59116Manager[i]
 
+    /// \name Global Functions
+    ///@{
+    /// Controlling various global features of the device
     // Turn _all_ outputs on/off.
     virtual TLC59116& enable_outputs(
       bool yes = true,  // false to disable outputs
       bool with_delay = true // delay if doing something immediately
       );
+
     bool is_enable_outputs() { return !is_OSC_bit(shadow_registers[MODE1_Register]); };
-    bool is_enabled() { return is_enable_outputs(); }
+    bool is_enabled() { return is_enable_outputs(); } //!< Alias for is_enable_outputs
+    ///@}
 
     // High level
 
-    // Digital
+    /// \name Digital Functions
+    ///@{
+    //! Analogous to DigitalWrite
     // FIXME: pattern_bits(bits, which). set_bits(pattern). reset_bits(pattern). on/off/set
-    TLC59116& set_outputs(word pattern, word which=0xFFFF); // Only change bits marked in which: to bits in pattern
-    TLC59116& pattern(word pattern, word which=0xFFFF) { return set_outputs(pattern, which); }
+    TLC59116& set_outputs(
+        word pattern,  //!< HIGH/LOW for each channel by bit
+        word which=0xFFFF //!< But, only change these bits
+      ); //!< Only change the channels (that are marked in _bit_which_) to HIGH/LOW as marked in _bit_pattern_
+      /**< 
+        (cf. set_pattern(word)
+
+        Examples:
+        \snippet allfeatures/allfeatures.ino set_outputs by bit pattern
+      */
+    TLC59116& pattern(word bit_pattern, word bit_which=0xFFFF) { return set_outputs(bit_pattern, bit_which); }
     TLC59116& set_pattern(word pattern) { return set_outputs(pattern, pattern); } // only set those indicated
     TLC59116& reset_pattern(word pattern) { return set_outputs(~pattern, pattern); } // only turn-off those indicated
     TLC59116& set(int led_num, bool offon) {  // only turn-off one
@@ -84,8 +133,11 @@ class TLC59116 : public TLC59116_Unmanaged {
       }
     TLC59116& on(int led_num) { return set(led_num, true); } // turn one on
     TLC59116& off(int led_num) { return set(led_num, false); } // turn one off
+    ///@}
 
-    // PWM
+    /// \name PWM Functions
+    ///@{
+    //! Analogous to AnalogWrite
     TLC59116& set_outputs(byte led_num_start, byte led_num_end, const byte brightness[] /*[start..end]*/); // A list of PWM values. Tolerates led_num_end>15 which wraps around
     TLC59116& pwm(byte led_num, byte brightness) { byte ba[1] = {brightness}; return set_outputs(led_num, led_num, ba); }
     TLC59116& pwm(byte led_num_start, byte led_num_end, const byte brightness[] /*[ct]*/) { return set_outputs(led_num_start, led_num_end, brightness); }
@@ -98,35 +150,44 @@ class TLC59116 : public TLC59116_Unmanaged {
       }
     TLC59116& pwm(const byte brightness[16]) { return set_outputs(0,15, brightness); }
     // fixme: maybe brightness()?
+    ///@}
     
-    /* Group Functions:
-    "group" functions have a bug:
-    If you decrease the value (blink_time or brightness),
-    The chip may act like the value is max for one "cycle".
+    /** \name Group Functions
+    \warning The TLC59116 has a hardware bug:
+
+    If you decrease the value (blink_time or brightness) in these functions,
+    the chip may act like the value is max for one "cycle".
     This causes a full-brightness result for group_pwm, and a 10 second blink-length for group_blink.
     I think this is because:
-    * There is a continously running timer, counting up.
-    * The "value" is compared to the timer, and triggers the action and a reset of the timer.
-    * If you move the "value" down, you may skip over the current timer value,
+    - There is a continously running timer, counting up.
+    - The "value" is compared to the timer, and triggers the action and a reset of the timer.
+    - If you move the "value" down, you may skip over the current timer value,
        so it runs to the maximum value before wrapping around again.
     "reset" is the only thing that I know of that will reset the timer.
     But, more experimentation is needed.
-    */
+    
+    I recommend you only set group functions once (or only increase values).
 
-    // Superpose group-pwm on current pwm setting (but, current should be 255 for best results)
-    // FIXME: has a hardware bug
-    TLC59116& group_pwm(word bit_pattern, byte brightness);
+    Of course, you could TLC59116Manager::reset() everytime, too.
+    */
+    ///@{
+    // Warning, "group" functions have a bug in the device hardware
+
+    //! Superpose group-pwm on current pwm setting (but, current should be 255 for best results)
+    TLC59116& group_pwm(word bit_pattern, byte brightness); //!< \warning Hardware Bug, see \ref Group Functions 
 
     // Blink the LEDs, at their current/last PWM setting. 
     // FIXME: has a hardware bug
     // Set PWM values first.
     // To turn off blink, set channels to PWM or digital-on/off
     // All:
-    TLC59116& group_blink(byte blink_delay, byte on_ratio=128) { return group_blink(0xFFFF,blink_delay,on_ratio); }
+    TLC59116& group_blink(byte blink_delay, byte on_ratio=128) { return group_blink(0xFFFF,blink_delay,on_ratio); } //!< \warning Hardware Bug, see \ref Group Functions 
+    //! \warning Hardware Bug, see \ref Group Functions 
     TLC59116& group_blink(double blink_length_secs, double on_percent=50.0) {
       return group_blink(0xFFFF,blink_length_secs,on_percent); 
       }
     // By pattern:
+    //! \warning Hardware Bug, see \ref Group Functions 
     TLC59116& group_blink(word bit_pattern, double blink_length_secs, double on_percent=50.0) { // convenience % & len
       // on_percent is 05..99.61%, blink_length is 0.041secs (24.00384hz) to 10.54secs (.09375hz) in steps of .04166secs 
       return group_blink(
@@ -135,14 +196,18 @@ class TLC59116 : public TLC59116_Unmanaged {
         (byte) int(on_percent * 256.0/100.0)
         );
       }
+    //! \warning Hardware Bug, see \ref Group Functions 
     TLC59116& group_blink(unsigned int bit_pattern, int blink_length_secs, double on_percent=50.0) {
       return group_blink((word)bit_pattern, blink_length_secs, int(on_percent * 256.0/100.0));
       }
+    //! \warning Hardware Bug, see \ref Group Functions 
     TLC59116& group_blink(word bit_pattern, int blink_delay, int on_ratio=128); // blinks/sec = (blink_delay+1)/24
+    ///@}
 
-    // Address stuff
-    // it is illegal to set any address to Reset_Addr (0x6B), will be ignored, with warning
-    // Addresses should be specified as 0x60..0x6F
+    /// \name Group/Broadcast Addresses
+    ///@{
+    /// Addresses should be specified as 0x60..0x6F
+    /* it is illegal to set any address to Reset_Addr (0x6B), will be ignored, with warning */
 
     // Can't change Reset
     byte Reset_address() { return Reset_Addr >> 1; } // convenience
@@ -159,7 +224,10 @@ class TLC59116 : public TLC59116_Unmanaged {
     TLC59116& SUBADR_address(byte which, bool enable); // enable/disable
     byte SUBADR_address(byte which) { return shadow_registers[SUBADRx_Register(which)] >> 1; }
     bool is_SUBADR_address(byte which) { return is_SUBADR_bit( shadow_registers[MODE1_Register], which); }
+    ///@}
     
+    /// \name Global Functions
+    ///@{
     // Software current control
     // We need a Rext value to calculate this, 156ohms gives 120ma at reset, 937ohms give 20ma
     // Note that this will tend to set the output 1milliamp low.
@@ -167,16 +235,26 @@ class TLC59116 : public TLC59116_Unmanaged {
     // Check it with milliamps().
     TLC59116& set_milliamps(byte ma, int Rext=Rext_Min); // Rext_Min ohms is 120ma at reset.
     int milliamps(int Rext=Rext_Min) {return i_out(shadow_registers[IREF_Register]); } // current setting
+    ///@}
 
     // Error detect
     // FIXME: implement. we should set error enable on reset? then read them?
 
-    // Misc
+    /// \name Convenience
+    ///@{
     TLC59116& delay(int msec) { ::delay(msec); return *this;} // convenience
+    ///@}
 
-  public: // Debugging
+    /// \name Info Functions
+    ///@{
+    // \todo checking a shadow_register value
+    ///@}
+
+    /// \name Debugging
+    ///@{
     TLC59116& describe_shadow();
     TLC59116& resync_shadow_registers();
+    ///@}
 
   private:
     // FIXME: move Power_Up_Register_Values to FLASH
@@ -236,10 +314,21 @@ class TLC59116::Broadcast : public TLC59116 {
 
   };
 
+/// Holds all of the devices.
+/** 
+  - Inits the I2C bus, and devices (see TLC59116Manager::TLC59116Manager())
+  - Collects and holds the devices (cf TLC59116Manager::operator[]) 
+  - Provides reset (TLC59116Manager::reset())
+  - Provides a broadcast object (TLC59116Manager::broadcast())
+  
+  The reset command for TCL59116's is a broadcast command, so we manage that here.
+
+  \bug 
+  This collects all I2C devices between 0x60 and 0x6E. Non TLC59116 devices can appear in our list!
+  The TLC59116 doesn't have a feature that identifies it, so we just assume.
+
+*/
 class TLC59116Manager {
-  // Manager
-  // Holds all-devices (on one bus) because reset needs to affect them
-  // Holds which "wire" interface
 
   // FIXME: this skips the device at AllCall_Addr, allow a remediation of that
   // FIXME: likewise, subadr is disabled at reset, allow remediation to exclude that on scan
@@ -260,11 +349,15 @@ class TLC59116Manager {
 
     // Protocol: * Get a manager via a constructor
     // Simple constructor, uses Wire (standard I2C pins), 100khz bus speed, resets devices, and enables outputs
+    // NB: The IDE will get confused if you do: TLC59116Manager myname(); in the global section, so leave off "()"
     TLC59116Manager() : i2cbus(Wire), init_frequency(Default_Frequency), reset_actions( WireInit | EnableOutputs | Reset) {}
     // Allow override of setup
+    // E.g. TLC59116Manager tlcmanager(Wire, 50000, EnableOutputs | Reset); // 500khz, don't do Wire.init()
     // You'll have to write an adaptor for other (non-Wire) I2C interfaces
     TLC59116Manager(TwoWire &w, // Use the specified i2c bus (e.g. Wire) (shouldn't allow 2 of these on same bus)
         long frequency = Default_Frequency, // hz. (Screws With:) This screws with TWBR 
+          // Only certain speeds are actually allowed, rounds to nearest
+          // FIXME: table of speeds
         byte dothings = WireInit | EnableOutputs | Reset // Do things now and at reset()
         ) : i2cbus(w), init_frequency(frequency), reset_actions(dothings) { }
 

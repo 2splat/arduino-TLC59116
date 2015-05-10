@@ -25,16 +25,19 @@
   TLC59208F : 4channel, similar, pin changes, up to 64 devices, etc.
 
   Dandelion address jumpers:
-    These are unassigned:
+    Don't use the "reserved", you can use "programmable reserved"
     A B C D
-    0-7
-    0 0 0 0
+    0 0 0 0 = 0x60
     0 0 0 1 = 0x61
       ...
-    0 1 1 1
-    D-F
-    1 1 0 1
-    1 1 1 1
+    0 1 1 1 = 0x67
+    1 0 0 0 = 0x68 (AllCall, reserved)
+    1 0 0 1 = 0x69 (SUBADR1, programmable reserved)
+    1 0 1 0 = 0x6A (SUBADR2, programmable reserved)
+    1 0 1 1 = 0x6B (RESET, reserved)
+    1 1 0 0 = 0x6C (SUBADR3, programmable reserved)
+    1 1 0 1 = 0x6D
+    1 1 1 1 = 0x6E
 
   !! erratic flashes seen when using GRPPWM and decreasing it over time
       claimed to happen at same point every time (speed dependant I think)

@@ -59,7 +59,8 @@ preproc :
 # documentation, section 1, is in .cpp
 # the first /* ... */ as markdown
 .PHONY : doc
-doc : README.md debugdoc
+doc : README.md $(doc_input) Doxyfile DoxygenLayout.xml
+	doxygen Doxyfile
 
 .PHONY : debugdoc
 debugdoc : $(doc_input)

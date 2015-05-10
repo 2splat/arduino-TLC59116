@@ -19,14 +19,14 @@ class BlinkTracking {
   byte to;   // 0 is intercount, odd is on, even is off
   byte index;
 
-  static BlinkTracking **tracked; // [0..tlmanager.device_count]
-  static int xx;
+  static BlinkTracking **tracked; // [0..tlmanager.device_count], the blink-state of each tlc
 
   // Protocol:
-  static void init_tracking();
+  static void init_tracking(); // we assume a global 'tlcmannager'
   static void update(unsigned long now);
 
-  BlinkTracking(byte index) : at(0), to(1) {} // start on
+  // internal
+  BlinkTracking(byte index) : index(index), at(0), to(1) {} // tlcmanager[index], start on
 
   void _update(unsigned long now);
     

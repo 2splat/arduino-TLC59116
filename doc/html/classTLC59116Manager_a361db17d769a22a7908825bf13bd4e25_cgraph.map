@@ -1,0 +1,10 @@
+<map id="TLC59116Manager::init" name="TLC59116Manager::init">
+<area shape="rect" id="node2" href="$classTLC59116Manager.html#a4f36fbb60b668b13d837a8f8705c8c4b" title="TLC59116Manager::reset" alt="" coords="211,121,381,148"/>
+<area shape="rect" id="node3" href="$classTLC59116__Unmanaged.html#ac1f3a139c4f723fa09720850c5efbccf" title="TLC59116_Unmanaged\l::_end_trans" alt="" coords="449,5,607,46"/>
+<area shape="rect" id="node4" href="$TLC59116__Unmanaged_8h.html#aa3f3157e61b6d64526e7bf2016c6d799" title="TLC59116Dev" alt="" coords="475,71,581,97"/>
+<area shape="rect" id="node5" href="$TLC59116__Unmanaged_8h.html#ab2ce20589d924c815fc785c51f49b0b7" title="TLC59116Warn" alt="" coords="471,121,585,148"/>
+<area shape="rect" id="node6" href="$classTLC59116Manager.html#accc69d6286a6e8052cee7e717b54dc1f" title="TLC59116Manager::broadcast" alt="" coords="429,172,627,199"/>
+<area shape="rect" id="node7" href="$classTLC59116_1_1Broadcast.html#a7e4a899c574da03f81ada7aa7619c05f" title="TLC59116::Broadcast\l::enable_outputs" alt="" coords="453,223,603,265"/>
+<area shape="rect" id="node8" href="$classTLC59116.html#a24199b74fa82e207d54deb4142ac41fa" title="TLC59116::enable_outputs" alt="" coords="675,231,853,257"/>
+<area shape="rect" id="node9" href="$classTLC59116__Unmanaged.html#a6139f45bea0929e07c5549ef40fd1d6b" title="TLC59116_Unmanaged\l::address" alt="" coords="902,223,1061,265"/>
+</map>

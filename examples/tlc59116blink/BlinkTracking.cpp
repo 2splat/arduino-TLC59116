@@ -4,11 +4,14 @@ BlinkTracking **BlinkTracking::tracked = NULL;
 
 #define debug(msg)
 #define debugln(msg)
+// #define debug(msg) Serial.print(msg)
+// #define debugln(msg) Serial.println(msg)
 
 void BlinkTracking::init_tracking() {
    int ct = tlcmanager.device_count();
    BlinkTracking::tracked = (BlinkTracking**) malloc(ct * sizeof(BlinkTracking*));
    for(int i=0; i< ct; i++) {
+    debug(F("Setup blink periods for "));debug(i);debugln(F("th tlc"));
     BlinkTracking::tracked[i] = new BlinkTracking(i);
     }
    }
@@ -16,7 +19,9 @@ void BlinkTracking::init_tracking() {
 void BlinkTracking::update(unsigned long now) {
     debug(now);debug(F(" "));
     for(int i=0; i< tlcmanager.device_count(); i++) {
+      debug(i);debug(": ");
       BlinkTracking::tracked[i]->_update(now);
+      debug(F(" | "));
       }
     debugln();
     }

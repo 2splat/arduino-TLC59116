@@ -51,7 +51,7 @@ void TLC59116Manager::init() {
   else {WARN(F("Don't know how to set i2c frequency for non Wire"));WARN();}
 
   // NB. desired-frequency and actual, may not match
-  WARN(F("I2C bus init'd to ")); WARN(F_CPU / (16 + (2 * TWBR))); WARN(F("hz")); WARN();
+  WARN(F("I2C bus init'd to ")); WARN(F_CPU / (16 + (2 * TWBR))); WARN(F("hz. F_CPU=")); WARN(F_CPU); WARN();
 
   scan();
   if (reset_actions & Reset) reset(); // does enable

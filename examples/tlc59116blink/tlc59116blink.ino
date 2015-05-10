@@ -25,15 +25,17 @@
     Thus, the tlcmanager[0] device has an 'n' of 1.
     This is set per TLC (individual addressed).
   Output 4,5,6,7: triangle ramp
+    Increments brightness up/down by 1 on each "loop".
     All TLC at same rate.
-    This is set by broadcast, not individually.
+    This is done by broadcast, not individually.
+    This reflects the Wire speed, 50khz is noticeably slower than 500khz.
   Output 8,9,10,11: On
   Output 12,13,14,15: Off
 
   You can slow down the I2C speed (100khz default), look for the
     TLC59116Manager tlcmanager;
   below. Add arguments for speed setting, e.g.
-    TLC59116Manager tlcmanager(Wire, 50000); // 'Wire' needed, 50khz
+    TLC59116Manager tlcmanager(Wire, 50000); // you have to say 'Wire', and then 50khz
   Check the console for the actual speed (only certain values possible).
 */
 
@@ -41,7 +43,7 @@
 #include <avr/pgmspace.h>
 
 #include "TLC59116.h"
-TLC59116Manager tlcmanager; // (Wire, 50000);
+TLC59116Manager tlcmanager(Wire, 100000); // see the I2C_Speed.xls spread sheet for workable speeds
 
 #include "BlinkTracking.h"
 
@@ -92,15 +94,17 @@ void do_blinks(TLC59116 &t) {
 
 void do_triangles(TLC59116 &t) {
   static long triangle_value = 1;
-  triangle(triangle_value, 6, 0,255, 1,1, false);
+  triangle(triangle_value, 0,255, 1,1, false);
   // not doing individual addressing for triangle.
   tlcmanager.broadcast().pwm(4,7,abs(triangle_value));
+  // For pin 6 triangle (source not sink)
+  analogWrite(6, abs(triangle_value));
   }
 
 #define debug(msg)
 #define debugln(msg)
 
-void triangle(long &state, int pin, int min, int max, int up_inc, int down_inc, boolean once) {
+void triangle(long &state, int min, int max, int up_inc, int down_inc, boolean once) {
   // Set state to 1 to start running. We will set state to 0 when we want to stop!
   // debug(min);debug('<');debug(state);debug('<');debug(max);debug(' ');
   if (state < 0) {
@@ -109,7 +113,6 @@ void triangle(long &state, int pin, int min, int max, int up_inc, int down_inc, 
     if (state >= -min) {
       if (once) {
         /// debug("once'd\n");debugln();
-        analogWrite(pin, 0);
         state = 0; // mark not running
         return;
         // return true; // done
@@ -134,7 +137,6 @@ void triangle(long &state, int pin, int min, int max, int up_inc, int down_inc, 
       }
     }
   if (state == 0) state = 1; // don't allow 0
-  analogWrite(pin, abs(state));    
   // debug("=");debug(state);debugln();
   // return false;
   }
