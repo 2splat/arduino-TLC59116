@@ -15,11 +15,11 @@
 <area shape="rect" id="node20" href="$classTLC59116.html#ae7627e27217f48424fc470c46d984408" title="Superpose group&#45;pwm on current pwm setting (but, current should be 255 for best results) ..." alt="" coords="828,231,985,257"/>
 <area shape="rect" id="node21" href="$classTLC59116.html#aee8072c3386b44ad81f629796ac129ef" title="TLC59116::group_blink" alt="" coords="829,281,985,308"/>
 <area shape="rect" id="node22" href="$classTLC59116__Unmanaged.html#aaab5a8d457987943aaf05fa2f91b51d8" title="TLC59116_Unmanaged\l::LEDx_set_mode" alt="" coords="827,333,986,374"/>
-<area shape="rect" id="node13" href="$classTLC59116.html#a0ee3fae95f6eecdde3f20166e566c4ae" title="TLC59116::pattern" alt="" coords="1053,79,1184,105"/>
-<area shape="rect" id="node14" href="$classTLC59116.html#a42a4856ff8aa1920b1d66539e128b308" title="TLC59116::set_pattern" alt="" coords="1041,129,1196,156"/>
-<area shape="rect" id="node15" href="$classTLC59116.html#aa235b425dc34d160cfbe7b6cf2c9f939" title="TLC59116::reset_pattern" alt="" coords="1035,180,1202,207"/>
-<area shape="rect" id="node16" href="$classTLC59116.html#a7dd7c2beaa0e7926caee771b5439f130" title="TLC59116::set" alt="" coords="1065,231,1173,257"/>
-<area shape="rect" id="node19" href="$classTLC59116.html#a8d6069720cefe5bc8f587844d2cbc64c" title="TLC59116::pwm" alt="" coords="1059,281,1178,308"/>
-<area shape="rect" id="node17" href="$classTLC59116.html#ab0456a6a0f1127df48bb6f2977a9eb00" title="TLC59116::on" alt="" coords="1252,205,1356,232"/>
-<area shape="rect" id="node18" href="$classTLC59116.html#ad5e48f003949da34ef99623767005429" title="TLC59116::off" alt="" coords="1251,256,1357,283"/>
+<area shape="rect" id="node13" href="$classTLC59116.html#a0ee3fae95f6eecdde3f20166e566c4ae" title="Alias for set_outputs() " alt="" coords="1045,79,1176,105"/>
+<area shape="rect" id="node14" href="$classTLC59116.html#a088e3396b527714b0ca679de2f889b3d" title="Turn on by bit pattern. " alt="" coords="1035,129,1186,156"/>
+<area shape="rect" id="node15" href="$classTLC59116.html#ab74add573a7d422715bc418becd7834b" title="TLC59116::off_pattern" alt="" coords="1035,180,1187,207"/>
+<area shape="rect" id="node16" href="$classTLC59116.html#a7dd7c2beaa0e7926caee771b5439f130" title="On/Off by channel&#45;number. " alt="" coords="1057,231,1165,257"/>
+<area shape="rect" id="node19" href="$classTLC59116.html#a8d6069720cefe5bc8f587844d2cbc64c" title="TLC59116::pwm" alt="" coords="1051,281,1170,308"/>
+<area shape="rect" id="node17" href="$classTLC59116.html#ab0456a6a0f1127df48bb6f2977a9eb00" title="Turn one on. " alt="" coords="1236,205,1340,232"/>
+<area shape="rect" id="node18" href="$classTLC59116.html#ad5e48f003949da34ef99623767005429" title="TLC59116::off" alt="" coords="1235,256,1341,283"/>
 </map>

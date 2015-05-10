@@ -10,3 +10,11 @@
 
 Related Pages have bugs, etc.
 
+Arch overview:
+
+unmanaged constants etc.
+manager high level for:
+TLC shadows & highlevel & opt
+broadcast because propagate
+
+

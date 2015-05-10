@@ -48,8 +48,15 @@ void setup() {
 //! [Static referencing devices]
 void loop() {
     // "static" "reference" acts like a global. note the "&"
-    TLC59116 &first_device = tlcmanager[0]; // the lowest address device
+    static TLC59116 &first_device = tlcmanager[0]; // the lowest address device
     //! [Static referencing devices]
+
+    //! [temp referencing devices]
+    // Name it for meaning (note "&", but absence of "static")
+    TLC59116 &left_arm = tlcmanager[1];
+    left_arm.on(4);
+    left_arm.pwm(6,20);
+
 
     //! [set_outputs by bit pattern]
     // Bit patterns are conveniently written using hex or binary:

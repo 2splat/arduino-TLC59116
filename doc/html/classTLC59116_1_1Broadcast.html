@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">TLC59116 Library
-   &#160;<span id="projectnumber">0.2</span>
+   &#160;<span id="projectnumber">doxygen</span>
    </div>
   </td>
  </tr>
@@ -134,6 +134,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:afdab6558e28a80a7be27282c5f6fdad3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116__Unmanaged.html">TLC59116_Unmanaged</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116__Unmanaged.html#afdab6558e28a80a7be27282c5f6fdad3">describe_actual</a> ()</td></tr>
 <tr class="separator:afdab6558e28a80a7be27282c5f6fdad3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7e4a899c574da03f81ada7aa7619c05f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116_1_1Broadcast.html">Broadcast</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116_1_1Broadcast.html#a7e4a899c574da03f81ada7aa7619c05f">enable_outputs</a> (bool yes=true, bool with_delay=true)</td></tr>
+<tr class="memdesc:a7e4a899c574da03f81ada7aa7619c05f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Master power switch (the <a class="el" href="classTLC59116Manager.html" title="Holds all of the devices. ">TLC59116Manager</a> sets this on/true by default)  <a href="#a7e4a899c574da03f81ada7aa7619c05f">More...</a><br/></td></tr>
 <tr class="separator:a7e4a899c574da03f81ada7aa7619c05f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab29c684a0751a03c4dc1239e877ca083"><td class="memItemLeft" align="right" valign="top">byte&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116__Unmanaged.html#ab29c684a0751a03c4dc1239e877ca083">fetch_registers</a> (byte start_r, byte count, byte registers[])</td></tr>
 <tr class="separator:ab29c684a0751a03c4dc1239e877ca083"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -145,6 +146,7 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a513cc233a1398925cf0a4d015606124f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader">Global Functions</div></td></tr>
 <tr class="memitem:abc2c406250904c9ef33a908589a37561"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#abc2c406250904c9ef33a908589a37561">is_enable_outputs</a> ()</td></tr>
+<tr class="memdesc:abc2c406250904c9ef33a908589a37561"><td class="mdescLeft">&#160;</td><td class="mdescRight">Is master power on?  <a href="#abc2c406250904c9ef33a908589a37561">More...</a><br/></td></tr>
 <tr class="separator:abc2c406250904c9ef33a908589a37561"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7a3390e7fae7f917ac3f8e22ac58e212"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a7a3390e7fae7f917ac3f8e22ac58e212">is_enabled</a> ()</td></tr>
 <tr class="separator:a7a3390e7fae7f917ac3f8e22ac58e212"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -159,14 +161,18 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a6122fb43d940c057fc6a5459e9dbd89b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Only change the channels (that are marked in <em>bit_which</em>) to HIGH/LOW as marked in <em>bit_pattern</em>  <a href="#a6122fb43d940c057fc6a5459e9dbd89b">More...</a><br/></td></tr>
 <tr class="separator:a6122fb43d940c057fc6a5459e9dbd89b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0ee3fae95f6eecdde3f20166e566c4ae"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a0ee3fae95f6eecdde3f20166e566c4ae">pattern</a> (word bit_pattern, word bit_which=0xFFFF)</td></tr>
+<tr class="memdesc:a0ee3fae95f6eecdde3f20166e566c4ae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Alias for <a class="el" href="classTLC59116.html#a6122fb43d940c057fc6a5459e9dbd89b" title="Only change the channels (that are marked in bit_which) to HIGH/LOW as marked in bit_pattern ...">set_outputs()</a>  <a href="#a0ee3fae95f6eecdde3f20166e566c4ae">More...</a><br/></td></tr>
 <tr class="separator:a0ee3fae95f6eecdde3f20166e566c4ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a42a4856ff8aa1920b1d66539e128b308"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a42a4856ff8aa1920b1d66539e128b308">set_pattern</a> (word <a class="el" href="classTLC59116.html#a0ee3fae95f6eecdde3f20166e566c4ae">pattern</a>)</td></tr>
-<tr class="separator:a42a4856ff8aa1920b1d66539e128b308"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa235b425dc34d160cfbe7b6cf2c9f939"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#aa235b425dc34d160cfbe7b6cf2c9f939">reset_pattern</a> (word <a class="el" href="classTLC59116.html#a0ee3fae95f6eecdde3f20166e566c4ae">pattern</a>)</td></tr>
-<tr class="separator:aa235b425dc34d160cfbe7b6cf2c9f939"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a088e3396b527714b0ca679de2f889b3d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a088e3396b527714b0ca679de2f889b3d">on_pattern</a> (word <a class="el" href="classTLC59116.html#a0ee3fae95f6eecdde3f20166e566c4ae">pattern</a>)</td></tr>
+<tr class="memdesc:a088e3396b527714b0ca679de2f889b3d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Turn on by bit pattern.  <a href="#a088e3396b527714b0ca679de2f889b3d">More...</a><br/></td></tr>
+<tr class="separator:a088e3396b527714b0ca679de2f889b3d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab74add573a7d422715bc418becd7834b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#ab74add573a7d422715bc418becd7834b">off_pattern</a> (word <a class="el" href="classTLC59116.html#a0ee3fae95f6eecdde3f20166e566c4ae">pattern</a>)</td></tr>
+<tr class="separator:ab74add573a7d422715bc418becd7834b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7dd7c2beaa0e7926caee771b5439f130"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a7dd7c2beaa0e7926caee771b5439f130">set</a> (int led_num, bool offon)</td></tr>
+<tr class="memdesc:a7dd7c2beaa0e7926caee771b5439f130"><td class="mdescLeft">&#160;</td><td class="mdescRight">On/Off by channel-number.  <a href="#a7dd7c2beaa0e7926caee771b5439f130">More...</a><br/></td></tr>
 <tr class="separator:a7dd7c2beaa0e7926caee771b5439f130"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab0456a6a0f1127df48bb6f2977a9eb00"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#ab0456a6a0f1127df48bb6f2977a9eb00">on</a> (int led_num)</td></tr>
+<tr class="memdesc:ab0456a6a0f1127df48bb6f2977a9eb00"><td class="mdescLeft">&#160;</td><td class="mdescRight">Turn one on.  <a href="#ab0456a6a0f1127df48bb6f2977a9eb00">More...</a><br/></td></tr>
 <tr class="separator:ab0456a6a0f1127df48bb6f2977a9eb00"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad5e48f003949da34ef99623767005429"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#ad5e48f003949da34ef99623767005429">off</a> (int led_num)</td></tr>
 <tr class="separator:ad5e48f003949da34ef99623767005429"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -482,6 +488,9 @@ Friends</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Master power switch (the <a class="el" href="classTLC59116Manager.html" title="Holds all of the devices. ">TLC59116Manager</a> sets this on/true by default) </p>
+<p>It takes the device a moment to enable power, so typically leave <em>with_delay</em> true </p>
+
 <p>Reimplemented from <a class="el" href="classTLC59116.html#a24199b74fa82e207d54deb4142ac41fa">TLC59116</a>.</p>
 
 <p><div class="dynheader">
@@ -489,7 +498,7 @@ Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classTLC59116_1_1Broadcast_a7e4a899c574da03f81ada7aa7619c05f_cgraph.png" border="0" usemap="#classTLC59116_1_1Broadcast_a7e4a899c574da03f81ada7aa7619c05f_cgraph" alt=""/></div>
 <map name="classTLC59116_1_1Broadcast_a7e4a899c574da03f81ada7aa7619c05f_cgraph" id="classTLC59116_1_1Broadcast_a7e4a899c574da03f81ada7aa7619c05f_cgraph">
-<area shape="rect" id="node2" href="classTLC59116.html#a24199b74fa82e207d54deb4142ac41fa" title="TLC59116::enable_outputs" alt="" coords="203,12,381,39"/><area shape="rect" id="node3" href="classTLC59116__Unmanaged.html#a6139f45bea0929e07c5549ef40fd1d6b" title="TLC59116_Unmanaged\l::address" alt="" coords="430,5,589,46"/></map>
+<area shape="rect" id="node2" href="classTLC59116.html#a24199b74fa82e207d54deb4142ac41fa" title="Master power switch (the TLC59116Manager sets this on/true by default) " alt="" coords="203,12,381,39"/><area shape="rect" id="node3" href="classTLC59116__Unmanaged.html#a6139f45bea0929e07c5549ef40fd1d6b" title="TLC59116_Unmanaged\l::address" alt="" coords="430,5,589,46"/></map>
 </div>
 </p>
 
@@ -524,6 +533,8 @@ Here is the caller graph for this function:</div>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Is master power on? </p>
 
 <p><div class="dynheader">
 Here is the call graph for this function:</div>
@@ -611,7 +622,7 @@ Here is the call graph for this function:</div>
 </div><div class="memdoc">
 
 <p>Only change the channels (that are marked in <em>bit_which</em>) to HIGH/LOW as marked in <em>bit_pattern</em> </p>
-<p>(cf. <a class="el" href="classTLC59116.html#a42a4856ff8aa1920b1d66539e128b308">set_pattern(word)</a></p>
+<p>(cf. <a class="el" href="classTLC59116.html#a088e3396b527714b0ca679de2f889b3d" title="Turn on by bit pattern. ">on_pattern(word)</a>, <a class="el" href="classTLC59116.html#ab0456a6a0f1127df48bb6f2977a9eb00" title="Turn one on. ">on()</a>, <a class="el" href="classTLC59116.html#ad5e48f003949da34ef99623767005429">off()</a> )</p>
 <p>Examples: </p>
 <div class="fragment"><div class="line">    <span class="comment">// Bit patterns are conveniently written using hex or binary:</span></div>
 <div class="line">    <span class="comment">// Each &quot;digit&quot; of a hex number is 4 bits, so 0xF is binary &quot;1111&quot;</span></div>
@@ -743,6 +754,8 @@ Here is the call graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
+<p>Alias for <a class="el" href="classTLC59116.html#a6122fb43d940c057fc6a5459e9dbd89b" title="Only change the channels (that are marked in bit_which) to HIGH/LOW as marked in bit_pattern ...">set_outputs()</a> </p>
+
 <p><div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -754,7 +767,7 @@ Here is the call graph for this function:</div>
 
 </div>
 </div>
-<a class="anchor" id="a42a4856ff8aa1920b1d66539e128b308"></a>
+<a class="anchor" id="a088e3396b527714b0ca679de2f889b3d"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -762,7 +775,7 @@ Here is the call graph for this function:</div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classTLC59116.html">TLC59116</a>&amp; TLC59116::set_pattern </td>
+          <td class="memname"><a class="el" href="classTLC59116.html">TLC59116</a>&amp; TLC59116::on_pattern </td>
           <td>(</td>
           <td class="paramtype">word&#160;</td>
           <td class="paramname"><em>pattern</em></td><td>)</td>
@@ -776,18 +789,20 @@ Here is the call graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
+<p>Turn on by bit pattern. </p>
+
 <p><div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="classTLC59116_a42a4856ff8aa1920b1d66539e128b308_cgraph.png" border="0" usemap="#classTLC59116_a42a4856ff8aa1920b1d66539e128b308_cgraph" alt=""/></div>
-<map name="classTLC59116_a42a4856ff8aa1920b1d66539e128b308_cgraph" id="classTLC59116_a42a4856ff8aa1920b1d66539e128b308_cgraph">
-<area shape="rect" id="node2" href="classTLC59116.html#a6122fb43d940c057fc6a5459e9dbd89b" title="TLC59116::set_outputs" alt="" coords="209,45,367,72"/><area shape="rect" id="node3" href="classTLC59116__Unmanaged.html#ae52bca032bf3a5ad3137cfa37bc907cf" title="TLC59116_Unmanaged\l::LEDOUTx_Register" alt="" coords="417,5,575,46"/><area shape="rect" id="node4" href="classTLC59116__Unmanaged.html#ae15c27d8f55bf9a1d1e147f861860065" title="TLC59116_Unmanaged\l::LEDx_set_mode" alt="" coords="417,70,575,111"/><area shape="rect" id="node5" href="classTLC59116__Unmanaged.html#a437e3817f378c57b895ad99d29105c5c" title="TLC59116_Unmanaged\l::LEDOUTx_CHECK" alt="" coords="838,7,997,49"/><area shape="rect" id="node7" href="classTLC59116__Unmanaged.html#a1b34867e93dc76d3379e9f9fea1ba4f6" title="TLC59116_Unmanaged\l::LEDx_Register_mask" alt="" coords="627,37,786,78"/><area shape="rect" id="node8" href="classTLC59116__Unmanaged.html#a025a7e444437a01fecb8b398a6091faa" title="TLC59116_Unmanaged\l::LEDx_to_Register_bits" alt="" coords="624,102,789,143"/><area shape="rect" id="node9" href="classTLC59116__Unmanaged.html#a1dd4a181567c7ccf57301c9bd53a5305" title="TLC59116_Unmanaged\l::set_with_mask" alt="" coords="627,167,786,209"/><area shape="rect" id="node6" href="TLC59116__Unmanaged_8h.html#ab2ce20589d924c815fc785c51f49b0b7" title="TLC59116Warn" alt="" coords="1046,15,1159,41"/></map>
+<div class="center"><img src="classTLC59116_a088e3396b527714b0ca679de2f889b3d_cgraph.png" border="0" usemap="#classTLC59116_a088e3396b527714b0ca679de2f889b3d_cgraph" alt=""/></div>
+<map name="classTLC59116_a088e3396b527714b0ca679de2f889b3d_cgraph" id="classTLC59116_a088e3396b527714b0ca679de2f889b3d_cgraph">
+<area shape="rect" id="node2" href="classTLC59116.html#a6122fb43d940c057fc6a5459e9dbd89b" title="Only change the channels (that are marked in bit_which) to HIGH/LOW as marked in bit_pattern ..." alt="" coords="206,101,365,128"/><area shape="rect" id="node3" href="classTLC59116__Unmanaged.html#ae15c27d8f55bf9a1d1e147f861860065" title="TLC59116_Unmanaged\l::LEDx_set_mode" alt="" coords="414,61,573,102"/><area shape="rect" id="node9" href="classTLC59116__Unmanaged.html#ae52bca032bf3a5ad3137cfa37bc907cf" title="TLC59116_Unmanaged\l::LEDOUTx_Register" alt="" coords="414,126,573,167"/><area shape="rect" id="node4" href="classTLC59116__Unmanaged.html#a437e3817f378c57b895ad99d29105c5c" title="TLC59116_Unmanaged\l::LEDOUTx_CHECK" alt="" coords="835,31,994,73"/><area shape="rect" id="node6" href="classTLC59116__Unmanaged.html#a1dd4a181567c7ccf57301c9bd53a5305" title="TLC59116_Unmanaged\l::set_with_mask" alt="" coords="625,27,783,69"/><area shape="rect" id="node7" href="classTLC59116__Unmanaged.html#a1b34867e93dc76d3379e9f9fea1ba4f6" title="TLC59116_Unmanaged\l::LEDx_Register_mask" alt="" coords="625,93,783,134"/><area shape="rect" id="node8" href="classTLC59116__Unmanaged.html#a025a7e444437a01fecb8b398a6091faa" title="TLC59116_Unmanaged\l::LEDx_to_Register_bits" alt="" coords="621,158,787,199"/><area shape="rect" id="node5" href="TLC59116__Unmanaged_8h.html#ab2ce20589d924c815fc785c51f49b0b7" title="TLC59116Warn" alt="" coords="1043,39,1157,65"/></map>
 </div>
 </p>
 
 </div>
 </div>
-<a class="anchor" id="aa235b425dc34d160cfbe7b6cf2c9f939"></a>
+<a class="anchor" id="ab74add573a7d422715bc418becd7834b"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -795,7 +810,7 @@ Here is the call graph for this function:</div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classTLC59116.html">TLC59116</a>&amp; TLC59116::reset_pattern </td>
+          <td class="memname"><a class="el" href="classTLC59116.html">TLC59116</a>&amp; TLC59116::off_pattern </td>
           <td>(</td>
           <td class="paramtype">word&#160;</td>
           <td class="paramname"><em>pattern</em></td><td>)</td>
@@ -812,9 +827,9 @@ Here is the call graph for this function:</div>
 <p><div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="classTLC59116_aa235b425dc34d160cfbe7b6cf2c9f939_cgraph.png" border="0" usemap="#classTLC59116_aa235b425dc34d160cfbe7b6cf2c9f939_cgraph" alt=""/></div>
-<map name="classTLC59116_aa235b425dc34d160cfbe7b6cf2c9f939_cgraph" id="classTLC59116_aa235b425dc34d160cfbe7b6cf2c9f939_cgraph">
-<area shape="rect" id="node2" href="classTLC59116.html#a6122fb43d940c057fc6a5459e9dbd89b" title="TLC59116::set_outputs" alt="" coords="222,45,381,72"/><area shape="rect" id="node3" href="classTLC59116__Unmanaged.html#ae52bca032bf3a5ad3137cfa37bc907cf" title="TLC59116_Unmanaged\l::LEDOUTx_Register" alt="" coords="430,5,589,46"/><area shape="rect" id="node4" href="classTLC59116__Unmanaged.html#ae15c27d8f55bf9a1d1e147f861860065" title="TLC59116_Unmanaged\l::LEDx_set_mode" alt="" coords="430,70,589,111"/><area shape="rect" id="node5" href="classTLC59116__Unmanaged.html#a437e3817f378c57b895ad99d29105c5c" title="TLC59116_Unmanaged\l::LEDOUTx_CHECK" alt="" coords="851,7,1010,49"/><area shape="rect" id="node7" href="classTLC59116__Unmanaged.html#a1b34867e93dc76d3379e9f9fea1ba4f6" title="TLC59116_Unmanaged\l::LEDx_Register_mask" alt="" coords="641,37,799,78"/><area shape="rect" id="node8" href="classTLC59116__Unmanaged.html#a025a7e444437a01fecb8b398a6091faa" title="TLC59116_Unmanaged\l::LEDx_to_Register_bits" alt="" coords="637,102,803,143"/><area shape="rect" id="node9" href="classTLC59116__Unmanaged.html#a1dd4a181567c7ccf57301c9bd53a5305" title="TLC59116_Unmanaged\l::set_with_mask" alt="" coords="641,167,799,209"/><area shape="rect" id="node6" href="TLC59116__Unmanaged_8h.html#ab2ce20589d924c815fc785c51f49b0b7" title="TLC59116Warn" alt="" coords="1059,15,1173,41"/></map>
+<div class="center"><img src="classTLC59116_ab74add573a7d422715bc418becd7834b_cgraph.png" border="0" usemap="#classTLC59116_ab74add573a7d422715bc418becd7834b_cgraph" alt=""/></div>
+<map name="classTLC59116_ab74add573a7d422715bc418becd7834b_cgraph" id="classTLC59116_ab74add573a7d422715bc418becd7834b_cgraph">
+<area shape="rect" id="node2" href="classTLC59116.html#a6122fb43d940c057fc6a5459e9dbd89b" title="Only change the channels (that are marked in bit_which) to HIGH/LOW as marked in bit_pattern ..." alt="" coords="206,101,365,128"/><area shape="rect" id="node3" href="classTLC59116__Unmanaged.html#ae15c27d8f55bf9a1d1e147f861860065" title="TLC59116_Unmanaged\l::LEDx_set_mode" alt="" coords="414,61,573,102"/><area shape="rect" id="node9" href="classTLC59116__Unmanaged.html#ae52bca032bf3a5ad3137cfa37bc907cf" title="TLC59116_Unmanaged\l::LEDOUTx_Register" alt="" coords="414,126,573,167"/><area shape="rect" id="node4" href="classTLC59116__Unmanaged.html#a437e3817f378c57b895ad99d29105c5c" title="TLC59116_Unmanaged\l::LEDOUTx_CHECK" alt="" coords="835,31,994,73"/><area shape="rect" id="node6" href="classTLC59116__Unmanaged.html#a1dd4a181567c7ccf57301c9bd53a5305" title="TLC59116_Unmanaged\l::set_with_mask" alt="" coords="625,27,783,69"/><area shape="rect" id="node7" href="classTLC59116__Unmanaged.html#a1b34867e93dc76d3379e9f9fea1ba4f6" title="TLC59116_Unmanaged\l::LEDx_Register_mask" alt="" coords="625,93,783,134"/><area shape="rect" id="node8" href="classTLC59116__Unmanaged.html#a025a7e444437a01fecb8b398a6091faa" title="TLC59116_Unmanaged\l::LEDx_to_Register_bits" alt="" coords="621,158,787,199"/><area shape="rect" id="node5" href="TLC59116__Unmanaged_8h.html#ab2ce20589d924c815fc785c51f49b0b7" title="TLC59116Warn" alt="" coords="1043,39,1157,65"/></map>
 </div>
 </p>
 
@@ -851,6 +866,14 @@ Here is the call graph for this function:</div>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>On/Off by channel-number. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">offon</td><td><em>true</em> for on </td></tr>
+  </table>
+  </dd>
+</dl>
 
 <p><div class="dynheader">
 Here is the call graph for this function:</div>
@@ -894,6 +917,8 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
+<p>Turn one on. </p>
+
 <p><div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -926,6 +951,7 @@ Here is the call graph for this function:</div>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>Turn one off </p>
 
 <p><div class="dynheader">
 Here is the call graph for this function:</div>
@@ -4601,13 +4627,13 @@ Here is the call graph for this function:</div>
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following files:<ul>
-<li><a class="el" href="TLC59116_8h_source.html">TLC59116.h (Sun May 10 09:30:08 2015 -0400)</a></li>
-<li><a class="el" href="TLC59116_8cpp.html">TLC59116.cpp (Sun May 10 09:30:08 2015 -0400)</a></li>
+<li><a class="el" href="TLC59116_8h_source.html">TLC59116.h (Sun May 10 10:25:17 2015 -0400)</a></li>
+<li><a class="el" href="TLC59116_8cpp.html">TLC59116.cpp (Sun May 10 10:25:17 2015 -0400)</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun May 10 2015 10:19:45 for TLC59116 Library by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun May 10 2015 11:43:03 for TLC59116 Library by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

@@ -6,6 +6,7 @@ arduino_dir := $(shell which arduino | xargs --no-run-if-empty realpath | xargs 
 arduino_inc_dirs := $(arduino_dir)/hardware/arduino/cores/arduino,$(arduino_dir)/hardware/tools/avr/lib/avr/include,$(arduino_dir)/hardware/arduino/variants/standard,$(arduino_dir)/libraries/*
 ino_link := $(shell basename `/bin/pwd`).ino
 test_example_srcs := $(shell find examples/test_features -name '*.h' -o -name '*.cpp' | xargs basename )
+branch := $(shell git branch | grep '^\*' | awk '{print $$2}' )
 
 # a=`which arduino` && b=`realpath $$a` && echo `dirname $$b`/hardware
 
@@ -60,6 +61,7 @@ preproc :
 # the first /* ... */ as markdown
 .PHONY : doc
 doc : README.md $(doc_input) Doxyfile DoxygenLayout.xml
+	sed -i '/^PROJECT_NUMBER/ s/= .\+/= $(branch)/' Doxyfile
 	doxygen Doxyfile
 
 .PHONY : debugdoc
@@ -68,14 +70,7 @@ debugdoc : $(doc_input)
 	# build_tools/extract_doc --include-paths '.,$(arduino_inc_dirs)' $(doc_input)
 	wc -l t.ast
 
-README : $(doc_input)
-	build_tools/extract_doc --include-paths '.,$(arduino_inc_dirs)' --processor CppDoc_Processor_TopComment build/TLC59116.hpp > $@
 
-README.md : $(doc_input)
-	awk 'FNR==2,/*\// {if ($$0 != "*/") {print}}' $< | sed 's/^    //' > $@
-	echo >> $@
-	awk '/\/* Use:/,/*\// {if ($$0 == "*/") {next}; sub(/^\/\*/, ""); print}' $< | sed 's/^ //' >> $@
-	cat build_src/README.* >> $@
 
 README.html : README.md
 ifeq ($(shell which markdown),)

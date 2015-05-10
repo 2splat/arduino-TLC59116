@@ -56,7 +56,7 @@ void setup() {
     Serial.println("setup().arduino done");
 
     tlcmanager.init();
-    tlcmanager.broadcast().set_pattern(0xF << 8); // 8..11 on
+    tlcmanager.broadcast().on_pattern(0xF << 8); // 8..11 on
     // tlcmanager[0].set_milliamps(0, 150);
     Serial.println("setup().tlc done");
 

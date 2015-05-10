@@ -34,19 +34,19 @@ void BlinkTracking::_update(unsigned long now) {
     if (this->to == 0) {
       debug(F(" <>"));
       this->at = now + Intercount;
-      tlcmanager[this->index].reset_pattern(Output_Bits);
+      tlcmanager[this->index].off_pattern(Output_Bits);
       }
     // odd 'state' is on
     else if (this->to & 0x1) {
       debug(F(" +"));
       this->at = now + On_Time;
-      tlcmanager[this->index].set_pattern(Output_Bits);
+      tlcmanager[this->index].on_pattern(Output_Bits);
       }
     // even 'state' is off
     else {
       debug(F(" -"));
       this->at = now + Interblink;
-      tlcmanager[this->index].reset_pattern(Output_Bits);
+      tlcmanager[this->index].off_pattern(Output_Bits);
       }
 
     // move state
@@ -59,6 +59,6 @@ void BlinkTracking::_update(unsigned long now) {
   // Detect clock wrap-around
   else if ( this->at - now > (Intercount+1) ) {
     this->at = 0;
-    tlcmanager[this->index].reset_pattern(Output_Bits);
+    tlcmanager[this->index].off_pattern(Output_Bits);
     }
   }

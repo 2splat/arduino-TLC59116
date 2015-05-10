@@ -1,10 +1,14 @@
 #ifndef TLC59116_h
 #define TLC59116_h
 
+/* Documentation assumes Doxygen */
+
 // FIXME: insert version here
 
 
-/* Documentation assumes Doxygen */
+/** \todo
+  - I think something that accumulates changes, then does them as a "block"
+*/
 
 #include <Arduino.h>
 #include <Wire.h> // Usage.Include+: You have to do this in your .ino also
@@ -75,9 +79,6 @@ class TLC59116Manager;
     - This library returns the device-reference for most calls, so you can chain functions
       \snippet allfeatures/allfeatures.ino chain functions together
 
-  FIXME: group the unmanaged
-  FIXME: a beginner protocol, reveal advanced: advanced -> folded
-
     - config-thingy-description, it's protocol, in-constructor?, defaults, method 
   - FIXME: configure methods should note the default
   - FIXME: configure methods should include constructor-args
@@ -97,15 +98,18 @@ class TLC59116 : public TLC59116_Unmanaged {
 
     /// \name Global Functions
     ///@{
-    /// Controlling various global features of the device
-    // Turn _all_ outputs on/off.
+    //! Controlling various global features of the device
+
+    /// Master power switch (the TLC59116Manager sets this on/true by default)
+    /** It takes the device a moment to enable power, so typically leave _with_delay_ true **/
     virtual TLC59116& enable_outputs(
-      bool yes = true,  // false to disable outputs
-      bool with_delay = true // delay if doing something immediately
+      bool yes = true,  //!< false to disable outputs
+      bool with_delay = true //!< delay for 500msec
       );
 
+    /// Is master power on?
     bool is_enable_outputs() { return !is_OSC_bit(shadow_registers[MODE1_Register]); };
-    bool is_enabled() { return is_enable_outputs(); } //!< Alias for is_enable_outputs
+    bool is_enabled() { return is_enable_outputs(); } ///< Alias for is_enable_outputs
     ///@}
 
     // High level
@@ -119,20 +123,22 @@ class TLC59116 : public TLC59116_Unmanaged {
         word which=0xFFFF //!< But, only change these bits
       ); //!< Only change the channels (that are marked in _bit_which_) to HIGH/LOW as marked in _bit_pattern_
       /**< 
-        (cf. set_pattern(word)
+        (cf. on_pattern(word), on(), off() )
 
         Examples:
         \snippet allfeatures/allfeatures.ino set_outputs by bit pattern
       */
+    /// Alias for set_outputs()
     TLC59116& pattern(word bit_pattern, word bit_which=0xFFFF) { return set_outputs(bit_pattern, bit_which); }
-    TLC59116& set_pattern(word pattern) { return set_outputs(pattern, pattern); } // only set those indicated
-    TLC59116& reset_pattern(word pattern) { return set_outputs(~pattern, pattern); } // only turn-off those indicated
-    TLC59116& set(int led_num, bool offon) {  // only turn-off one
+    TLC59116& on_pattern(word pattern) { return set_outputs(pattern, pattern); } ///< Turn on by bit pattern
+    TLC59116& off_pattern(word pattern) { return set_outputs(~pattern, pattern); } //< Turn off by bit pattern
+    /// On/Off by channel-number
+    TLC59116& set(int led_num, bool offon /**< _true_ for on */ ) {
       word bits = 1 << led_num;
       return set_outputs(offon ? bits : ~bits, bits); 
       }
-    TLC59116& on(int led_num) { return set(led_num, true); } // turn one on
-    TLC59116& off(int led_num) { return set(led_num, false); } // turn one off
+    TLC59116& on(int led_num) { return set(led_num, true); } ///< Turn one on
+    TLC59116& off(int led_num) { return set(led_num, false); } ///< Turn one off
     ///@}
 
     /// \name PWM Functions
@@ -249,6 +255,7 @@ class TLC59116 : public TLC59116_Unmanaged {
     /// \name Info Functions
     ///@{
     // \todo checking a shadow_register value
+    // (make doxygen include this fn:)
     // \fn byte address()
     ///@}
 
@@ -380,6 +387,7 @@ class TLC59116Manager {
     // Can return null if index is out of range, or there are none!
     // Pattern: TLC59116& first = manager[0]; // Note the '&'
     // Pattern: manager[i].all_on(); // you can use "." notation
+    // \todo get by I2C address, which we might could do because 0x60 > 15...
     // FIXME: can we do: BaseClass& x = manager[0];
     TLC59116& operator[](byte index) { 
       if (index >= device_ct) { 

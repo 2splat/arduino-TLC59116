@@ -1,6 +1,10 @@
 #ifndef TLC59116_Unmanaged_h
 #define TLC59116_Unmanaged_h
 
+/* \todo
+  - group functions, and constants
+*/
+
 /*
   Pins:
     TLC59116: 27:SDA, 26:SCL
