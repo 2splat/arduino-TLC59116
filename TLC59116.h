@@ -53,12 +53,12 @@ class TLC59116Manager;
   ### Protocol:
 
   - Setting up
-    - Declare a static TLC59116Manager(static scope, or "static" keyword if you are very clever)
+    - Declare a static TLC59116Manager (static scope, or "static" keyword if you are very clever)
       \snippet allfeatures/allfeatures.ino Need a manager
-    - Execute \ref TLC59116Manager::init() ".init()" the manager once (usually in setup())
+    - Execute \ref TLC59116Manager::init() ".init()" for the manager once, usually in setup()
       \snippet allfeatures/allfeatures.ino Init the manager
-    - The devices should be in a ready state (by default, outputs are enabled, but all channels are off)
-  - Obtain a reference from yourmanager\[i],  0..device_count()-1
+    - The devices will then be in a ready state (by default, outputs are enabled, but all channels are off)
+  - Obtain a reference from yourmanager\[i],  for i from 0..device_count()-1
     - This library passes and returns references so that "." can always be used.
       \snippet allfeatures/allfeatures.ino Static referencing devices
       \snippet allfeatures/allfeatures.ino Index referencing devices
@@ -69,9 +69,9 @@ class TLC59116Manager;
       void setup() {
       \endcode
       \snippet allfeatures/allfeatures.ino device setup
-  - Initial \ref Digital Functions, \ref PWM Functions, typically in setup()
+  - Do initial \ref Digital Functions, \ref PWM Functions, typically in setup()
       \snippet allfeatures/allfeatures.ino initial channel settings
-  - During loop, mess with \ref Global Functions, \re Group/Broadcast Addresses, \ref Digital Functions, \ref PWM Functions
+  - During loop, mess with \ref Global Functions, \ref Group/Broadcast Addresses, \ref Digital Functions, \ref PWM Functions
     - This library returns the device-reference for most calls, so you can chain functions
       \snippet allfeatures/allfeatures.ino chain functions together
 
@@ -214,7 +214,8 @@ class TLC59116 : public TLC59116_Unmanaged {
 
     // allcall is enabled at reset
     TLC59116& allcall_address(byte address, bool enable=true);
-    TLC59116& allcall_address(bool enable); // enable/disable
+    TLC59116& allcall_address_enable(); //!< Enable broadcast
+    TLC59116& allcall_address_disable(); //!< Disable broadcast
     byte allcall_address() { return shadow_registers[AllCall_Addr_Register] >> 1; }
     bool is_allcall_address() { return shadow_registers[AllCall_Addr_Register] & MODE1_ALLCALL_mask; }
 
@@ -248,6 +249,7 @@ class TLC59116 : public TLC59116_Unmanaged {
     /// \name Info Functions
     ///@{
     // \todo checking a shadow_register value
+    // \fn byte address()
     ///@}
 
     /// \name Debugging
@@ -392,6 +394,8 @@ class TLC59116Manager {
 
   public: // global things
     // Protocol: * OR get the .broadcast() object that sends the same command to all devices
+    // \todo reconsider the subclass, instead propagate if self.address==thebroadcast address
+    // \todo and, broadcast can change, and there are subadr's, so we should deal with those.
     TLC59116::Broadcast& broadcast() { static TLC59116::Broadcast x(Wire, *this); return x; }
 
     // Protocol: * Reset all devices with .reset(), when desired

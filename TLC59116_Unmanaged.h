@@ -294,7 +294,10 @@ class TLC59116_Unmanaged {
 
     // FIXME: implement error bits (reset, read).
 
+    /// \name Info Functions
+    ///@{
     byte address() { return i2c_address; } 
+    ///@}
 
     // Low Level interface: writes bash the whole register
     byte control_register(byte register_num); // get. Failure returns 0, set TLC59116_WARNINGS=1 and check monitor

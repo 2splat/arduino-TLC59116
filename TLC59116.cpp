@@ -416,6 +416,18 @@ TLC59116& TLC59116::allcall_address(byte address, bool enable) {
   return set_address(want_address, enable ? MODE1_ALLCALL_mask : 0);
   }
 
+TLC59116& TLC59116::allcall_address_enable() {
+  byte want_mode1 = shadow_registers[MODE1_Register];
+  set_with_mask(&want_mode1, MODE1_ALLCALL_mask, MODE1_ALLCALL_mask);
+  update_registers( &want_mode1, MODE1_Register, MODE1_Register);
+  }
+
+TLC59116& TLC59116::allcall_address_disable() {
+  byte want_mode1 = shadow_registers[MODE1_Register];
+  set_with_mask(&want_mode1, MODE1_ALLCALL_mask, 0);
+  update_registers( &want_mode1, MODE1_Register, MODE1_Register);
+  }
+
 TLC59116& TLC59116::resync_shadow_registers() {
   byte rez = fetch_registers(0, Control_Register_Max+1, shadow_registers);
   return *this;

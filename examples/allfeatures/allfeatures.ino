@@ -14,10 +14,10 @@ TLC59116Manager tlcmanager;
 //    OR
 // Specify the I2C interface, I2C speed
 // see TLC59116Manager:TLC59116Manager(TwoWire, long, byte)
-TLC59116Manager tlcmanager(Wire,400000); // default I2C/device initialization
+TLC59116Manager tlc4kHz(Wire,400000); // default I2C/device initialization
 //    OR
 // Specify the I2C interface, I2C speed, and initialization
-TLC59116Manager tlcmanager(Wire,400000, TLC59116Manager::Reset | TLC59116::WireInit); // e.g. don't init Wire
+TLC59116Manager tlcWithOtherWire(Wire,400000, TLC59116Manager::Reset | TLC59116Manager::WireInit); // e.g. don't init Wire
 
 //! [Need a manager]
 
@@ -36,7 +36,7 @@ void setup() {
 
     //! [device setup]
     tlcmanager.broadcast().set_milliamps(5); // everybody
-    tlcmanager[4].allcall_address(FALSE); // 5th \[sic] device ignores broadcast now.
+    tlcmanager[4].allcall_address(false); // 5th \[sic] device ignores broadcast now.
     //! [device setup]
 
     //! [initial channel settings]
@@ -68,18 +68,18 @@ void loop() {
     first_device.set_outputs(0xFFFF, 0b0101010101010101);
 
     // _bit_which_ can be a variable, expression, function, etc.
-    first_device.set_outputs(0xFFFF, rand(0x10)); // randomly turn on the first 4 channels
-    first_device.set_outputs(0x0000, rand(0x10)); // randomly turn off the first 4 channels
+    first_device.set_outputs(0xFFFF, random(0x10)); // randomly turn on the first 4 channels
+    first_device.set_outputs(0x0000, random(0x10)); // randomly turn off the first 4 channels
 
     // _bit_pattern can be a variable, expression, function, etc.
-    first_device.set_outputs(rand(0xF) 0x000F); // randomly _change_ the first 4 channels
+    first_device.set_outputs(random(0xF), 0x000F); // randomly _change_ the first 4 channels
     //! [set_outputs by bit pattern]
 
     //! [Index referencing devices]
     // The manager knows how many there are:
     for (int i=0; i<tlcmanager.device_count(); i++) {
         // turn on channel _i_ of each device
-        tlcmanager[i].set(i); // in the list in order of address
+        tlcmanager[i].on(i); // in the list in order of address
         }
     //! [Index referencing devices]
 

@@ -164,35 +164,35 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <h3>Protocol:</h3>
 <ul>
 <li>Setting up<ul>
-<li>Declare a static <a class="el" href="classTLC59116Manager.html" title="Holds all of the devices. ">TLC59116Manager</a>(static scope, or "static" keyword if you are very clever) <div class="fragment"><div class="line"><span class="comment">// ONLY 1 manager</span></div>
+<li>Declare a static <a class="el" href="classTLC59116Manager.html" title="Holds all of the devices. ">TLC59116Manager</a> (static scope, or "static" keyword if you are very clever) <div class="fragment"><div class="line"><span class="comment">// ONLY 1 manager</span></div>
 <div class="line"><span class="comment">// Use defaults, see TLC59116Manager:TLC59116Manager()</span></div>
 <div class="line"><a class="code" href="classTLC59116Manager.html">TLC59116Manager</a> tlcmanager; </div>
 <div class="line"><span class="comment">//    OR</span></div>
 <div class="line"><span class="comment">// Specify the I2C interface, I2C speed</span></div>
 <div class="line"><span class="comment">// see TLC59116Manager:TLC59116Manager(TwoWire, long, byte)</span></div>
-<div class="line"><a class="code" href="classTLC59116Manager.html">TLC59116Manager</a> tlcmanager(<a class="code" href="TLC59116_8h.html#a35bd3de386d23ba02c35f820303db472">Wire</a>,400000); <span class="comment">// default I2C/device initialization</span></div>
+<div class="line"><a class="code" href="classTLC59116Manager.html">TLC59116Manager</a> tlc4kHz(<a class="code" href="TLC59116_8h.html#a35bd3de386d23ba02c35f820303db472">Wire</a>,400000); <span class="comment">// default I2C/device initialization</span></div>
 <div class="line"><span class="comment">//    OR</span></div>
 <div class="line"><span class="comment">// Specify the I2C interface, I2C speed, and initialization</span></div>
-<div class="line"><a class="code" href="classTLC59116Manager.html">TLC59116Manager</a> tlcmanager(<a class="code" href="TLC59116_8h.html#a35bd3de386d23ba02c35f820303db472">Wire</a>,400000, <a class="code" href="classTLC59116Manager.html#a54a446ce5fc0dd75a4f88e68eb1bd334">TLC59116Manager::Reset</a> | TLC59116::WireInit); <span class="comment">// e.g. don&#39;t init Wire</span></div>
+<div class="line"><a class="code" href="classTLC59116Manager.html">TLC59116Manager</a> tlcWithOtherWire(<a class="code" href="TLC59116_8h.html#a35bd3de386d23ba02c35f820303db472">Wire</a>,400000, <a class="code" href="classTLC59116Manager.html#a54a446ce5fc0dd75a4f88e68eb1bd334">TLC59116Manager::Reset</a> | <a class="code" href="classTLC59116Manager.html#a2ef7c0740bdb17767f4e111f1c9c5d94">TLC59116Manager::WireInit</a>); <span class="comment">// e.g. don&#39;t init Wire</span></div>
 <div class="line"></div>
 </div><!-- fragment --></li>
-<li>Execute <a class="el" href="classTLC59116Manager.html#a361db17d769a22a7908825bf13bd4e25">.init()</a> the manager once (usually in setup()) <div class="fragment"><div class="line"><span class="keywordtype">void</span> setup() {</div>
+<li>Execute <a class="el" href="classTLC59116Manager.html#a361db17d769a22a7908825bf13bd4e25">.init()</a> for the manager once, usually in setup() <div class="fragment"><div class="line"><span class="keywordtype">void</span> setup() {</div>
 <div class="line">    Serial.begin(9600);</div>
 <div class="line"></div>
 <div class="line">    <span class="comment">// inits Wire, devices, and collects them</span></div>
 <div class="line">    tlcmanager.<a class="code" href="classTLC59116Manager.html#a361db17d769a22a7908825bf13bd4e25">init</a>(); <span class="comment">// uses the options from the definition of tlcmanager </span></div>
 </div><!-- fragment --></li>
-<li>The devices should be in a ready state (by default, outputs are enabled, but all channels are off)</li>
+<li>The devices will then be in a ready state (by default, outputs are enabled, but all channels are off)</li>
 </ul>
 </li>
-<li>Obtain a reference from yourmanager[i], 0..device_count()-1<ul>
+<li>Obtain a reference from yourmanager[i], for i from 0..device_count()-1<ul>
 <li>This library passes and returns references so that "." can always be used. <div class="fragment"><div class="line"><span class="keywordtype">void</span> loop() {</div>
 <div class="line">    <span class="comment">// &quot;static&quot; &quot;reference&quot; acts like a global. note the &quot;&amp;&quot;</span></div>
 <div class="line">    <a class="code" href="classTLC59116.html">TLC59116</a> &amp;first_device = tlcmanager[0]; <span class="comment">// the lowest address device</span></div>
 </div><!-- fragment --> <div class="fragment"><div class="line">    <span class="comment">// The manager knows how many there are:</span></div>
 <div class="line">    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i=0; i&lt;tlcmanager.<a class="code" href="classTLC59116Manager.html#a2eeb030f4baf9d448c5be81d5a4459aa">device_count</a>(); i++) {</div>
 <div class="line">        <span class="comment">// turn on channel _i_ of each device</span></div>
-<div class="line">        tlcmanager[i].set(i); <span class="comment">// in the list in order of address</span></div>
+<div class="line">        tlcmanager[i].on(i); <span class="comment">// in the list in order of address</span></div>
 <div class="line">        }</div>
 </div><!-- fragment --></li>
 </ul>
@@ -202,12 +202,12 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- fragment --></li>
 <li>Set device Global Functions, Group/Broadcast Addresses, typically in setup() <div class="fragment"><div class="line"><span class="keywordtype">void</span> setup() {</div>
 </div><!-- fragment --> <div class="fragment"><div class="line">    tlcmanager.<a class="code" href="classTLC59116Manager.html#accc69d6286a6e8052cee7e717b54dc1f">broadcast</a>().<a class="code" href="classTLC59116.html#a2310679ba68d4479dad8108c345bfef0">set_milliamps</a>(5); <span class="comment">// everybody</span></div>
-<div class="line">    tlcmanager[4].allcall_address(FALSE); <span class="comment">// 5th \[sic] device ignores broadcast now.</span></div>
+<div class="line">    tlcmanager[4].allcall_address(<span class="keyword">false</span>); <span class="comment">// 5th \[sic] device ignores broadcast now.</span></div>
 </div><!-- fragment --></li>
-<li>Initial Digital Functions, PWM Functions, typically in setup() <div class="fragment"><div class="line">    tlcmanager.<a class="code" href="classTLC59116Manager.html#accc69d6286a6e8052cee7e717b54dc1f">broadcast</a>().<a class="code" href="classTLC59116.html#a7dd7c2beaa0e7926caee771b5439f130">set</a>(0, HIGH); <span class="comment">// every device, channel 0 on</span></div>
+<li>Do initial Digital Functions, PWM Functions, typically in setup() <div class="fragment"><div class="line">    tlcmanager.<a class="code" href="classTLC59116Manager.html#accc69d6286a6e8052cee7e717b54dc1f">broadcast</a>().<a class="code" href="classTLC59116.html#a7dd7c2beaa0e7926caee771b5439f130">set</a>(0, HIGH); <span class="comment">// every device, channel 0 on</span></div>
 <div class="line">    tlcmanager[0].pwm(13, 128); <span class="comment">// set device[0], channel 13, PWM to half bright</span></div>
 </div><!-- fragment --></li>
-<li>During loop, mess with Global Functions,  Group/Broadcast Addresses, Digital Functions, PWM Functions<ul>
+<li>During loop, mess with Global Functions, Group/Broadcast Addresses, Digital Functions, PWM Functions<ul>
 <li>This library returns the device-reference for most calls, so you can chain functions <div class="fragment"><div class="line">    tlcmanager[0].on(1).pwm(2,128).pwm(3,14, 50).delay(200).off(1).delay(200).set_outputs(0x0000);</div>
 </div><!-- fragment --> FIXME: group the unmanaged FIXME: a beginner protocol, reveal advanced: advanced -&gt; folded</li>
 <li>config-thingy-description, it's protocol, in-constructor?, defaults, method</li>
@@ -246,8 +246,6 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:aed56b2a755ec2d9d2cc11199e8d4bbe4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac1f3a139c4f723fa09720850c5efbccf"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116__Unmanaged.html#ac1f3a139c4f723fa09720850c5efbccf">_end_trans</a> ()</td></tr>
 <tr class="separator:ac1f3a139c4f723fa09720850c5efbccf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6139f45bea0929e07c5549ef40fd1d6b"><td class="memItemLeft" align="right" valign="top">byte&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116__Unmanaged.html#a6139f45bea0929e07c5549ef40fd1d6b">address</a> ()</td></tr>
-<tr class="separator:a6139f45bea0929e07c5549ef40fd1d6b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0663251c7f97864954ab540468c9949a"><td class="memItemLeft" align="right" valign="top">byte&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116__Unmanaged.html#a0663251c7f97864954ab540468c9949a">control_register</a> (byte register_num)</td></tr>
 <tr class="separator:a0663251c7f97864954ab540468c9949a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2a09a2ec129171e92d5f742c211271e4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116__Unmanaged.html#a2a09a2ec129171e92d5f742c211271e4">control_register</a> (byte register_num, byte data)</td></tr>
@@ -337,8 +335,12 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a6c3cb4034fa697c86d972f262208f9d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ada90a7d8f2d6bdb452e6c45b84d3d7b9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#ada90a7d8f2d6bdb452e6c45b84d3d7b9">allcall_address</a> (byte <a class="el" href="classTLC59116__Unmanaged.html#a6139f45bea0929e07c5549ef40fd1d6b">address</a>, bool enable=true)</td></tr>
 <tr class="separator:ada90a7d8f2d6bdb452e6c45b84d3d7b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa8ed569f008c0ae536c86d43b89c544d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#aa8ed569f008c0ae536c86d43b89c544d">allcall_address</a> (bool enable)</td></tr>
-<tr class="separator:aa8ed569f008c0ae536c86d43b89c544d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6998e155661f477d79d290b5b5266ae8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a6998e155661f477d79d290b5b5266ae8">allcall_address_enable</a> ()</td></tr>
+<tr class="memdesc:a6998e155661f477d79d290b5b5266ae8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enable broadcast.  <a href="#a6998e155661f477d79d290b5b5266ae8">More...</a><br/></td></tr>
+<tr class="separator:a6998e155661f477d79d290b5b5266ae8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a55621702303ff89c6aa6c75533ac4192"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a55621702303ff89c6aa6c75533ac4192">allcall_address_disable</a> ()</td></tr>
+<tr class="memdesc:a55621702303ff89c6aa6c75533ac4192"><td class="mdescLeft">&#160;</td><td class="mdescRight">Disable broadcast.  <a href="#a55621702303ff89c6aa6c75533ac4192">More...</a><br/></td></tr>
+<tr class="separator:a55621702303ff89c6aa6c75533ac4192"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a55bfed7ff3932b7300c58830f99cbbce"><td class="memItemLeft" align="right" valign="top">byte&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a55bfed7ff3932b7300c58830f99cbbce">allcall_address</a> ()</td></tr>
 <tr class="separator:a55bfed7ff3932b7300c58830f99cbbce"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4db0408c3d6d5181ad987a76ae5c21c2"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a4db0408c3d6d5181ad987a76ae5c21c2">is_allcall_address</a> ()</td></tr>
@@ -359,6 +361,9 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a68f754b83544356e9194d950ecac841e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a404babbe19ecdbe89b3ce9d6f86032dd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a404babbe19ecdbe89b3ce9d6f86032dd">resync_shadow_registers</a> ()</td></tr>
 <tr class="separator:a404babbe19ecdbe89b3ce9d6f86032dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader">Info Functions</div></td></tr>
+<tr class="memitem:a6139f45bea0929e07c5549ef40fd1d6b"><td class="memItemLeft" align="right" valign="top">byte&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116__Unmanaged.html#a6139f45bea0929e07c5549ef40fd1d6b">address</a> ()</td></tr>
+<tr class="separator:a6139f45bea0929e07c5549ef40fd1d6b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
@@ -702,11 +707,11 @@ Here is the call graph for this function:</div>
 <div class="line">    first_device.<a class="code" href="classTLC59116.html#a6122fb43d940c057fc6a5459e9dbd89b">set_outputs</a>(0xFFFF, 0b0101010101010101);</div>
 <div class="line"></div>
 <div class="line">    <span class="comment">// _bit_which_ can be a variable, expression, function, etc.</span></div>
-<div class="line">    first_device.<a class="code" href="classTLC59116.html#a6122fb43d940c057fc6a5459e9dbd89b">set_outputs</a>(0xFFFF, rand(0x10)); <span class="comment">// randomly turn on the first 4 channels</span></div>
-<div class="line">    first_device.<a class="code" href="classTLC59116.html#a6122fb43d940c057fc6a5459e9dbd89b">set_outputs</a>(0x0000, rand(0x10)); <span class="comment">// randomly turn off the first 4 channels</span></div>
+<div class="line">    first_device.<a class="code" href="classTLC59116.html#a6122fb43d940c057fc6a5459e9dbd89b">set_outputs</a>(0xFFFF, random(0x10)); <span class="comment">// randomly turn on the first 4 channels</span></div>
+<div class="line">    first_device.<a class="code" href="classTLC59116.html#a6122fb43d940c057fc6a5459e9dbd89b">set_outputs</a>(0x0000, random(0x10)); <span class="comment">// randomly turn off the first 4 channels</span></div>
 <div class="line"></div>
 <div class="line">    <span class="comment">// _bit_pattern can be a variable, expression, function, etc.</span></div>
-<div class="line">    first_device.<a class="code" href="classTLC59116.html#a6122fb43d940c057fc6a5459e9dbd89b">set_outputs</a>(rand(0xF) 0x000F); <span class="comment">// randomly _change_ the first 4 channels</span></div>
+<div class="line">    first_device.<a class="code" href="classTLC59116.html#a6122fb43d940c057fc6a5459e9dbd89b">set_outputs</a>(random(0xF), 0x000F); <span class="comment">// randomly _change_ the first 4 channels</span></div>
 </div><!-- fragment --><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">pattern</td><td>HIGH/LOW for each channel by bit </td></tr>
@@ -1499,19 +1504,55 @@ Here is the call graph for this function:</div>
 
 </div>
 </div>
-<a class="anchor" id="aa8ed569f008c0ae536c86d43b89c544d"></a>
+<a class="anchor" id="a6998e155661f477d79d290b5b5266ae8"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classTLC59116.html">TLC59116</a>&amp; TLC59116::allcall_address </td>
+          <td class="memname"><a class="el" href="classTLC59116.html">TLC59116</a> &amp; TLC59116::allcall_address_enable </td>
           <td>(</td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>enable</em></td><td>)</td>
+          <td class="paramname"></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Enable broadcast. </p>
+
+<p><div class="dynheader">
+Here is the call graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="classTLC59116_a6998e155661f477d79d290b5b5266ae8_cgraph.png" border="0" usemap="#classTLC59116_a6998e155661f477d79d290b5b5266ae8_cgraph" alt=""/></div>
+<map name="classTLC59116_a6998e155661f477d79d290b5b5266ae8_cgraph" id="classTLC59116_a6998e155661f477d79d290b5b5266ae8_cgraph">
+<area shape="rect" id="node2" href="classTLC59116__Unmanaged.html#a1dd4a181567c7ccf57301c9bd53a5305" title="TLC59116_Unmanaged\l::set_with_mask" alt="" coords="230,5,389,46"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a55621702303ff89c6aa6c75533ac4192"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classTLC59116.html">TLC59116</a> &amp; TLC59116::allcall_address_disable </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Disable broadcast. </p>
+
+<p><div class="dynheader">
+Here is the call graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="classTLC59116_a55621702303ff89c6aa6c75533ac4192_cgraph.png" border="0" usemap="#classTLC59116_a55621702303ff89c6aa6c75533ac4192_cgraph" alt=""/></div>
+<map name="classTLC59116_a55621702303ff89c6aa6c75533ac4192_cgraph" id="classTLC59116_a55621702303ff89c6aa6c75533ac4192_cgraph">
+<area shape="rect" id="node2" href="classTLC59116__Unmanaged.html#a1dd4a181567c7ccf57301c9bd53a5305" title="TLC59116_Unmanaged\l::set_with_mask" alt="" coords="230,5,389,46"/></map>
+</div>
+</p>
 
 </div>
 </div>
@@ -4550,13 +4591,13 @@ Here is the call graph for this function:</div>
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following files:<ul>
-<li><a class="el" href="TLC59116_8h_source.html">TLC59116.h (Fri Feb 6 13:49:40 2015 -0500)</a></li>
-<li><a class="el" href="TLC59116_8cpp.html">TLC59116.cpp (Fri Feb 6 13:49:40 2015 -0500)</a></li>
+<li><a class="el" href="TLC59116_8h_source.html">TLC59116.h (Sun May 10 09:30:08 2015 -0400)</a></li>
+<li><a class="el" href="TLC59116_8cpp.html">TLC59116.cpp (Sun May 10 09:30:08 2015 -0400)</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat May 9 2015 13:38:23 for TLC59116 Library by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun May 10 2015 10:19:45 for TLC59116 Library by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>
