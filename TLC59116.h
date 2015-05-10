@@ -32,6 +32,14 @@ class TLC59116Manager;
 
   \include basic_usage_single/basic_usage_single.ino
 
+  There are examples in the Arduino IDE examples, and of course, the download site https://github.com/2splat/arduino-TLC59116 .
+
+  This high-level interface tracks each device's state so that commands appear to be independant.
+  For example, you can set the digital-on of a channel without worrying about the 
+  other 4 mode settings in each LEDOUTx_Register.
+
+  Some optimization of the data sent to the devices is also done.
+
   ### The TLC59116 Device
   See the TI spec sheet for much detail: http://www.ti.com/lit/ds/symlink/tlc59116.pdf
 
@@ -41,6 +49,9 @@ class TLC59116Manager;
     - Channels are considered ON, or OFF, instead of HIGH/LOW (or, at some PWM value)
     - PWM is 8 bit.
   - I2C addresses start at 0x60. See TLC59116_Unmanaged for the available addresses (up to 14).
+  - The device provides a constant-current control (external and software settable).
+    This means you can set the current, usually leave out resistors on each LED/channel, and is more efficient.
+    See also, TLC59116::milliamps().
   - This library discovers the devices on the I2C bus and keeps them in a list.
     - Use the _index_ in this library: e.g. "0" is the device with the lowest address, 
       "1" is the next highest, etc.
@@ -78,19 +89,8 @@ class TLC59116Manager;
   - Do initial \ref Digital Functions, \ref PWM Functions, typically in setup()
       \snippet allfeatures/allfeatures.ino initial channel settings
   - During loop, mess with \ref Global Functions, \ref Group/Broadcast Addresses, \ref Digital Functions, \ref PWM Functions
-    - This library returns the device-reference for most calls, so you can chain functions
-      \snippet allfeatures/allfeatures.ino chain functions together
-
-    - config-thingy-description, it's protocol, in-constructor?, defaults, method 
-  - FIXME: configure methods should note the default
-  - FIXME: configure methods should include constructor-args
-
-
-  This high-level interface tracks each device's state so that commands appear to be independant.
-  For example, you can set the digital-on of a channel without worrying about the 
-  other 4 mode settings in each LEDOUTx_Register.
-
-  Some optimization of the data sent to the devices is also done.
+  - This library returns the device-reference for most calls, so you can chain functions, e.g.:
+    \snippet allfeatures/allfeatures.ino chain functions together
 
 */
 class TLC59116 : public TLC59116_Unmanaged {
@@ -125,13 +125,17 @@ class TLC59116 : public TLC59116_Unmanaged {
       There are several aliases, and overloaded functions here (and for the pwm functions below). 
       The intention was to provide natural
       overloads and aliases. I've shied away from using the Arduino DigitalWrite and AnalogWrite so far.
+
+      These functions only change the specified channels, they'll leave other outputs, like a PWM channel alone.
+
+      You can have some channels doing PWM, and some channels doing digital.
       
     */
     ///@{
     // FIXME: pattern_bits(bits, which). set_bits(pattern). reset_bits(pattern). on/off/set
     TLC59116& set_outputs(
         word pattern,  //!< on/off for each channel by bit
-        word which=0xFFFF //!< But, only change these bits
+        word which //!< But, only change these bits
       ); //!< Only change the channels (that are marked in _bit_which_) to on/off as marked in _bit_pattern_
       /**< 
         (cf. on_pattern(word), on(), off() )
@@ -141,9 +145,27 @@ class TLC59116 : public TLC59116_Unmanaged {
       */
     /// Alias for set_outputs()
     TLC59116& pattern(word bit_pattern, word bit_which=0xFFFF) { return set_outputs(bit_pattern, bit_which); }
-    TLC59116& on_pattern(word pattern) { return set_outputs(pattern, pattern); } ///< Turn on by bit pattern
-    TLC59116& off_pattern(word pattern) { return set_outputs(~pattern, pattern); } ///< Turn off by bit pattern
-    /// Turn one on/off.
+
+    /// Turn on by bit pattern
+    /** See set_outputs(word,word) examples for hex/binary notation hints 
+
+        Examples:
+        \snippet allfeatures/allfeatures.ino on_pattern
+    */
+    TLC59116& on_pattern(word pattern) { return set_outputs(pattern, pattern); }
+
+    /// Turn off by bit pattern
+    /** See set_outputs(word,word) examples for hex/binary notation hints 
+
+        Examples:
+        \snippet allfeatures/allfeatures.ino off_pattern
+    */
+    TLC59116& off_pattern(word pattern) { return set_outputs(~pattern, pattern); }
+
+    /// Turn one on/off, much like DigitalWrite.
+    /** Examples:
+        \snippet allfeatures/allfeatures.ino using set
+    */
     TLC59116& set(int led_num, bool offon /**< _true_ for on */ ) {
       word bits = 1 << led_num;
       return set_outputs(offon ? bits : ~bits, bits); 
@@ -154,18 +176,33 @@ class TLC59116 : public TLC59116_Unmanaged {
     ///@}
 
     /** \name PWM Functions
+      Analogous to AnalogWrite
+
+      You can have some channels doing PWM, and some channels doing digital.
+
+      Remember, the device is a "sink", even for PWM. Minus side of LED goes to the output pin.
+
       \bug Be careful with start/end arguments, if they are out of range (0..15) you will have mysterious problems.
       \todo Put in range checking
     */
     ///@{
-    //! Analogous to AnalogWrite
 
     /// PWM, start..end, list-of-brightness
-    // set_outputs() is overloaded for "digital" and "pwm", because it made sense to me
-    TLC59116& set_outputs(byte led_num_start, byte led_num_end, const byte brightness[] /*[start..end]*/); // A list of PWM values. Tolerates led_num_end>15 which wraps around
-    TLC59116& pwm(byte led_num_start, byte led_num_end, const byte brightness[] /*[ct]*/) { return set_outputs(led_num_start, led_num_end, brightness); } ///< Alias of set_outputs
-    TLC59116& pwm(byte led_num, byte brightness) { byte ba[1] = {brightness}; return set_outputs(led_num, led_num, ba); } ///< PWM for one channel
+    /** Examples:
+        \snippet allfeatures/allfeatures.ino range of pwm
+    */
+    TLC59116& set_outputs(
+      byte led_num_start, ///< first channel
+      byte led_num_end, ///< last channel
+      const byte brightness[] ///< A list of PWM values. Tolerates led_num_end>15 which wraps around
+      );
+
+    TLC59116& pwm(byte led_num_start, byte led_num_end, const byte brightness[] /*[ct]*/) { return set_outputs(led_num_start, led_num_end, brightness); } ///< Alias of set_outputs() above
+
     /// PWM, start..end same brightness
+    /** Examples:
+        \snippet allfeatures/allfeatures.ino same pwm
+    */
     TLC59116& pwm(byte led_num_start, byte led_num_end, byte pwm_value) {
       const byte register_count = led_num_end - led_num_start +1;
       // FIXME: warnings of range
@@ -173,8 +210,19 @@ class TLC59116 : public TLC59116_Unmanaged {
       memset(pwm_buff, pwm_value, register_count);
       return set_outputs(led_num_start, led_num_end, pwm_buff); 
       }
-    TLC59116& set_outputs(const byte brightness[16]) { return set_outputs(0,15, brightness); } ///< Set all 16 PWM according to the brightness list
-    TLC59116& pwm(const byte brightness[16]) { return set_outputs(0,15, brightness); } ///< Set all 16 PWM according to the brightness list
+
+    /// Set all 16 PWM according to the brightness list
+    /** Examples:
+        \snippet allfeatures/allfeatures.ino all pwm
+    */
+    TLC59116& set_outputs(const byte brightness[16] ) { return set_outputs(0,15, brightness); }
+    TLC59116& pwm(const byte (&brightness)[16]) { return set_outputs(0,15, brightness); } ///< Set all 16 PWM according to the brightness list, same as above.
+
+    /// PWM for one channel
+    /** Examples:
+        \snippet allfeatures/allfeatures.ino one pwm
+    */
+    TLC59116& pwm(byte led_num, byte brightness) { byte ba[1] = {brightness}; return set_outputs(led_num, led_num, ba); }
     // fixme: maybe brightness()?
     ///@}
     
@@ -217,7 +265,7 @@ class TLC59116 : public TLC59116_Unmanaged {
     TLC59116& group_blink(
       byte blink_period, ///< blink-length secs = (blink_period + 1)/24
       byte on_ratio=128  ///< ratio that the blink is on: on_ratio/256
-      ) { return group_blink(0xFFFF,blink_delay,on_ratio); }
+      ) { return group_blink(0xFFFF,blink_period,on_ratio); }
 
     /// As TLC59116& group_blink(byte,byte), but you can specify the channels by bit-pattern
     //! \warning Hardware Bug, see \ref Group Functions 
@@ -273,6 +321,9 @@ class TLC59116 : public TLC59116_Unmanaged {
     
       \bug However, the TLC59116Manager.broadcast() object _only_ assumes the default allcall_address 0x68.
       So, it won't work if you change the allcall_address.
+
+      Examples:
+        \snippet allfeatures/allfeatures.ino set allcall
     */
     TLC59116& allcall_address(byte address, bool enable=true);
 
@@ -288,12 +339,17 @@ class TLC59116 : public TLC59116_Unmanaged {
       By default, the SUBADR's are disabled. You must enable them if you want to use them (see SUBADR_address(byte, byte, bool), SUBADR_address_enable(byte), SUBADR_address_disable(byte) ).
 
       The default addresses are: are 0x69, 0x6a, 0x6b
+
     */
     byte SUBADR_address(byte which) { return shadow_registers[SUBADRx_Register(which)] >> 1; }
     bool is_SUBADR_address(byte which) { return is_SUBADR_bit( shadow_registers[MODE1_Register], which); } ///< Is SUBADR_n enabled?
 
     /// Set the SUBADR_n address.
-    /** \bug We don't track commands on SUBADR_n's, so this library will get very confused 
+    /** 
+      Examples:
+        \snippet allfeatures/allfeatures.ino set subadr
+    
+      \bug We don't track commands on SUBADR_n's, so this library will get very confused 
       about the state of the devices and do confusing things if you mix broadcasts to 
       SUBADR_n devices, and individual devices in that SUBADR_n group.
 
@@ -313,7 +369,11 @@ class TLC59116 : public TLC59116_Unmanaged {
       to calculate this, e.g. 156ohms gives 120mA at reset (default), 937ohms gives 20mA.
       This function can use a default value of 156ohms to do the calculation.
     
-      By default, this is set to maximum current (e.g. 120mA for 156ohm).
+      By default, this is set to maximum current (e.g. 120mA for 156ohm). 
+      Remember that common LEDs are usually 20mA, though 10mA is becoming common
+      (the tiny surface-mount LEDs are usually 5mA).
+
+      You probably want to set the current before you turn on any LEDs!
 
       Note that this will tend to set the output 1milliamp low (due to rounding).
     
@@ -323,7 +383,16 @@ class TLC59116 : public TLC59116_Unmanaged {
 
       See the section "The TLC59116 Device" for some short notes on "constant current".
 
-      \todo the example showing software current setup before power on
+      Examples:
+        \code{.cpp}
+        void setup() {
+        \endcode
+        \snippet allfeatures/allfeatures.ino initial current control
+
+        \code{.cpp}
+        void loop() {
+        \endcode
+        \snippet allfeatures/allfeatures.ino current control
     */
     TLC59116& set_milliamps(byte ma, int Rext=Rext_Min); // Rext_Min ohms is 120ma at reset.
 

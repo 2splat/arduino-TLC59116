@@ -411,14 +411,9 @@ TLC59116& TLC59116::SUBADR_address(byte which, byte address, bool enable) {
   return set_address(want_address, enable ? MODE1_SUB1_mask >> (which-1) : 0);
   }
 
-TLC59116& TLC59116::allcall_address_enable(byte address) {
+TLC59116& TLC59116::allcall_address(byte address, bool enable) {
   byte want_address[4] = {0,0,0,address << 1};
-  return set_address(want_address, MODE1_ALLCALL_mask);
-  }
-
-TLC59116& TLC59116::allcall_address_disable(byte address) {
-  byte want_address[4] = {0,0,0,address << 1};
-  return set_address(want_address, 0);
+  return set_address(want_address, enable ? MODE1_ALLCALL_mask : 0);
   }
 
 TLC59116& TLC59116::allcall_address_enable() {
