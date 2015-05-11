@@ -1,6 +1,0 @@
-<map id="TLC59116::resync_shadow_registers" name="TLC59116::resync_shadow_registers">
-<area shape="rect" id="node2" href="$classTLC59116__Unmanaged.html#ab29c684a0751a03c4dc1239e877ca083" title="TLC59116_Unmanaged\l::fetch_registers" alt="" coords="235,63,394,105"/>
-<area shape="rect" id="node3" href="$classTLC59116__Unmanaged.html#ab3dd16039595af68e1c79feef58ee8fd" title="TLC59116_Unmanaged\l::_begin_trans" alt="" coords="443,5,602,46"/>
-<area shape="rect" id="node4" href="$classTLC59116__Unmanaged.html#a6139f45bea0929e07c5549ef40fd1d6b" title="TLC59116_Unmanaged\l::address" alt="" coords="651,34,810,75"/>
-<area shape="rect" id="node5" href="$classTLC59116__Unmanaged.html#ac1f3a139c4f723fa09720850c5efbccf" title="TLC59116_Unmanaged\l::_end_trans" alt="" coords="443,122,602,163"/>
-</map>

@@ -1,7 +1,0 @@
-<map id="TLC59116_Unmanaged::LEDOUTx_CHECK" name="TLC59116_Unmanaged::LEDOUTx_CHECK">
-<area shape="rect" id="node2" href="$classTLC59116__Unmanaged.html#abd4690ab3e44f21ec2bee2f7c3841359" title="TLC59116_Unmanaged\l::PWMx_Register" alt="" coords="214,5,373,46"/>
-<area shape="rect" id="node3" href="$classTLC59116__Unmanaged.html#a1b34867e93dc76d3379e9f9fea1ba4f6" title="TLC59116_Unmanaged\l::LEDx_Register_mask" alt="" coords="214,122,373,163"/>
-<area shape="rect" id="node4" href="$classTLC59116__Unmanaged.html#a3c040245c7c1543a388623fa393f657a" title="TLC59116_Unmanaged\l::LEDx_Register_bits" alt="" coords="422,77,581,118"/>
-<area shape="rect" id="node5" href="$classTLC59116__Unmanaged.html#ae15c27d8f55bf9a1d1e147f861860065" title="TLC59116_Unmanaged\l::LEDx_set_mode" alt="" coords="422,155,581,197"/>
-<area shape="rect" id="node6" href="$classTLC59116__Unmanaged.html#aaab5a8d457987943aaf05fa2f91b51d8" title="TLC59116_Unmanaged\l::LEDx_set_mode" alt="" coords="630,155,789,197"/>
-</map>

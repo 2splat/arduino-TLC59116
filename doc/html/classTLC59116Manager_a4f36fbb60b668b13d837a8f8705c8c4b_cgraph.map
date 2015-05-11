@@ -1,9 +1,0 @@
-<map id="TLC59116Manager::reset" name="TLC59116Manager::reset">
-<area shape="rect" id="node2" href="$classTLC59116__Unmanaged.html#ac1f3a139c4f723fa09720850c5efbccf" title="TLC59116_Unmanaged\l::_end_trans" alt="" coords="243,5,402,46"/>
-<area shape="rect" id="node3" href="$TLC59116__Unmanaged_8h.html#aa3f3157e61b6d64526e7bf2016c6d799" title="TLC59116Dev" alt="" coords="269,71,376,97"/>
-<area shape="rect" id="node4" href="$TLC59116__Unmanaged_8h.html#ab2ce20589d924c815fc785c51f49b0b7" title="TLC59116Warn" alt="" coords="266,121,379,148"/>
-<area shape="rect" id="node5" href="$classTLC59116Manager.html#accc69d6286a6e8052cee7e717b54dc1f" title="TLC59116Manager::broadcast" alt="" coords="224,172,421,199"/>
-<area shape="rect" id="node6" href="$classTLC59116_1_1Broadcast.html#a7e4a899c574da03f81ada7aa7619c05f" title="Master power switch (the TLC59116Manager sets this on/true by default) " alt="" coords="248,223,397,265"/>
-<area shape="rect" id="node7" href="$classTLC59116.html#a24199b74fa82e207d54deb4142ac41fa" title="Master power switch (the TLC59116Manager sets this on/true by default) " alt="" coords="469,231,648,257"/>
-<area shape="rect" id="node8" href="$classTLC59116__Unmanaged.html#a6139f45bea0929e07c5549ef40fd1d6b" title="TLC59116_Unmanaged\l::address" alt="" coords="697,223,855,265"/>
-</map>

@@ -1,6 +1,0 @@
-var searchData=
-[
-  ['tlc59116_5fdev',['TLC59116_DEV',['../TLC59116_8cpp.html#a825e37ba6ff82c31fb565e671f8d5f4e',1,'TLC59116_DEV():&#160;TLC59116.cpp'],['../TLC59116__Unmanaged_8cpp.html#a825e37ba6ff82c31fb565e671f8d5f4e',1,'TLC59116_DEV():&#160;TLC59116_Unmanaged.cpp'],['../TLC59116__Unmanaged_8h.html#a825e37ba6ff82c31fb565e671f8d5f4e',1,'TLC59116_DEV():&#160;TLC59116_Unmanaged.h']]],
-  ['tlc59116_5flowlevel',['TLC59116_LOWLEVEL',['../TLC59116_8cpp.html#ad62f69307744989e410a133095f1a8d1',1,'TLC59116_LOWLEVEL():&#160;TLC59116.cpp'],['../TLC59116__Unmanaged_8cpp.html#ad62f69307744989e410a133095f1a8d1',1,'TLC59116_LOWLEVEL():&#160;TLC59116_Unmanaged.cpp'],['../TLC59116__Unmanaged_8h.html#ad62f69307744989e410a133095f1a8d1',1,'TLC59116_LOWLEVEL():&#160;TLC59116_Unmanaged.h']]],
-  ['tlc59116_5fwarnings',['TLC59116_WARNINGS',['../TLC59116_8cpp.html#a67d9a410806f81c775d16b2c4699c3d2',1,'TLC59116_WARNINGS():&#160;TLC59116.cpp'],['../TLC59116__Unmanaged_8cpp.html#a67d9a410806f81c775d16b2c4699c3d2',1,'TLC59116_WARNINGS():&#160;TLC59116_Unmanaged.cpp'],['../TLC59116__Unmanaged_8h.html#a67d9a410806f81c775d16b2c4699c3d2',1,'TLC59116_WARNINGS():&#160;TLC59116_Unmanaged.h']]]
-];

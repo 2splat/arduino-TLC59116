@@ -1,9 +1,0 @@
-<map id="TLC59116::set_outputs" name="TLC59116::set_outputs">
-<area shape="rect" id="node2" href="$classTLC59116__Unmanaged.html#ae52bca032bf3a5ad3137cfa37bc907cf" title="TLC59116_Unmanaged\l::LEDOUTx_Register" alt="" coords="214,5,373,46"/>
-<area shape="rect" id="node3" href="$classTLC59116__Unmanaged.html#ae15c27d8f55bf9a1d1e147f861860065" title="TLC59116_Unmanaged\l::LEDx_set_mode" alt="" coords="214,70,373,111"/>
-<area shape="rect" id="node4" href="$classTLC59116__Unmanaged.html#a437e3817f378c57b895ad99d29105c5c" title="TLC59116_Unmanaged\l::LEDOUTx_CHECK" alt="" coords="635,7,794,49"/>
-<area shape="rect" id="node6" href="$classTLC59116__Unmanaged.html#a1b34867e93dc76d3379e9f9fea1ba4f6" title="TLC59116_Unmanaged\l::LEDx_Register_mask" alt="" coords="425,37,583,78"/>
-<area shape="rect" id="node7" href="$classTLC59116__Unmanaged.html#a025a7e444437a01fecb8b398a6091faa" title="TLC59116_Unmanaged\l::LEDx_to_Register_bits" alt="" coords="421,102,587,143"/>
-<area shape="rect" id="node8" href="$classTLC59116__Unmanaged.html#a1dd4a181567c7ccf57301c9bd53a5305" title="TLC59116_Unmanaged\l::set_with_mask" alt="" coords="425,167,583,209"/>
-<area shape="rect" id="node5" href="$TLC59116__Unmanaged_8h.html#ab2ce20589d924c815fc785c51f49b0b7" title="TLC59116Warn" alt="" coords="843,15,957,41"/>
-</map>
