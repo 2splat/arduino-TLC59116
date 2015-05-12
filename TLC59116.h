@@ -72,6 +72,12 @@ class TLC59116Manager;
   - Setting up
     - Declare a static TLC59116Manager (static scope, or "static" keyword if you are very clever)
       \snippet allfeatures/allfeatures.ino Need a manager
+    - Initialize the serial-output e.g.
+      - `Serial.begin(9600)`
+      - This library will warn you about some mistakes or dubious usages.
+      - You don't have to setup the serial-output, but then you won't see the warnings.
+      - I like to set the speed to 115200, because at that setting it has little effect 
+        on the speed of your program.
     - Execute \ref TLC59116Manager::init() ".init()" for the manager once, usually in setup()
       \snippet allfeatures/allfeatures.ino Init the manager
     - The devices will then be in a ready state (by default, outputs are enabled, but all channels are off)
@@ -81,14 +87,14 @@ class TLC59116Manager;
       \snippet allfeatures/allfeatures.ino Index referencing devices
   - Get information about the device as needed from the \ref Info Functions
       \snippet allfeatures/allfeatures.ino device info
-  - Set device \ref Global Functions, \ref Group/Broadcast Addresses, typically in setup()
+  - Set device \ref Global Functions, \ref Group/Broadcast Addresses, \ref Software Current Control, typically in setup()
       \code{.cpp}
       void setup() {
       \endcode
       \snippet allfeatures/allfeatures.ino device setup
   - Do initial \ref Digital Functions, \ref PWM Functions, typically in setup()
       \snippet allfeatures/allfeatures.ino initial channel settings
-  - During loop, mess with \ref Global Functions, \ref Group/Broadcast Addresses, \ref Digital Functions, \ref PWM Functions
+  - During loop, mess with \ref Global Functions, \ref Group/Broadcast Addresses, \ref Software Current Control, \ref Digital Functions, \ref PWM Functions
   - This library returns the device-reference for most calls, so you can chain functions, e.g.:
     \snippet allfeatures/allfeatures.ino chain functions together
 
@@ -100,7 +106,7 @@ class TLC59116 : public TLC59116_Unmanaged {
 
     /// \name Global Functions
     ///@{
-    //! Controlling various global features of the device
+    //! Controlling various global features of the device (see also, the "Software Current Control" section)
 
     /// Master power switch (the TLC59116Manager sets this on/true by default)
     /** It takes the device a moment to enable power, so typically leave _with_delay_ true **/
@@ -362,9 +368,9 @@ class TLC59116 : public TLC59116_Unmanaged {
     TLC59116& SUBADR_address_disable(byte which); ///< Disable SUBADR_n
     ///@}
     
-    /// \name Global Functions
+    /// \name Software Current Control
     ///@{
-    /// Software current control
+
     /** We need a Rext value (the resistor attached to the Rext pin) 
       to calculate this, e.g. 156ohms gives 120mA at reset (default), 937ohms gives 20mA.
       This function can use a default value of 156ohms to do the calculation.

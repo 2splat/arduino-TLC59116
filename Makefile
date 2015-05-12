@@ -60,23 +60,19 @@ preproc :
 # documentation, section 1, is in .cpp
 # the first /* ... */ as markdown
 .PHONY : doc
-doc : README.md $(doc_input) Doxyfile DoxygenLayout.xml
+doc : README.md $(doc_input) Doxyfile DoxygenLayout.xml README.html
 	sed -i '/^PROJECT_NUMBER/ s/= .\+/= $(branch)/' Doxyfile
 	doxygen Doxyfile
-
-.PHONY : debugdoc
-debugdoc : $(doc_input)
-	build_tools/extract_doc --include-paths '.,$(arduino_inc_dirs)' --processor CppDoc_Processor_Dump build/TLC59116.hpp
-	# build_tools/extract_doc --include-paths '.,$(arduino_inc_dirs)' $(doc_input)
-	wc -l t.ast
-
-
+	# Want the files in the archive to be html/...
+	rm arduino_$(Device)_doc.zip || true
+	cd doc && (cd html && git ls-tree -r --name-only -t HEAD) | awk '{print "html/"$$0}' | xargs -s 2000 zip -u ../arduino_$(Device)_doc.zip
+	# make doc, commit doc, commit main, amend doc
 
 README.html : README.md
 ifeq ($(shell which markdown),)
 	@echo WARNING: Couldn\'t make $@ because couldn\'t find markdown command
 else
-	markdown README.md > README.html
+	sed 's/#BRANCH#/$(branch)/' README.md | markdown > README.html
 endif
 
 # Not actually phony, but remake always

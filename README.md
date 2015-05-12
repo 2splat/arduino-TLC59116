@@ -1,14 +1,88 @@
-  This interface provides a high level interface:
-  * So it's easier to get started (provides useful defaults, etc.).
-  * With supposedly friendly functions.
-  * And allowing the friendlier ".", instead of remembering when to use "->".
+### Arduino Library for TI TLC59116 LED-driver 
 
-  This interface keeps track of the device(s) state (i.e. output-channel 4 is already "on"):
-  * So you don't have to, which minimizes bugs
-    (i.e.: only update the bits to turn channel 5 on, without stomping the other channels).
-  * And to optimize communication with the device(s).
+This provides a high level interface:
 
-Related Pages have bugs, etc.
+- Makes it easier to get started.
+    - Discovers the devices.
+    - Provides useful defaults.
+- Provides most features.
+- Provides operations at the feature level (like "turn on channel 4").
+    - Manages the subfields and state of the device registers.
+    - i.e.: only update the bits to turn channel 5 on, without stomping the other channels.
+    - So you don't have to, which minimizes bugs.
+    - Optimizes some communications with the device.
+- Allows the friendlier "." notation, so you don't have to remember when to use "->".
+- Provides a low-level interface if you don't want the state managed.
+
+### Requirements
+
+1.  An Arduino that is I2C capable, and works with the Wire library.
+1.  Arduino IDE version 1.0.5, or 1.0.4. There is a bug that causes a problem in 1.0.6.
+1.  At least one TLC59116, wired up and hooked to the default I2C pins of your Arduino.
+    1.  Something on the outputs, otherwise it's real boring.
+
+I have not tested this with any Makefile setups. Please send me info on how that works for you.
+
+### Installation
+
+1.  Download the [library zip file](https://github.com/2splat/arduino-TLC59116/raw/#BRANCH#/arduino_TLC59116.zip).
+1.  Add the library to the Arduino IDE
+    1.  (cf. the [official instructions](http://arduino.cc/en/guide/libraries))
+    1.  For Arduino IDE 1.0.5:
+        1. `Sketch -> Import Library -> Add Library`
+        1. Then select the downloaded `arduino_TLC59116.zip`.
+    1.  For earlier versions, follow the "Manual" section of <http://www.arduino.cc/en/guide/libraries>.
+
+### Getting Started
+
+1.  Copy the code from 
+1.  Try the examples. 
+    1. "examples/basic_usage_single" is the same code as show in the "Usage" section of [TLC59116 Class](https://2splat.github.io/arduino-TLC59116/classTLC59116.html)
+        1.  Open it.
+        1.  Do the Upload thing.
+        1.  Oooh. Blinky light.
+    1.  "examples/test_features" wants you to interact with the serial-console.
+        1. Type single-letter commands into the top box, and click send. Try "?".
+        1. It has a bunch of behaviors, useful for testing the TLC59116 and your wiring prowess.
+    1.  "examples/allfeatures" is the source of most of the examples in the documenation.
+        1. It compiles.
+        1. It probably is not useful to actually run.
+        1. But, you can copy & paste from it.
+    1.  "examples/tlc59116blink" is what I use to do quick tests of wired-up devices.
+        1. Read it's comments!
+1.  Browse the [TLC59116 Class](https://2splat.github.io/arduino-TLC59116/classTLC59116.html) documentation page:
+    1. The "Protocol" section describes the order you have to do things.
+    1. Further down, the [Public Methods](http://2splat.github.io/arduino-TLC59116/classTLC59116.html#pub-methods) section has groups of operations (like "Digital" and "PWM").
+       1. (you probably want to ignore that first list of methods)
+       1. There's usually a short description of each method. 
+       1. For example-code, explanations, and more details, click on the method-name.
+
+### Documentation
+
+HTML documentation, with examples, and explanation:
+
+- Online: <https://2splat.github.io/arduino-TLC59116>
+    - For the high-level/friendly, start at the [TLC59116 Class](https://2splat.github.io/arduino-TLC59116/classTLC59116.html)
+    - NB: That is the current version's documentation. You can download other versions by going to the [repository](https://github.com/2splat/arduino-TLC59116), choosing the branch of interest, navigating to the `arduino_TLC59116_doc.zip`, and clicking on the "raw" button.
+- Or, download a [zip](https://github.com/2splat/arduino-TLC59116/raw/#BRANCH#/arduino_TLC59116_doc.zip) of the documentation from the repository.
+- Some known bugs are noted in the documentation (summary on ["Related Pages::Bugs"](https://2splat.github.io/arduino-TLC59116/bug.html)).
+- Some things that aren't done are on the ["Related Pages::Todo"](https://2splat.github.io/arduino-TLC59116/todo.html)
+
+### Developing
+
+1.  Everything should be in the [github repository](https://github.com/2splat/arduino-TLC59116).
+1.  Clone it to mess around. Fork it to keep track of the messing around.
+1.  I'm happy to consider pull-requests, especially for bug-fixes, documentation issues, and missing functions.
+    1.  Please maintain a high-level of documentation.
+1.  Requirements for developing:
+    1. Source control is by git, with a repository on github.
+    1. Documentation is generated by doxygen: `doxygen Doxyfile`
+    1. The .zip files are constructed by gnu-make.
+    1. Several other files are constructed by gnu-make (e.g. `README.html`)
+    1. The default `make` target constructs everything.
+       1.  It tries to be tolerant of missing tools.
+       1.  It touches up a few files to insert the git-branch as the version.
+
 
 Arch overview:
 
