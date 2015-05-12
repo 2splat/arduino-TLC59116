@@ -145,17 +145,13 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a513cc233a1398925cf0a4d015606124f"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116__Unmanaged.html#a513cc233a1398925cf0a4d015606124f">is_SUBADR_bit</a> (byte mode1_value, byte which)</td></tr>
 <tr class="separator:a513cc233a1398925cf0a4d015606124f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader">Global Functions</div></td></tr>
-<tr><td colspan="2"><div class="groupText"><p>Software current control </p>
+<tr><td colspan="2"><div class="groupText"><p>Controlling various global features of the device (see also, the "Software Current Control" section) </p>
 </div></td></tr>
 <tr class="memitem:abc2c406250904c9ef33a908589a37561"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#abc2c406250904c9ef33a908589a37561">is_enable_outputs</a> ()</td></tr>
 <tr class="memdesc:abc2c406250904c9ef33a908589a37561"><td class="mdescLeft">&#160;</td><td class="mdescRight">Is master power on?  <a href="#abc2c406250904c9ef33a908589a37561">More...</a><br/></td></tr>
 <tr class="separator:abc2c406250904c9ef33a908589a37561"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7a3390e7fae7f917ac3f8e22ac58e212"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a7a3390e7fae7f917ac3f8e22ac58e212">is_enabled</a> ()</td></tr>
 <tr class="separator:a7a3390e7fae7f917ac3f8e22ac58e212"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2310679ba68d4479dad8108c345bfef0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a2310679ba68d4479dad8108c345bfef0">set_milliamps</a> (byte ma, int Rext=<a class="el" href="classTLC59116__Unmanaged.html#a02efe10b964887296918703d388d762e">Rext_Min</a>)</td></tr>
-<tr class="separator:a2310679ba68d4479dad8108c345bfef0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7b12a12e134df87bfdc477cbc9153db6"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a7b12a12e134df87bfdc477cbc9153db6">milliamps</a> (int Rext=<a class="el" href="classTLC59116__Unmanaged.html#a02efe10b964887296918703d388d762e">Rext_Min</a>)</td></tr>
-<tr class="separator:a7b12a12e134df87bfdc477cbc9153db6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader">Digital Functions</div></td></tr>
 <tr><td colspan="2"><div class="groupText"><p>Analogous to DigitalWrite.</p>
 <p>Arduino DigitalWrite uses HIGH and LOW, but the device is a "sink", so "on" is actually a LOW. Thus, this library uses "on" and "off" for terminology.</p>
@@ -270,6 +266,11 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:ac6239daf0a26d22f1cfba8150b257567"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a365e02e443ac0dfad0b9a92ce3a315bf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a365e02e443ac0dfad0b9a92ce3a315bf">SUBADR_address_disable</a> (byte which)</td></tr>
 <tr class="separator:a365e02e443ac0dfad0b9a92ce3a315bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader">Software Current Control</div></td></tr>
+<tr class="memitem:a2310679ba68d4479dad8108c345bfef0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a2310679ba68d4479dad8108c345bfef0">set_milliamps</a> (byte ma, int Rext=<a class="el" href="classTLC59116__Unmanaged.html#a02efe10b964887296918703d388d762e">Rext_Min</a>)</td></tr>
+<tr class="separator:a2310679ba68d4479dad8108c345bfef0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7b12a12e134df87bfdc477cbc9153db6"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a7b12a12e134df87bfdc477cbc9153db6">milliamps</a> (int Rext=<a class="el" href="classTLC59116__Unmanaged.html#a02efe10b964887296918703d388d762e">Rext_Min</a>)</td></tr>
+<tr class="separator:a7b12a12e134df87bfdc477cbc9153db6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader">Convenience</div></td></tr>
 <tr><td colspan="2"><div class="groupText"><p>Since we allow function-chaining, it seems like a few convenience functions might be nice.</p>
 <p>Note all the functions (not just these convenience functions) that look like</p>
@@ -2006,7 +2007,7 @@ Here is the call graph for this function:</div>
 </div><!-- fragment --> <div class="fragment"><div class="line">    <span class="comment">// Assume we put a 100ohm resistor on the Rext pin</span></div>
 <div class="line">    <span class="comment">// set it to 5mA before we play with any outputs</span></div>
 <div class="line">    tlcmanager[0].set_milliamps(5,100);</div>
-<div class="line">    Serial.print(<span class="stringliteral">&quot;Device 0 is actually &quot;</span>)</div>
+<div class="line">    Serial.print(<span class="stringliteral">&quot;Device 0 is actually &quot;</span>);</div>
 <div class="line">    Serial.print(tlcmanager[0].<a class="code" href="classTLC59116.html#a7b12a12e134df87bfdc477cbc9153db6">milliamps</a>(100)); <span class="comment">// might be slightly off due to rounding</span></div>
 <div class="line">    Serial.println(<span class="stringliteral">&quot;mA&quot;</span>);</div>
 </div><!-- fragment --> <div class="fragment"><div class="line"><span class="keywordtype">void</span> loop() {</div>
@@ -4876,13 +4877,13 @@ Here is the call graph for this function:</div>
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following files:<ul>
-<li><a class="el" href="TLC59116_8h_source.html">TLC59116.h (Sun May 10 13:44:11 2015 -0400)</a></li>
-<li><a class="el" href="TLC59116_8cpp.html">TLC59116.cpp (Sun May 10 13:44:11 2015 -0400)</a></li>
+<li><a class="el" href="TLC59116_8h_source.html">TLC59116.h (Mon May 11 19:25:55 2015 -0400)</a></li>
+<li><a class="el" href="TLC59116_8cpp.html">TLC59116.cpp (Mon May 11 19:25:55 2015 -0400)</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun May 10 2015 16:06:26 for TLC59116 Library by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon May 11 2015 22:42:09 for TLC59116 Library by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

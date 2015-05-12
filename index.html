@@ -79,10 +79,179 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">TLC59116 Library Documentation</div>  </div>
 </div><!--header-->
 <div class="contents">
-</div><!-- contents -->
+<div class="textblock"><p>This provides a high level interface:</p>
+<ul>
+<li>Makes it easier to get started.<ul>
+<li>Discovers the devices.</li>
+<li>Provides useful defaults.</li>
+</ul>
+</li>
+<li>Provides most features.</li>
+<li>Provides operations at the feature level (like "turn on channel 4").<ul>
+<li>Manages the subfields and state of the device registers.</li>
+<li>i.e.: only update the bits to turn channel 5 on, without stomping the other channels.</li>
+<li>So you don't have to, which minimizes bugs.</li>
+<li>Optimizes some communications with the device.</li>
+</ul>
+</li>
+<li>Allows the friendlier "." notation, so you don't have to remember when to use "-&gt;".</li>
+<li>Provides a low-level interface if you don't want the state managed.</li>
+</ul>
+<h3>Requirements</h3>
+<ol type="1">
+<li>An Arduino that is I2C capable, and works with the Wire library.</li>
+</ol>
+<ol type="1">
+<li>Arduino IDE version 1.0.5, or 1.0.4. There is a bug that causes a problem in 1.0.6.</li>
+</ol>
+<ol type="1">
+<li>At least one <a class="el" href="classTLC59116.html" title="High Level interface to a single TLC59116 using Wire (I2C) interface. ">TLC59116</a>, wired up and hooked to the default I2C pins of your Arduino.<ol type="a">
+<li>Something on the outputs, otherwise it's real boring.</li>
+</ol>
+</li>
+</ol>
+<p>I have not tested this with any Makefile setups. Please send me info on how that works for you.</p>
+<h3>Installation</h3>
+<ol type="1">
+<li>Download the <a href="https://github.com/2splat/arduino-TLC59116/raw/#BRANCH#/arduino_TLC59116.zip">library zip file</a>.</li>
+</ol>
+<ol type="1">
+<li>Add the library to the Arduino IDE<ol type="a">
+<li>(cf. the <a href="http://arduino.cc/en/guide/libraries">official instructions</a>)</li>
+</ol>
+<ol type="a">
+<li>For Arduino IDE 1.0.5:<ol type="i">
+<li><code>Sketch -&gt; Import Library -&gt; Add Library</code></li>
+</ol>
+<ol type="i">
+<li>Then select the downloaded <code>arduino_TLC59116.zip</code>.</li>
+</ol>
+</li>
+</ol>
+<ol type="a">
+<li>For earlier versions, follow the "Manual" section of <a href="http://www.arduino.cc/en/guide/libraries">http://www.arduino.cc/en/guide/libraries</a>.</li>
+</ol>
+</li>
+</ol>
+<h3>Getting Started</h3>
+<ol type="1">
+<li>Copy the code from</li>
+</ol>
+<ol type="1">
+<li>Try the examples.<ol type="a">
+<li>"examples/basic_usage_single" is the same code as show in the "Usage" section of <a href="https://2splat.github.io/arduino-TLC59116/classTLC59116.html">TLC59116 Class</a><ol type="i">
+<li>Open it.</li>
+</ol>
+<ol type="i">
+<li>Do the Upload thing.</li>
+</ol>
+<ol type="i">
+<li>Oooh. Blinky light.</li>
+</ol>
+</li>
+</ol>
+<ol type="a">
+<li>"examples/test_features" wants you to interact with the serial-console.<ol type="i">
+<li>Type single-letter commands into the top box, and click send. Try "?".</li>
+</ol>
+<ol type="i">
+<li>It has a bunch of behaviors, useful for testing the <a class="el" href="classTLC59116.html" title="High Level interface to a single TLC59116 using Wire (I2C) interface. ">TLC59116</a> and your wiring prowess.</li>
+</ol>
+</li>
+</ol>
+<ol type="a">
+<li>"examples/allfeatures" is the source of most of the examples in the documenation.<ol type="i">
+<li>It compiles.</li>
+</ol>
+<ol type="i">
+<li>It probably is not useful to actually run.</li>
+</ol>
+<ol type="i">
+<li>But, you can copy &amp; paste from it.</li>
+</ol>
+</li>
+</ol>
+<ol type="a">
+<li>"examples/tlc59116blink" is what I use to do quick tests of wired-up devices.<ol type="i">
+<li>Read it's comments!</li>
+</ol>
+</li>
+</ol>
+</li>
+</ol>
+<ol type="1">
+<li>Browse the <a href="https://2splat.github.io/arduino-TLC59116/classTLC59116.html">TLC59116 Class</a> documentation page:<ol type="a">
+<li>The "Protocol" section describes the order you have to do things.</li>
+</ol>
+<ol type="a">
+<li>Further down, the <a href="http://2splat.github.io/arduino-TLC59116/classTLC59116.html#pub-methods">Public Methods</a> section has groups of operations (like "Digital" and "PWM").<ol type="i">
+<li>(you probably want to ignore that first list of methods)</li>
+</ol>
+<ol type="i">
+<li>There's usually a short description of each method.</li>
+</ol>
+<ol type="i">
+<li>For example-code, explanations, and more details, click on the method-name.</li>
+</ol>
+</li>
+</ol>
+</li>
+</ol>
+<h3>Documentation</h3>
+<p>HTML documentation, with examples, and explanation:</p>
+<ul>
+<li>Online: <a href="https://2splat.github.io/arduino-TLC59116">https://2splat.github.io/arduino-TLC59116</a><ul>
+<li>For the high-level/friendly, start at the <a href="https://2splat.github.io/arduino-TLC59116/classTLC59116.html">TLC59116 Class</a></li>
+<li>NB: That is the current version's documentation. You can download other versions by going to the <a href="https://github.com/2splat/arduino-TLC59116">repository</a>, choosing the branch of interest, navigating to the <code>arduino_TLC59116_doc.zip</code>, and clicking on the "raw" button.</li>
+</ul>
+</li>
+<li>Or, download a <a href="https://github.com/2splat/arduino-TLC59116/raw/#BRANCH#/arduino_TLC59116_doc.zip">zip</a> of the documentation from the repository.</li>
+<li>Some known bugs are noted in the documentation (summary on <a href="https://2splat.github.io/arduino-TLC59116/bug.html">"Related Pages::Bugs"</a>).</li>
+<li>Some things that aren't done are on the <a href="https://2splat.github.io/arduino-TLC59116/todo.html">"Related Pages::Todo"</a></li>
+</ul>
+<h3>Developing</h3>
+<ol type="1">
+<li>Everything should be in the <a href="https://github.com/2splat/arduino-TLC59116">github repository</a>.</li>
+</ol>
+<ol type="1">
+<li>Clone it to mess around. Fork it to keep track of the messing around.</li>
+</ol>
+<ol type="1">
+<li>I'm happy to consider pull-requests, especially for bug-fixes, documentation issues, and missing functions.<ol type="a">
+<li>Please maintain a high-level of documentation.</li>
+</ol>
+</li>
+</ol>
+<ol type="1">
+<li>Requirements for developing:<ol type="a">
+<li>Source control is by git, with a repository on github.</li>
+</ol>
+<ol type="a">
+<li>Documentation is generated by doxygen: <code>doxygen Doxyfile</code></li>
+</ol>
+<ol type="a">
+<li>The .zip files are constructed by gnu-make.</li>
+</ol>
+<ol type="a">
+<li>Several other files are constructed by gnu-make (e.g. <code>README.html</code>)</li>
+</ol>
+<ol type="a">
+<li>The default <code>make</code> target constructs everything.<ol type="i">
+<li>It tries to be tolerant of missing tools.</li>
+</ol>
+<ol type="i">
+<li>It touches up a few files to insert the git-branch as the version.</li>
+</ol>
+</li>
+</ol>
+</li>
+</ol>
+<p>Arch overview:</p>
+<p>unmanaged constants etc. manager high level for: TLC shadows &amp; highlevel &amp; opt broadcast because propagate </p>
+</div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun May 10 2015 16:06:26 for TLC59116 Library by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon May 11 2015 22:42:09 for TLC59116 Library by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>
