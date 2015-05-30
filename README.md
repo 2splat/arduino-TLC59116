@@ -35,7 +35,7 @@ I have not tested this with any Makefile setups. Please send me info on how that
 
 ### Getting Started
 
-1.  Copy the code from 
+1.  Wire things up. Someone should write a how-to!
 1.  Try the examples. 
     1. "examples/basic_usage_single" is the same code as show in the "Usage" section of [TLC59116 Class](https://2splat.github.io/arduino-TLC59116/classTLC59116.html)
         1.  Open it.
@@ -83,12 +83,6 @@ HTML documentation, with examples, and explanation:
        1.  It tries to be tolerant of missing tools.
        1.  It touches up a few files to insert the git-branch as the version.
 
-
-Arch overview:
-
-unmanaged constants etc.
-manager high level for:
-TLC shadows & highlevel & opt
-broadcast because propagate
-
+### CreditS
+1. I2C scan function adapted from Nick Gammon (written 20th April 2011), http://www.gammon.com.au/forum/?id=10896&reply=6#reply6. Thanks Nick!
 

@@ -12,7 +12,7 @@ extern "C" void atexit( void ) { } // so I can have statics in a method, i.e. si
 #define LOWD TLC59116LowLevel
 #define DEBUG TLC59116Warn
 
-const prog_uchar TLC59116::Power_Up_Register_Values[TLC59116_Unmanaged::Control_Register_Max + 1] PROGMEM = {
+const unsigned char TLC59116::Power_Up_Register_Values[TLC59116_Unmanaged::Control_Register_Max + 1] PROGMEM = {
   TLC59116_Unmanaged::MODE1_OSC_mask | TLC59116_Unmanaged::MODE1_ALLCALL_mask,
   0, // mode2
   0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // pwm0..15

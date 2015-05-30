@@ -21,9 +21,13 @@ lib_files :
 	@echo $(lib_files)
 
 .PHONY : build_dir
-build_dir :
+build_dir : build/html
 	@mkdir -p build
-	@rm -rf build/*
+	@find build -path build/html -prune -o \( -print0 \) | xargs --null -s 2000 rm -rf build/*
+
+build/html
+	git clone --branch gh-pages .git build/html
+
 
 build/%.hpp : %.h
 	ln -s ../$< $@
@@ -60,12 +64,16 @@ preproc :
 # documentation, section 1, is in .cpp
 # the first /* ... */ as markdown
 .PHONY : doc
-doc : README.md $(doc_input) Doxyfile DoxygenLayout.xml README.html
+doc : doc/html/index.html arduino_$(Device)_doc.zip gh_pages
+
+doc/html/index.html arduino_$(Device)_doc.zip : README.md $(doc_input) Doxyfile DoxygenLayout.xml README.html
 	sed -i '/^PROJECT_NUMBER/ s/= .\+/= $(branch)/' Doxyfile
 	doxygen Doxyfile
 	# Want the files in the archive to be html/...
 	rm arduino_$(Device)_doc.zip || true
 	cd doc && (cd html && git ls-tree -r --name-only -t HEAD) | awk '{print "html/"$$0}' | xargs -s 2000 zip -u ../arduino_$(Device)_doc.zip
+
+gh_pages : build_dir
 	# make doc, commit doc, commit main, amend doc
 
 README.html : README.md

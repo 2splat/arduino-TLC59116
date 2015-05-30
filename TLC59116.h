@@ -46,7 +46,8 @@ class TLC59116Manager;
   - Output pins ("channels") are numbered 0..15.
   - Channels are "sinks", acting like Arduino pins that are LOW, even for PWM.
     - Connect the minus side of LEDs to the output pins.
-    - Channels are considered ON, or OFF, instead of HIGH/LOW (or, at some PWM value)
+    - Instead of HIGH/LOW like DigitalWrite(), we use on/off/set.
+    - Channels are considered ON, OFF, , instead of HIGH/LOW (or, at some PWM value)
     - PWM is 8 bit.
   - I2C addresses start at 0x60. See TLC59116_Unmanaged for the available addresses (up to 14).
   - The device provides a constant-current control (external and software settable).
@@ -445,7 +446,7 @@ class TLC59116 : public TLC59116_Unmanaged {
   private:
     // FIXME: move Power_Up_Register_Values to FLASH
     /// The state of the device on power-up/reset.
-    static const prog_uchar Power_Up_Register_Values[TLC59116_Unmanaged::Control_Register_Max + 1];
+    static const unsigned char Power_Up_Register_Values[TLC59116_Unmanaged::Control_Register_Max + 1] PROGMEM;
 
     TLC59116Manager &manager; /// so we can find the manager for a few things
     // void (*on_reset)(byte /* manager[i] */); 
@@ -605,7 +606,7 @@ class TLC59116Manager {
     byte device_ct;
 
     // We have to store the power-up values, so we can set our shadows to them on reset
-    static const prog_uchar Power_Up_Register_Values[TLC59116::Control_Register_Max+1] PROGMEM;
+    static const unsigned char Power_Up_Register_Values[TLC59116::Control_Register_Max+1] PROGMEM;
   };
 
 #endif
