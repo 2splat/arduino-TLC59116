@@ -1,0 +1,4 @@
+<map id="TLC59116::Broadcast" name="TLC59116::Broadcast">
+<area shape="rect" id="node2" href="$classTLC59116.html" title="High Level interface to a single TLC59116 using Wire (I2C) interface. " alt="" coords="43,80,124,107"/>
+<area shape="rect" id="node3" href="$classTLC59116__Unmanaged.html" title="TLC59116_Unmanaged" alt="" coords="5,5,163,32"/>
+</map>
