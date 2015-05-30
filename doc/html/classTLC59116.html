@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">TLC59116 Library
-   &#160;<span id="projectnumber">doxygen</span>
+   &#160;<span id="projectnumber">layers</span>
    </div>
   </td>
  </tr>
@@ -140,7 +140,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <li>Output pins ("channels") are numbered 0..15.</li>
 <li>Channels are "sinks", acting like Arduino pins that are LOW, even for PWM.<ul>
 <li>Connect the minus side of LEDs to the output pins.</li>
-<li>Channels are considered ON, or OFF, instead of HIGH/LOW (or, at some PWM value)</li>
+<li>Instead of HIGH/LOW like DigitalWrite(), we use on/off/set.</li>
+<li>Channels are considered ON, OFF, , instead of HIGH/LOW (or, at some PWM value)</li>
 <li>PWM is 8 bit.</li>
 </ul>
 </li>
@@ -181,6 +182,13 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a class="code" href="classTLC59116Manager.html">TLC59116Manager</a> tlcWithOtherWire(<a class="code" href="TLC59116_8h.html#a35bd3de386d23ba02c35f820303db472">Wire</a>,400000, <a class="code" href="classTLC59116Manager.html#a54a446ce5fc0dd75a4f88e68eb1bd334">TLC59116Manager::Reset</a> | <a class="code" href="classTLC59116Manager.html#a2ef7c0740bdb17767f4e111f1c9c5d94">TLC59116Manager::WireInit</a>); <span class="comment">// e.g. don&#39;t init Wire</span></div>
 <div class="line"></div>
 </div><!-- fragment --></li>
+<li>Initialize the serial-output e.g.<ul>
+<li><code>Serial.begin(9600)</code></li>
+<li>This library will warn you about some mistakes or dubious usages.</li>
+<li>You don't have to setup the serial-output, but then you won't see the warnings.</li>
+<li>I like to set the speed to 115200, because at that setting it has little effect on the speed of your program.</li>
+</ul>
+</li>
 <li>Execute <a class="el" href="classTLC59116Manager.html#a361db17d769a22a7908825bf13bd4e25">.init()</a> for the manager once, usually in setup() <div class="fragment"><div class="line"><span class="keywordtype">void</span> setup() {</div>
 <div class="line">    Serial.begin(9600);</div>
 <div class="line"></div>
@@ -205,14 +213,14 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <li>Get information about the device as needed from the Info Functions <div class="fragment"><div class="line">    Serial.print(<span class="stringliteral">&quot;First device is at &quot;</span>);</div>
 <div class="line">    Serial.println(tlcmanager[0].<a class="code" href="classTLC59116__Unmanaged.html#a6139f45bea0929e07c5549ef40fd1d6b">address</a>());</div>
 </div><!-- fragment --></li>
-<li>Set device Global Functions, Group/Broadcast Addresses, typically in setup() <div class="fragment"><div class="line"><span class="keywordtype">void</span> setup() {</div>
+<li>Set device Global Functions, Group/Broadcast Addresses, Software Current Control, typically in setup() <div class="fragment"><div class="line"><span class="keywordtype">void</span> setup() {</div>
 </div><!-- fragment --> <div class="fragment"><div class="line">    tlcmanager.<a class="code" href="classTLC59116Manager.html#accc69d6286a6e8052cee7e717b54dc1f">broadcast</a>().<a class="code" href="classTLC59116.html#a2310679ba68d4479dad8108c345bfef0">set_milliamps</a>(5); <span class="comment">// everybody</span></div>
 <div class="line">    tlcmanager[4].allcall_address(<span class="keyword">false</span>); <span class="comment">// 5th \[sic] device ignores broadcast now.</span></div>
 </div><!-- fragment --></li>
 <li>Do initial Digital Functions, PWM Functions, typically in setup() <div class="fragment"><div class="line">    tlcmanager.<a class="code" href="classTLC59116Manager.html#accc69d6286a6e8052cee7e717b54dc1f">broadcast</a>().<a class="code" href="classTLC59116.html#a7dd7c2beaa0e7926caee771b5439f130">set</a>(0, HIGH); <span class="comment">// every device, channel 0 on</span></div>
 <div class="line">    tlcmanager[0].pwm(13, 128); <span class="comment">// set device[0], channel 13, PWM to half bright</span></div>
 </div><!-- fragment --></li>
-<li>During loop, mess with Global Functions, Group/Broadcast Addresses, Digital Functions, PWM Functions</li>
+<li>During loop, mess with Global Functions, Group/Broadcast Addresses, Software Current Control, Digital Functions, PWM Functions</li>
 <li>This library returns the device-reference for most calls, so you can chain functions, e.g.: <div class="fragment"><div class="line">    tlcmanager[0].on(1).pwm(2,128).pwm(3,14, 50).delay(200).off(1).delay(200).set_outputs(0x0000);</div>
 </div><!-- fragment --></li>
 </ul>
@@ -261,7 +269,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a513cc233a1398925cf0a4d015606124f"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116__Unmanaged.html#a513cc233a1398925cf0a4d015606124f">is_SUBADR_bit</a> (byte mode1_value, byte which)</td></tr>
 <tr class="separator:a513cc233a1398925cf0a4d015606124f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader">Global Functions</div></td></tr>
-<tr><td colspan="2"><div class="groupText"><p>Software current control </p>
+<tr><td colspan="2"><div class="groupText"><p>Controlling various global features of the device (see also, the "Software Current Control" section) </p>
 </div></td></tr>
 <tr class="memitem:a24199b74fa82e207d54deb4142ac41fa"><td class="memItemLeft" align="right" valign="top">virtual <a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a24199b74fa82e207d54deb4142ac41fa">enable_outputs</a> (bool yes=true, bool with_delay=true)</td></tr>
 <tr class="memdesc:a24199b74fa82e207d54deb4142ac41fa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Master power switch (the <a class="el" href="classTLC59116Manager.html" title="Holds all of the devices. ">TLC59116Manager</a> sets this on/true by default)  <a href="#a24199b74fa82e207d54deb4142ac41fa">More...</a><br/></td></tr>
@@ -271,10 +279,6 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:abc2c406250904c9ef33a908589a37561"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7a3390e7fae7f917ac3f8e22ac58e212"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a7a3390e7fae7f917ac3f8e22ac58e212">is_enabled</a> ()</td></tr>
 <tr class="separator:a7a3390e7fae7f917ac3f8e22ac58e212"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2310679ba68d4479dad8108c345bfef0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a2310679ba68d4479dad8108c345bfef0">set_milliamps</a> (byte ma, int Rext=<a class="el" href="classTLC59116__Unmanaged.html#a02efe10b964887296918703d388d762e">Rext_Min</a>)</td></tr>
-<tr class="separator:a2310679ba68d4479dad8108c345bfef0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7b12a12e134df87bfdc477cbc9153db6"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a7b12a12e134df87bfdc477cbc9153db6">milliamps</a> (int Rext=<a class="el" href="classTLC59116__Unmanaged.html#a02efe10b964887296918703d388d762e">Rext_Min</a>)</td></tr>
-<tr class="separator:a7b12a12e134df87bfdc477cbc9153db6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader">Digital Functions</div></td></tr>
 <tr><td colspan="2"><div class="groupText"><p>Analogous to DigitalWrite.</p>
 <p>Arduino DigitalWrite uses HIGH and LOW, but the device is a "sink", so "on" is actually a LOW. Thus, this library uses "on" and "off" for terminology.</p>
@@ -389,6 +393,11 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:ac6239daf0a26d22f1cfba8150b257567"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a365e02e443ac0dfad0b9a92ce3a315bf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a365e02e443ac0dfad0b9a92ce3a315bf">SUBADR_address_disable</a> (byte which)</td></tr>
 <tr class="separator:a365e02e443ac0dfad0b9a92ce3a315bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr><td colspan="2"><div class="groupHeader">Software Current Control</div></td></tr>
+<tr class="memitem:a2310679ba68d4479dad8108c345bfef0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classTLC59116.html">TLC59116</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a2310679ba68d4479dad8108c345bfef0">set_milliamps</a> (byte ma, int Rext=<a class="el" href="classTLC59116__Unmanaged.html#a02efe10b964887296918703d388d762e">Rext_Min</a>)</td></tr>
+<tr class="separator:a2310679ba68d4479dad8108c345bfef0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7b12a12e134df87bfdc477cbc9153db6"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTLC59116.html#a7b12a12e134df87bfdc477cbc9153db6">milliamps</a> (int Rext=<a class="el" href="classTLC59116__Unmanaged.html#a02efe10b964887296918703d388d762e">Rext_Min</a>)</td></tr>
+<tr class="separator:a7b12a12e134df87bfdc477cbc9153db6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader">Convenience</div></td></tr>
 <tr><td colspan="2"><div class="groupText"><p>Since we allow function-chaining, it seems like a few convenience functions might be nice.</p>
 <p>Note all the functions (not just these convenience functions) that look like</p>
@@ -1264,6 +1273,8 @@ Here is the call graph for this function:</div>
 Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classTLC59116_aba11b6ffe8f5315d2685eaa898b3a310_cgraph.png" border="0" usemap="#classTLC59116_aba11b6ffe8f5315d2685eaa898b3a310_cgraph" alt=""/></div>
+<map name="classTLC59116_aba11b6ffe8f5315d2685eaa898b3a310_cgraph" id="classTLC59116_aba11b6ffe8f5315d2685eaa898b3a310_cgraph">
+</map>
 </div>
 </p>
 
@@ -1271,6 +1282,8 @@ Here is the call graph for this function:</div>
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classTLC59116_aba11b6ffe8f5315d2685eaa898b3a310_icgraph.png" border="0" usemap="#classTLC59116_aba11b6ffe8f5315d2685eaa898b3a310_icgraph" alt=""/></div>
+<map name="classTLC59116_aba11b6ffe8f5315d2685eaa898b3a310_icgraph" id="classTLC59116_aba11b6ffe8f5315d2685eaa898b3a310_icgraph">
+</map>
 </div>
 </p>
 
@@ -2009,7 +2022,7 @@ Here is the call graph for this function:</div>
 </div><!-- fragment --> <div class="fragment"><div class="line">    <span class="comment">// Assume we put a 100ohm resistor on the Rext pin</span></div>
 <div class="line">    <span class="comment">// set it to 5mA before we play with any outputs</span></div>
 <div class="line">    tlcmanager[0].set_milliamps(5,100);</div>
-<div class="line">    Serial.print(<span class="stringliteral">&quot;Device 0 is actually &quot;</span>)</div>
+<div class="line">    Serial.print(<span class="stringliteral">&quot;Device 0 is actually &quot;</span>);</div>
 <div class="line">    Serial.print(tlcmanager[0].<a class="code" href="classTLC59116.html#a7b12a12e134df87bfdc477cbc9153db6">milliamps</a>(100)); <span class="comment">// might be slightly off due to rounding</span></div>
 <div class="line">    Serial.println(<span class="stringliteral">&quot;mA&quot;</span>);</div>
 </div><!-- fragment --> <div class="fragment"><div class="line"><span class="keywordtype">void</span> loop() {</div>
@@ -3244,6 +3257,8 @@ Here is the caller graph for this function:</div>
 Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classTLC59116__Unmanaged_a9c8637b383d83af3fb9a2a151cc9be91_cgraph.png" border="0" usemap="#classTLC59116__Unmanaged_a9c8637b383d83af3fb9a2a151cc9be91_cgraph" alt=""/></div>
+<map name="classTLC59116__Unmanaged_a9c8637b383d83af3fb9a2a151cc9be91_cgraph" id="classTLC59116__Unmanaged_a9c8637b383d83af3fb9a2a151cc9be91_cgraph">
+</map>
 </div>
 </p>
 
@@ -3251,6 +3266,8 @@ Here is the call graph for this function:</div>
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classTLC59116__Unmanaged_a9c8637b383d83af3fb9a2a151cc9be91_icgraph.png" border="0" usemap="#classTLC59116__Unmanaged_a9c8637b383d83af3fb9a2a151cc9be91_icgraph" alt=""/></div>
+<map name="classTLC59116__Unmanaged_a9c8637b383d83af3fb9a2a151cc9be91_icgraph" id="classTLC59116__Unmanaged_a9c8637b383d83af3fb9a2a151cc9be91_icgraph">
+</map>
 </div>
 </p>
 
@@ -4863,13 +4880,13 @@ Here is the call graph for this function:</div>
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following files:<ul>
-<li><a class="el" href="TLC59116_8h_source.html">TLC59116.h (Sun May 10 13:44:11 2015 -0400)</a></li>
-<li><a class="el" href="TLC59116_8cpp.html">TLC59116.cpp (Sun May 10 13:44:11 2015 -0400)</a></li>
+<li><a class="el" href="TLC59116_8h_source.html">TLC59116.h (Sat May 30 13:41:54 2015 -0400)</a></li>
+<li><a class="el" href="TLC59116_8cpp.html">TLC59116.cpp (Sat May 30 13:41:54 2015 -0400)</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun May 10 2015 16:06:26 for TLC59116 Library by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sat May 30 2015 13:56:31 for TLC59116 Library by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

@@ -11,21 +11,20 @@ branch := $(shell git branch | grep '^\*' | awk '{print $$2}' )
 # a=`which arduino` && b=`realpath $$a` && echo `dirname $$b`/hardware
 
 .PHONY : all
-all : build_dir README.html arduino_$(Device).zip
+all : clean README.html arduino_$(Device).zip
 
 .PHONY : clean
-clean : build_dir
+clean : build
+	find build -path build/html -prune -o \( -print0 \) | xargs --null -s 2000 rm -rf 
 
 .PHONY : lib_files
 lib_files :
 	@echo $(lib_files)
 
-.PHONY : build_dir
-build_dir : build/html
+build : build/html
 	@mkdir -p build
-	@find build -path build/html -prune -o \( -print0 \) | xargs --null -s 2000 rm -rf build/*
 
-build/html
+build/html :
 	git clone --branch gh-pages .git build/html
 
 
@@ -73,8 +72,9 @@ doc/html/index.html arduino_$(Device)_doc.zip : README.md $(doc_input) Doxyfile 
 	rm arduino_$(Device)_doc.zip || true
 	cd doc && (cd html && git ls-tree -r --name-only -t HEAD) | awk '{print "html/"$$0}' | xargs -s 2000 zip -u ../arduino_$(Device)_doc.zip
 
-gh_pages : build_dir
-	# make doc, commit doc, commit main, amend doc
+.PHONY : gh_pages
+gh_pages : build build/html 
+	rsync --progress -r --links --safe-links --hard-links --perms --whole-file --delete --prune-empty-dirs --exclude '*.md5' --filter 'protect .git/' doc/html/ build/html
 
 README.html : README.md
 ifeq ($(shell which markdown),)

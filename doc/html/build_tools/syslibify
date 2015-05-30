@@ -1,7 +1,0 @@
-# perl -p -i --- files... # edit in place to change hack'd "" include (for dev) to standard <> include
-use strict; use warnings; no warnings 'uninitialized'; use 5.010;
-
-# the implicit while <> is only on the files
-
-s/^(\s*#include\s+)"(TLC59116.+\.h)"(.*)/$1<$2>$3/;
-# s/^(\s*#include\s+)"(TLC59116[^"]+)"(.+)/$1<$2>$3/;
