@@ -1,5 +1,5 @@
 Device := TLC59116
-lib_files := $(shell find . -type f -a -not -path './build/*' -a -not -path './_Inline/*' -a \( -name '*.cpp' -o -name '*.h' -o -name '*.ino' \) ) keywords.txt VERSION README.md README.html library.properties
+lib_files := $(shell find . -type f -a -not -path './build/*' -a -not -path './_Inline/*' -a \( -name '*.cpp' -o -name '*.h' -o -name '*.ino' \) ) keywords.txt VERSION README.md library.properties
 h_files = $(shell /bin/ls $(Device)*.h)
 doc_input := $(shell /bin/ls *.h | xargs -n 1 -iX echo build/Xpp; /bin/ls *.cpp)
 arduino_dir := $(shell which arduino | xargs --no-run-if-empty realpath | xargs --no-run-if-empty dirname)
@@ -11,7 +11,7 @@ branch := $(shell git branch | grep '^\*' | awk '{print $$2}' )
 # a=`which arduino` && b=`realpath $$a` && echo `dirname $$b`/hardware
 
 .PHONY : all
-all : clean README.html arduino_$(Device).zip
+all : clean doc arduino_$(Device).zip
 
 .PHONY : clean
 clean : build
@@ -25,8 +25,8 @@ build : build/html
 	@mkdir -p build
 
 build/html :
+	@mkdir -p build/html
 	git clone --branch gh-pages .git build/html
-
 
 build/%.hpp : %.h
 	ln -s ../$< $@
@@ -63,18 +63,25 @@ preproc :
 # documentation, section 1, is in .cpp
 # the first /* ... */ as markdown
 .PHONY : doc
-doc : doc/html/index.html arduino_$(Device)_doc.zip gh_pages
+doc : doc/html/index.html arduino_$(Device)_doc.zip
 
-doc/html/index.html arduino_$(Device)_doc.zip : README.md $(doc_input) Doxyfile DoxygenLayout.xml README.html
+doc/html/index.html arduino_$(Device)_doc.zip : README.md $(doc_input) Doxyfile DoxygenLayout.xml *.h *.cpp examples/allfeatures/allfeatures.ino examples/basic_usage/basic_usage.ino
 	sed -i '/^PROJECT_NUMBER/ s/= .\+/= $(branch)/' Doxyfile
 	doxygen Doxyfile
+	cd doc/html && git status --porcelain | awk '/^\?\?/ {print $$2}' | egrep '\.(html|js|cs|map|png|css|gitignore)' | xargs git add
 	# Want the files in the archive to be html/...
-	rm arduino_$(Device)_doc.zip || true
-	cd doc && (cd html && git ls-tree -r --name-only -t HEAD) | awk '{print "html/"$$0}' | xargs -s 2000 zip -u ../arduino_$(Device)_doc.zip
+	rm arduino_$(Device)_doc.zip 2>/dev/null || true
+	cd doc && (cd html && git ls-tree -r --name-only HEAD) | awk '{print "html/"$$0}' | egrep '\.(html|js|cs|map|png|css)' | xargs -s 2000 zip -u ../arduino_$(Device)_doc.zip
+	@ echo "--- Probably bad files in doc/html:"
+	cd doc/html && find . -name .git -prune -o \( -type f -print \) | (egrep -v '(.html|.js|.cs|.map|.png|.md5|.css|.gitignore|.swp)$$' || true)
 
-.PHONY : gh_pages
-gh_pages : build build/html 
-	rsync --progress -r --links --safe-links --hard-links --perms --whole-file --delete --prune-empty-dirs --exclude '*.md5' --filter 'protect .git/' doc/html/ build/html
+.PHONY : gh-pages
+# for git push pre-push hook!
+gh-pages : build build/html 
+	@rsync -r --links --safe-links --hard-links --perms --whole-file --delete --prune-empty-dirs --exclude '*.md5' --filter 'protect .git/' doc/html/ build/html
+	@cd build/html && git status --porcelain | awk '/^\?\?/ {print $$2}' | egrep '\.(html|js|cs|map|png|css|gitignore)' | xargs --no-run-if-empty git add
+	@git diff-index --quiet HEAD -- || (echo "Working dir not committed, not committing gh-pages branch" && false)	
+	@git log -n 1 > build/htmldoc.gitlog | (cd build/html && git commit -a -F -)
 
 README.html : README.md
 ifeq ($(shell which markdown),)
