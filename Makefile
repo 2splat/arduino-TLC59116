@@ -64,15 +64,17 @@ preproc :
 .PHONY : doc
 doc : doc/html/index.html arduino_$(Device)_doc.zip README.html
 
-doc/html/index.html arduino_$(Device)_doc.zip : README.md $(doc_input) Doxyfile DoxygenLayout.xml *.h *.cpp examples/allfeatures/allfeatures.ino examples/basic_usage/basic_usage.ino
+doc/html/index.html : README.md $(doc_input) Doxyfile DoxygenLayout.xml *.h *.cpp examples/allfeatures/allfeatures.ino examples/basic_usage/basic_usage.ino
 	sed -i '/^PROJECT_NUMBER/ s/= .\+/= $(branch)/' Doxyfile
 	doxygen Doxyfile
-	cd doc/html && git status --porcelain | awk '/^\?\?/ {print $$2}' | egrep '\.(html|js|cs|map|png|css|gitignore)' | xargs git add
+	git status --porcelain doc/html | awk '/^\?\?/ {print $$2}' | egrep '\.(html|js|cs|map|png|css|gitignore)' | xargs --no-run-if-empty git add
+	@ echo "--- Probably bad files in doc/html:"
+	cd doc/html && find . -name .git -prune -o \( -type f -print \) | (egrep -v '(.html|.js|.cs|.map|.png|.md5|.css|.gitignore|.swp)$$' || true)
+
+arduino_$(Device)_doc.zip : doc/html/index.html
 	# Want the files in the archive to be html/...
 	rm arduino_$(Device)_doc.zip 2>/dev/null || true
 	cd doc && (cd html && git ls-tree -r --name-only HEAD) | awk '{print "html/"$$0}' | egrep '\.(html|js|cs|map|png|css)' | xargs -s 2000 zip -u ../arduino_$(Device)_doc.zip
-	@ echo "--- Probably bad files in doc/html:"
-	cd doc/html && find . -name .git -prune -o \( -type f -print \) | (egrep -v '(.html|.js|.cs|.map|.png|.md5|.css|.gitignore|.swp)$$' || true)
 
 .PHONY : gh-pages
 # for git push pre-push hook!
