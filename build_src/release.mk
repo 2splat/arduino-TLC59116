@@ -25,7 +25,7 @@ update_tag :
 	if git describe --long master | sed 's/-[^-]\+$$//' | egrep '\-0$$'; then \
 		echo "Already tagged at head as `git describe master`"; \
 	else \
-		echo "Last tag " `git describe --long master | sed 's/-[^-]\+$$//; s/-\([0-9]\+\)/, \1 commit behind/'`
+		echo "Last tag " `git describe --long master | sed 's/-[^-]\+$$//; s/-\([0-9]\+\)/, \1 commit behind/'`; \
 		# figure out and tag: either +1 or .0
 		set -x; \
 		if [ "$(last_released_branch)" = "$(dev_branch)" ]; then \
