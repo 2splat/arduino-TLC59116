@@ -6,7 +6,10 @@ what_release :
 
 
 .PHONY : release
-release : dev_branch_real working_dir_clean merge_dev update_tag
+release : dev_branch_real working_dir_clean merge_dev update_tag gh-pages
+	# push code
+	git config --get-regexp '^remote\.github' >/dev/null || (git push --tags github : || true)
+
 
 .PHONY : dev_branch_real
 dev_branch_real :
@@ -52,8 +55,6 @@ gh-pages : build build/html build/html/.git/config
 		git log -n 1 --oneline; \
 	fi
 	git checkout gh-pages && git pull gh-pages-build gh-pages && git checkout master
-	# @ cd build/html;\
-	# git config --get-regexp '^remote\.github' >/dev/null || (git push github gh-pages || true)
 
 build/html :
 	mkdir -p build/html
