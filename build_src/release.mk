@@ -55,6 +55,9 @@ gh-pages : build build/html build/html/.git/config
 	# @ cd build/html;\
 	# git config --get-regexp '^remote\.github' >/dev/null || (git push github gh-pages || true)
 
+build/html :
+	mkdir -p build/html
+
 build/html/.git/config : build/html/.git .git/config gh-page-update
 	@# copy the remote.github
 	@if git config --get-regexp '^remote\.github' >/dev/null; then \
