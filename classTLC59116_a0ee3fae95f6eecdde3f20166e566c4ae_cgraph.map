@@ -1,5 +1,5 @@
 <map id="TLC59116::pattern" name="TLC59116::pattern">
-<area shape="rect" id="node2" href="$classTLC59116.html#a6122fb43d940c057fc6a5459e9dbd89b" title="Only change the channels (that are marked in which) to HIGH/LOW as marked in pattern ..." alt="" coords="185,101,343,128"/>
+<area shape="rect" id="node2" href="$classTLC59116.html#a30d53b3f94554ddee4e4afe22ca4537e" title="Only change the channels (that are marked in bit_which) to on/off as marked in bit_pattern ..." alt="" coords="185,101,343,128"/>
 <area shape="rect" id="node3" href="$classTLC59116__Unmanaged.html#ae15c27d8f55bf9a1d1e147f861860065" title="TLC59116_Unmanaged\l::LEDx_set_mode" alt="" coords="393,61,551,102"/>
 <area shape="rect" id="node9" href="$classTLC59116__Unmanaged.html#ae52bca032bf3a5ad3137cfa37bc907cf" title="TLC59116_Unmanaged\l::LEDOUTx_Register" alt="" coords="393,126,551,167"/>
 <area shape="rect" id="node4" href="$classTLC59116__Unmanaged.html#a437e3817f378c57b895ad99d29105c5c" title="TLC59116_Unmanaged\l::LEDOUTx_CHECK" alt="" coords="814,31,973,73"/>

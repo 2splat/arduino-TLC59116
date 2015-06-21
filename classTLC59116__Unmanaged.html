@@ -11,8 +11,11 @@
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/search.js"></script>
 <script type="text/javascript">
-  $(document).ready(function() { searchBox.OnSelectItem(0); });
+  $(document).ready(function() {
+    if ($('.searchresults').length > 0) { searchBox.DOMSearchField().focus(); }
+  });
 </script>
+<link rel="search" href="search-opensearch.php?v=opensearch.xml" type="application/opensearchdescription+xml" title="TLC59116 Library"/>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
@@ -23,7 +26,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">TLC59116 Library
-   &#160;<span id="projectnumber">layers</span>
+   &#160;<span id="projectnumber">v0.2</span>
    </div>
   </td>
  </tr>
@@ -43,18 +46,14 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
-        <span class="left">
-          <img id="MSearchSelect" src="search/mag_sel.png"
-               onmouseover="return searchBox.OnSearchSelectShow()"
-               onmouseout="return searchBox.OnSearchSelectHide()"
-               alt=""/>
-          <input type="text" id="MSearchField" value="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
-               onkeyup="searchBox.OnSearchFieldChange(event)"/>
-          </span><span class="right">
-            <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><img id="MSearchCloseImg" border="0" src="search/close.png" alt=""/></a>
-          </span>
+          <div class="left">
+            <form id="FSearchBox" action="search.html" method="get">
+              <img id="MSearchSelect" src="search/mag.png" alt=""/>
+              <input type="text" id="MSearchField" name="query" value="Search" size="20" accesskey="S" 
+                     onfocus="searchBox.OnSearchFieldFocus(true)" 
+                     onblur="searchBox.OnSearchFieldFocus(false)"/>
+            </form>
+          </div><div class="right"></div>
         </div>
       </li>
     </ul>
@@ -67,20 +66,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       <li><a href="functions.html"><span>Class&#160;Members</span></a></li>
     </ul>
   </div>
-<!-- window showing the filter options -->
-<div id="MSearchSelectWindow"
-     onmouseover="return searchBox.OnSearchSelectShow()"
-     onmouseout="return searchBox.OnSearchSelectHide()"
-     onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Macros</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Pages</a></div>
-
-<!-- iframe showing the search results (closed by default) -->
-<div id="MSearchResultsWindow">
-<iframe src="javascript:void(0)" frameborder="0" 
-        name="MSearchResults" id="MSearchResults">
-</iframe>
-</div>
-
 </div><!-- top -->
 <div class="header">
   <div class="summary">
@@ -107,6 +92,8 @@ Inheritance diagram for TLC59116_Unmanaged:</div>
 Collaboration diagram for TLC59116_Unmanaged:</div>
 <div class="dyncontent">
 <div class="center"><img src="classTLC59116__Unmanaged__coll__graph.png" border="0" usemap="#TLC59116__Unmanaged_coll__map" alt="Collaboration graph"/></div>
+<map name="TLC59116__Unmanaged_coll__map" id="TLC59116__Unmanaged_coll__map">
+</map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
@@ -487,7 +474,7 @@ Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classTLC59116__Unmanaged_a0233e6b118b9e742f7c5475c5cc82729_cgraph.png" border="0" usemap="#classTLC59116__Unmanaged_a0233e6b118b9e742f7c5475c5cc82729_cgraph" alt=""/></div>
 <map name="classTLC59116__Unmanaged_a0233e6b118b9e742f7c5475c5cc82729_cgraph" id="classTLC59116__Unmanaged_a0233e6b118b9e742f7c5475c5cc82729_cgraph">
-<area shape="rect" id="node2" href="classTLC59116__Unmanaged.html#ab13f5f43c9a6b56c73eede973aff96d7" title="TLC59116_Unmanaged\l::is_default_SUBADR" alt="" coords="214,5,373,46"/><area shape="rect" id="node3" href="classTLC59116__Unmanaged.html#a84771405f760974534c5eaba339e54ba" title="TLC59116_Unmanaged\l::is_device_range_addr" alt="" coords="214,70,373,111"/></map>
+<area shape="rect" id="node2" href="classTLC59116__Unmanaged.html#a84771405f760974534c5eaba339e54ba" title="TLC59116_Unmanaged\l::is_device_range_addr" alt="" coords="214,5,373,46"/><area shape="rect" id="node3" href="classTLC59116__Unmanaged.html#ab13f5f43c9a6b56c73eede973aff96d7" title="TLC59116_Unmanaged\l::is_default_SUBADR" alt="" coords="214,70,373,111"/></map>
 </div>
 </p>
 
@@ -529,7 +516,7 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classTLC59116__Unmanaged_a46f1b3450a9c925b6a3245dca1d78483_icgraph.png" border="0" usemap="#classTLC59116__Unmanaged_a46f1b3450a9c925b6a3245dca1d78483_icgraph" alt=""/></div>
 <map name="classTLC59116__Unmanaged_a46f1b3450a9c925b6a3245dca1d78483_icgraph" id="classTLC59116__Unmanaged_a46f1b3450a9c925b6a3245dca1d78483_icgraph">
-<area shape="rect" id="node2" href="classTLC59116.html#abc2c406250904c9ef33a908589a37561" title="TLC59116::is_enable\l_outputs" alt="" coords="214,5,359,46"/><area shape="rect" id="node3" href="classTLC59116.html#a7a3390e7fae7f917ac3f8e22ac58e212" title="TLC59116::is_enabled" alt="" coords="408,12,560,39"/></map>
+<area shape="rect" id="node2" href="classTLC59116.html#abc2c406250904c9ef33a908589a37561" title="Is master power on? " alt="" coords="214,5,359,46"/><area shape="rect" id="node3" href="classTLC59116.html#a7a3390e7fae7f917ac3f8e22ac58e212" title="TLC59116::is_enabled" alt="" coords="408,12,560,39"/></map>
 </div>
 </p>
 
@@ -572,7 +559,7 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classTLC59116__Unmanaged_a513cc233a1398925cf0a4d015606124f_icgraph.png" border="0" usemap="#classTLC59116__Unmanaged_a513cc233a1398925cf0a4d015606124f_icgraph" alt=""/></div>
 <map name="classTLC59116__Unmanaged_a513cc233a1398925cf0a4d015606124f_icgraph" id="classTLC59116__Unmanaged_a513cc233a1398925cf0a4d015606124f_icgraph">
-<area shape="rect" id="node2" href="classTLC59116.html#a392f9b8794eb9d50767f01f7b2061b33" title="TLC59116::is_SUBADR\l_address" alt="" coords="214,5,378,46"/></map>
+<area shape="rect" id="node2" href="classTLC59116.html#a392f9b8794eb9d50767f01f7b2061b33" title="Is SUBADR_n enabled? " alt="" coords="214,5,378,46"/></map>
 </div>
 </p>
 
@@ -614,7 +601,7 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classTLC59116__Unmanaged_abd4690ab3e44f21ec2bee2f7c3841359_icgraph.png" border="0" usemap="#classTLC59116__Unmanaged_abd4690ab3e44f21ec2bee2f7c3841359_icgraph" alt=""/></div>
 <map name="classTLC59116__Unmanaged_abd4690ab3e44f21ec2bee2f7c3841359_icgraph" id="classTLC59116__Unmanaged_abd4690ab3e44f21ec2bee2f7c3841359_icgraph">
-<area shape="rect" id="node2" href="classTLC59116.html#a51b5676a3105114176b81dc2b9fd937c" title="TLC59116::set_outputs" alt="" coords="214,12,373,39"/></map>
+<area shape="rect" id="node2" href="classTLC59116.html#a51b5676a3105114176b81dc2b9fd937c" title="PWM, start..end, list&#45;of&#45;brightness. " alt="" coords="214,12,373,39"/></map>
 </div>
 </p>
 
@@ -647,7 +634,7 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classTLC59116__Unmanaged_ae52bca032bf3a5ad3137cfa37bc907cf_icgraph.png" border="0" usemap="#classTLC59116__Unmanaged_ae52bca032bf3a5ad3137cfa37bc907cf_icgraph" alt=""/></div>
 <map name="classTLC59116__Unmanaged_ae52bca032bf3a5ad3137cfa37bc907cf_icgraph" id="classTLC59116__Unmanaged_ae52bca032bf3a5ad3137cfa37bc907cf_icgraph">
-<area shape="rect" id="node2" href="classTLC59116.html#aee8072c3386b44ad81f629796ac129ef" title="TLC59116::group_blink" alt="" coords="215,5,371,32"/><area shape="rect" id="node3" href="classTLC59116.html#ae7627e27217f48424fc470c46d984408" title="TLC59116::group_pwm" alt="" coords="215,56,372,83"/><area shape="rect" id="node4" href="classTLC59116.html#a6122fb43d940c057fc6a5459e9dbd89b" title="TLC59116::set_outputs" alt="" coords="214,107,373,133"/><area shape="rect" id="node5" href="classTLC59116.html#a2a3ae3a05389a1e5df0abae735c6f143" title="TLC59116::pattern" alt="" coords="440,5,571,32"/><area shape="rect" id="node6" href="classTLC59116.html#a8d6069720cefe5bc8f587844d2cbc64c" title="TLC59116::pwm" alt="" coords="446,56,565,83"/><area shape="rect" id="node7" href="classTLC59116.html#aa235b425dc34d160cfbe7b6cf2c9f939" title="TLC59116::reset_pattern" alt="" coords="422,107,589,133"/><area shape="rect" id="node8" href="classTLC59116.html#a7dd7c2beaa0e7926caee771b5439f130" title="TLC59116::set" alt="" coords="451,157,559,184"/><area shape="rect" id="node11" href="classTLC59116.html#a42a4856ff8aa1920b1d66539e128b308" title="TLC59116::set_pattern" alt="" coords="428,208,583,235"/><area shape="rect" id="node9" href="classTLC59116.html#ad5e48f003949da34ef99623767005429" title="TLC59116::off" alt="" coords="638,132,743,159"/><area shape="rect" id="node10" href="classTLC59116.html#ab0456a6a0f1127df48bb6f2977a9eb00" title="TLC59116::on" alt="" coords="639,183,743,209"/></map>
+<area shape="rect" id="node2" href="classTLC59116.html#a30d53b3f94554ddee4e4afe22ca4537e" title="Only change the channels (that are marked in bit_which) to on/off as marked in bit_pattern ..." alt="" coords="214,107,373,133"/><area shape="rect" id="node10" href="classTLC59116.html#ae7627e27217f48424fc470c46d984408" title="TLC59116::group_pwm" alt="" coords="215,157,372,184"/><area shape="rect" id="node11" href="classTLC59116.html#aee8072c3386b44ad81f629796ac129ef" title="TLC59116::group_blink" alt="" coords="215,208,371,235"/><area shape="rect" id="node3" href="classTLC59116.html#a0ee3fae95f6eecdde3f20166e566c4ae" title="Alias for set_outputs() " alt="" coords="432,5,563,32"/><area shape="rect" id="node4" href="classTLC59116.html#a088e3396b527714b0ca679de2f889b3d" title="Turn on by bit pattern. " alt="" coords="422,56,573,83"/><area shape="rect" id="node5" href="classTLC59116.html#ab74add573a7d422715bc418becd7834b" title="Turn off by bit pattern. " alt="" coords="421,107,573,133"/><area shape="rect" id="node6" href="classTLC59116.html#a7dd7c2beaa0e7926caee771b5439f130" title="Turn one on/off, much like DigitalWrite. " alt="" coords="443,157,551,184"/><area shape="rect" id="node9" href="classTLC59116.html#ae910495809497c9ba15bfdbd1e805e17" title="Alias of set_outputs() above. " alt="" coords="438,208,557,235"/><area shape="rect" id="node7" href="classTLC59116.html#ab0456a6a0f1127df48bb6f2977a9eb00" title="Turn one on. " alt="" coords="623,132,727,159"/><area shape="rect" id="node8" href="classTLC59116.html#ad5e48f003949da34ef99623767005429" title="Turn one off. " alt="" coords="622,183,727,209"/></map>
 </div>
 </p>
 
@@ -723,7 +710,7 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classTLC59116__Unmanaged_a437e3817f378c57b895ad99d29105c5c_icgraph.png" border="0" usemap="#classTLC59116__Unmanaged_a437e3817f378c57b895ad99d29105c5c_icgraph" alt=""/></div>
 <map name="classTLC59116__Unmanaged_a437e3817f378c57b895ad99d29105c5c_icgraph" id="classTLC59116__Unmanaged_a437e3817f378c57b895ad99d29105c5c_icgraph">
-<area shape="rect" id="node2" href="classTLC59116__Unmanaged.html#abd4690ab3e44f21ec2bee2f7c3841359" title="TLC59116_Unmanaged\l::PWMx_Register" alt="" coords="214,5,373,46"/><area shape="rect" id="node3" href="classTLC59116__Unmanaged.html#a1b34867e93dc76d3379e9f9fea1ba4f6" title="TLC59116_Unmanaged\l::LEDx_Register_mask" alt="" coords="214,122,373,163"/><area shape="rect" id="node4" href="classTLC59116__Unmanaged.html#a3c040245c7c1543a388623fa393f657a" title="TLC59116_Unmanaged\l::LEDx_Register_bits" alt="" coords="422,77,581,118"/><area shape="rect" id="node5" href="classTLC59116__Unmanaged.html#ae15c27d8f55bf9a1d1e147f861860065" title="TLC59116_Unmanaged\l::LEDx_set_mode" alt="" coords="422,155,581,197"/><area shape="rect" id="node6" href="classTLC59116__Unmanaged.html#aaab5a8d457987943aaf05fa2f91b51d8" title="TLC59116_Unmanaged\l::LEDx_set_mode" alt="" coords="630,155,789,197"/></map>
+<area shape="rect" id="node2" href="classTLC59116__Unmanaged.html#abd4690ab3e44f21ec2bee2f7c3841359" title="TLC59116_Unmanaged\l::PWMx_Register" alt="" coords="214,13,373,54"/><area shape="rect" id="node4" href="classTLC59116__Unmanaged.html#a1b34867e93dc76d3379e9f9fea1ba4f6" title="TLC59116_Unmanaged\l::LEDx_Register_mask" alt="" coords="214,130,373,171"/><area shape="rect" id="node5" href="classTLC59116__Unmanaged.html#a3c040245c7c1543a388623fa393f657a" title="TLC59116_Unmanaged\l::LEDx_Register_bits" alt="" coords="422,85,581,126"/><area shape="rect" id="node6" href="classTLC59116__Unmanaged.html#ae15c27d8f55bf9a1d1e147f861860065" title="TLC59116_Unmanaged\l::LEDx_set_mode" alt="" coords="422,175,581,217"/><area shape="rect" id="node3" href="classTLC59116.html#a51b5676a3105114176b81dc2b9fd937c" title="PWM, start..end, list&#45;of&#45;brightness. " alt="" coords="422,20,581,47"/><area shape="rect" id="node7" href="classTLC59116.html#a30d53b3f94554ddee4e4afe22ca4537e" title="Only change the channels (that are marked in bit_which) to on/off as marked in bit_pattern ..." alt="" coords="630,107,789,133"/><area shape="rect" id="node15" href="classTLC59116.html#ae7627e27217f48424fc470c46d984408" title="TLC59116::group_pwm" alt="" coords="631,157,788,184"/><area shape="rect" id="node16" href="classTLC59116.html#aee8072c3386b44ad81f629796ac129ef" title="TLC59116::group_blink" alt="" coords="631,208,787,235"/><area shape="rect" id="node17" href="classTLC59116__Unmanaged.html#aaab5a8d457987943aaf05fa2f91b51d8" title="TLC59116_Unmanaged\l::LEDx_set_mode" alt="" coords="630,259,789,301"/><area shape="rect" id="node8" href="classTLC59116.html#a0ee3fae95f6eecdde3f20166e566c4ae" title="Alias for set_outputs() " alt="" coords="848,5,979,32"/><area shape="rect" id="node9" href="classTLC59116.html#a088e3396b527714b0ca679de2f889b3d" title="Turn on by bit pattern. " alt="" coords="838,56,989,83"/><area shape="rect" id="node10" href="classTLC59116.html#ab74add573a7d422715bc418becd7834b" title="Turn off by bit pattern. " alt="" coords="837,107,989,133"/><area shape="rect" id="node11" href="classTLC59116.html#a7dd7c2beaa0e7926caee771b5439f130" title="Turn one on/off, much like DigitalWrite. " alt="" coords="859,157,967,184"/><area shape="rect" id="node14" href="classTLC59116.html#ae910495809497c9ba15bfdbd1e805e17" title="Alias of set_outputs() above. " alt="" coords="854,208,973,235"/><area shape="rect" id="node12" href="classTLC59116.html#ab0456a6a0f1127df48bb6f2977a9eb00" title="Turn one on. " alt="" coords="1039,132,1143,159"/><area shape="rect" id="node13" href="classTLC59116.html#ad5e48f003949da34ef99623767005429" title="Turn one off. " alt="" coords="1038,183,1143,209"/></map>
 </div>
 </p>
 
@@ -765,7 +752,7 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classTLC59116__Unmanaged_a1b34867e93dc76d3379e9f9fea1ba4f6_icgraph.png" border="0" usemap="#classTLC59116__Unmanaged_a1b34867e93dc76d3379e9f9fea1ba4f6_icgraph" alt=""/></div>
 <map name="classTLC59116__Unmanaged_a1b34867e93dc76d3379e9f9fea1ba4f6_icgraph" id="classTLC59116__Unmanaged_a1b34867e93dc76d3379e9f9fea1ba4f6_icgraph">
-<area shape="rect" id="node2" href="classTLC59116__Unmanaged.html#a3c040245c7c1543a388623fa393f657a" title="TLC59116_Unmanaged\l::LEDx_Register_bits" alt="" coords="214,5,373,46"/><area shape="rect" id="node3" href="classTLC59116__Unmanaged.html#ae15c27d8f55bf9a1d1e147f861860065" title="TLC59116_Unmanaged\l::LEDx_set_mode" alt="" coords="214,70,373,111"/><area shape="rect" id="node4" href="classTLC59116__Unmanaged.html#aaab5a8d457987943aaf05fa2f91b51d8" title="TLC59116_Unmanaged\l::LEDx_set_mode" alt="" coords="422,70,581,111"/></map>
+<area shape="rect" id="node2" href="classTLC59116__Unmanaged.html#a3c040245c7c1543a388623fa393f657a" title="TLC59116_Unmanaged\l::LEDx_Register_bits" alt="" coords="214,110,373,151"/><area shape="rect" id="node3" href="classTLC59116__Unmanaged.html#ae15c27d8f55bf9a1d1e147f861860065" title="TLC59116_Unmanaged\l::LEDx_set_mode" alt="" coords="214,175,373,217"/><area shape="rect" id="node4" href="classTLC59116.html#a30d53b3f94554ddee4e4afe22ca4537e" title="Only change the channels (that are marked in bit_which) to on/off as marked in bit_pattern ..." alt="" coords="422,107,581,133"/><area shape="rect" id="node12" href="classTLC59116.html#ae7627e27217f48424fc470c46d984408" title="TLC59116::group_pwm" alt="" coords="423,157,580,184"/><area shape="rect" id="node13" href="classTLC59116.html#aee8072c3386b44ad81f629796ac129ef" title="TLC59116::group_blink" alt="" coords="423,208,579,235"/><area shape="rect" id="node14" href="classTLC59116__Unmanaged.html#aaab5a8d457987943aaf05fa2f91b51d8" title="TLC59116_Unmanaged\l::LEDx_set_mode" alt="" coords="422,259,581,301"/><area shape="rect" id="node5" href="classTLC59116.html#a0ee3fae95f6eecdde3f20166e566c4ae" title="Alias for set_outputs() " alt="" coords="640,5,771,32"/><area shape="rect" id="node6" href="classTLC59116.html#a088e3396b527714b0ca679de2f889b3d" title="Turn on by bit pattern. " alt="" coords="630,56,781,83"/><area shape="rect" id="node7" href="classTLC59116.html#ab74add573a7d422715bc418becd7834b" title="Turn off by bit pattern. " alt="" coords="629,107,781,133"/><area shape="rect" id="node8" href="classTLC59116.html#a7dd7c2beaa0e7926caee771b5439f130" title="Turn one on/off, much like DigitalWrite. " alt="" coords="651,157,759,184"/><area shape="rect" id="node11" href="classTLC59116.html#ae910495809497c9ba15bfdbd1e805e17" title="Alias of set_outputs() above. " alt="" coords="646,208,765,235"/><area shape="rect" id="node9" href="classTLC59116.html#ab0456a6a0f1127df48bb6f2977a9eb00" title="Turn one on. " alt="" coords="831,132,935,159"/><area shape="rect" id="node10" href="classTLC59116.html#ad5e48f003949da34ef99623767005429" title="Turn one off. " alt="" coords="830,183,935,209"/></map>
 </div>
 </p>
 
@@ -851,7 +838,7 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classTLC59116__Unmanaged_a025a7e444437a01fecb8b398a6091faa_icgraph.png" border="0" usemap="#classTLC59116__Unmanaged_a025a7e444437a01fecb8b398a6091faa_icgraph" alt=""/></div>
 <map name="classTLC59116__Unmanaged_a025a7e444437a01fecb8b398a6091faa_icgraph" id="classTLC59116__Unmanaged_a025a7e444437a01fecb8b398a6091faa_icgraph">
-<area shape="rect" id="node2" href="classTLC59116__Unmanaged.html#ae15c27d8f55bf9a1d1e147f861860065" title="TLC59116_Unmanaged\l::LEDx_set_mode" alt="" coords="219,5,378,46"/><area shape="rect" id="node4" href="classTLC59116__Unmanaged.html#adbe3ea8c4a50b76e07ba4a244ab3da69" title="TLC59116_Unmanaged\l::LEDx_pwm_bits" alt="" coords="219,70,378,111"/><area shape="rect" id="node5" href="classTLC59116__Unmanaged.html#a85162d0bf63501ff5c9584667a96b678" title="TLC59116_Unmanaged\l::LEDx_gpwm_bits" alt="" coords="219,135,378,177"/><area shape="rect" id="node6" href="classTLC59116__Unmanaged.html#a540f531aafa7fc94d2390c46f196c8d4" title="TLC59116_Unmanaged\l::LEDx_digital_on_bits" alt="" coords="219,201,378,242"/><area shape="rect" id="node3" href="classTLC59116__Unmanaged.html#aaab5a8d457987943aaf05fa2f91b51d8" title="TLC59116_Unmanaged\l::LEDx_set_mode" alt="" coords="427,5,586,46"/></map>
+<area shape="rect" id="node2" href="classTLC59116__Unmanaged.html#ae15c27d8f55bf9a1d1e147f861860065" title="TLC59116_Unmanaged\l::LEDx_set_mode" alt="" coords="219,175,378,217"/><area shape="rect" id="node14" href="classTLC59116__Unmanaged.html#adbe3ea8c4a50b76e07ba4a244ab3da69" title="TLC59116_Unmanaged\l::LEDx_pwm_bits" alt="" coords="219,241,378,282"/><area shape="rect" id="node15" href="classTLC59116__Unmanaged.html#a85162d0bf63501ff5c9584667a96b678" title="TLC59116_Unmanaged\l::LEDx_gpwm_bits" alt="" coords="219,306,378,347"/><area shape="rect" id="node16" href="classTLC59116__Unmanaged.html#a540f531aafa7fc94d2390c46f196c8d4" title="TLC59116_Unmanaged\l::LEDx_digital_on_bits" alt="" coords="219,371,378,413"/><area shape="rect" id="node3" href="classTLC59116.html#a30d53b3f94554ddee4e4afe22ca4537e" title="Only change the channels (that are marked in bit_which) to on/off as marked in bit_pattern ..." alt="" coords="427,107,586,133"/><area shape="rect" id="node11" href="classTLC59116.html#ae7627e27217f48424fc470c46d984408" title="TLC59116::group_pwm" alt="" coords="428,157,585,184"/><area shape="rect" id="node12" href="classTLC59116.html#aee8072c3386b44ad81f629796ac129ef" title="TLC59116::group_blink" alt="" coords="429,208,585,235"/><area shape="rect" id="node13" href="classTLC59116__Unmanaged.html#aaab5a8d457987943aaf05fa2f91b51d8" title="TLC59116_Unmanaged\l::LEDx_set_mode" alt="" coords="427,259,586,301"/><area shape="rect" id="node4" href="classTLC59116.html#a0ee3fae95f6eecdde3f20166e566c4ae" title="Alias for set_outputs() " alt="" coords="645,5,776,32"/><area shape="rect" id="node5" href="classTLC59116.html#a088e3396b527714b0ca679de2f889b3d" title="Turn on by bit pattern. " alt="" coords="635,56,786,83"/><area shape="rect" id="node6" href="classTLC59116.html#ab74add573a7d422715bc418becd7834b" title="Turn off by bit pattern. " alt="" coords="635,107,787,133"/><area shape="rect" id="node7" href="classTLC59116.html#a7dd7c2beaa0e7926caee771b5439f130" title="Turn one on/off, much like DigitalWrite. " alt="" coords="657,157,765,184"/><area shape="rect" id="node10" href="classTLC59116.html#ae910495809497c9ba15bfdbd1e805e17" title="Alias of set_outputs() above. " alt="" coords="651,208,770,235"/><area shape="rect" id="node8" href="classTLC59116.html#ab0456a6a0f1127df48bb6f2977a9eb00" title="Turn one on. " alt="" coords="836,132,940,159"/><area shape="rect" id="node9" href="classTLC59116.html#ad5e48f003949da34ef99623767005429" title="Turn one off. " alt="" coords="835,183,941,209"/></map>
 </div>
 </p>
 
@@ -900,7 +887,7 @@ Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classTLC59116__Unmanaged_ae15c27d8f55bf9a1d1e147f861860065_cgraph.png" border="0" usemap="#classTLC59116__Unmanaged_ae15c27d8f55bf9a1d1e147f861860065_cgraph" alt=""/></div>
 <map name="classTLC59116__Unmanaged_ae15c27d8f55bf9a1d1e147f861860065_cgraph" id="classTLC59116__Unmanaged_ae15c27d8f55bf9a1d1e147f861860065_cgraph">
-<area shape="rect" id="node2" href="classTLC59116__Unmanaged.html#a437e3817f378c57b895ad99d29105c5c" title="TLC59116_Unmanaged\l::LEDOUTx_CHECK" alt="" coords="427,5,586,46"/><area shape="rect" id="node4" href="classTLC59116__Unmanaged.html#a1b34867e93dc76d3379e9f9fea1ba4f6" title="TLC59116_Unmanaged\l::LEDx_Register_mask" alt="" coords="217,34,375,75"/><area shape="rect" id="node5" href="classTLC59116__Unmanaged.html#a025a7e444437a01fecb8b398a6091faa" title="TLC59116_Unmanaged\l::LEDx_to_Register_bits" alt="" coords="213,99,379,141"/><area shape="rect" id="node6" href="classTLC59116__Unmanaged.html#a1dd4a181567c7ccf57301c9bd53a5305" title="TLC59116_Unmanaged\l::set_with_mask" alt="" coords="217,165,375,206"/><area shape="rect" id="node3" href="TLC59116__Unmanaged_8h.html#ab2ce20589d924c815fc785c51f49b0b7" title="TLC59116Warn" alt="" coords="635,12,749,39"/></map>
+<area shape="rect" id="node2" href="classTLC59116__Unmanaged.html#a437e3817f378c57b895ad99d29105c5c" title="TLC59116_Unmanaged\l::LEDOUTx_CHECK" alt="" coords="427,31,586,73"/><area shape="rect" id="node4" href="classTLC59116__Unmanaged.html#a1dd4a181567c7ccf57301c9bd53a5305" title="TLC59116_Unmanaged\l::set_with_mask" alt="" coords="217,27,375,69"/><area shape="rect" id="node5" href="classTLC59116__Unmanaged.html#a1b34867e93dc76d3379e9f9fea1ba4f6" title="TLC59116_Unmanaged\l::LEDx_Register_mask" alt="" coords="217,93,375,134"/><area shape="rect" id="node6" href="classTLC59116__Unmanaged.html#a025a7e444437a01fecb8b398a6091faa" title="TLC59116_Unmanaged\l::LEDx_to_Register_bits" alt="" coords="213,158,379,199"/><area shape="rect" id="node3" href="TLC59116__Unmanaged_8h.html#ab2ce20589d924c815fc785c51f49b0b7" title="TLC59116Warn" alt="" coords="635,39,749,65"/></map>
 </div>
 </p>
 
@@ -909,7 +896,7 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classTLC59116__Unmanaged_ae15c27d8f55bf9a1d1e147f861860065_icgraph.png" border="0" usemap="#classTLC59116__Unmanaged_ae15c27d8f55bf9a1d1e147f861860065_icgraph" alt=""/></div>
 <map name="classTLC59116__Unmanaged_ae15c27d8f55bf9a1d1e147f861860065_icgraph" id="classTLC59116__Unmanaged_ae15c27d8f55bf9a1d1e147f861860065_icgraph">
-<area shape="rect" id="node2" href="classTLC59116__Unmanaged.html#aaab5a8d457987943aaf05fa2f91b51d8" title="TLC59116_Unmanaged\l::LEDx_set_mode" alt="" coords="214,5,373,46"/></map>
+<area shape="rect" id="node2" href="classTLC59116.html#a30d53b3f94554ddee4e4afe22ca4537e" title="Only change the channels (that are marked in bit_which) to on/off as marked in bit_pattern ..." alt="" coords="214,107,373,133"/><area shape="rect" id="node10" href="classTLC59116.html#ae7627e27217f48424fc470c46d984408" title="TLC59116::group_pwm" alt="" coords="215,157,372,184"/><area shape="rect" id="node11" href="classTLC59116.html#aee8072c3386b44ad81f629796ac129ef" title="TLC59116::group_blink" alt="" coords="215,208,371,235"/><area shape="rect" id="node12" href="classTLC59116__Unmanaged.html#aaab5a8d457987943aaf05fa2f91b51d8" title="TLC59116_Unmanaged\l::LEDx_set_mode" alt="" coords="214,259,373,301"/><area shape="rect" id="node3" href="classTLC59116.html#a0ee3fae95f6eecdde3f20166e566c4ae" title="Alias for set_outputs() " alt="" coords="432,5,563,32"/><area shape="rect" id="node4" href="classTLC59116.html#a088e3396b527714b0ca679de2f889b3d" title="Turn on by bit pattern. " alt="" coords="422,56,573,83"/><area shape="rect" id="node5" href="classTLC59116.html#ab74add573a7d422715bc418becd7834b" title="Turn off by bit pattern. " alt="" coords="421,107,573,133"/><area shape="rect" id="node6" href="classTLC59116.html#a7dd7c2beaa0e7926caee771b5439f130" title="Turn one on/off, much like DigitalWrite. " alt="" coords="443,157,551,184"/><area shape="rect" id="node9" href="classTLC59116.html#ae910495809497c9ba15bfdbd1e805e17" title="Alias of set_outputs() above. " alt="" coords="438,208,557,235"/><area shape="rect" id="node7" href="classTLC59116.html#ab0456a6a0f1127df48bb6f2977a9eb00" title="Turn one on. " alt="" coords="623,132,727,159"/><area shape="rect" id="node8" href="classTLC59116.html#ad5e48f003949da34ef99623767005429" title="Turn one off. " alt="" coords="622,183,727,209"/></map>
 </div>
 </p>
 
@@ -958,7 +945,7 @@ Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classTLC59116__Unmanaged_aaab5a8d457987943aaf05fa2f91b51d8_cgraph.png" border="0" usemap="#classTLC59116__Unmanaged_aaab5a8d457987943aaf05fa2f91b51d8_cgraph" alt=""/></div>
 <map name="classTLC59116__Unmanaged_aaab5a8d457987943aaf05fa2f91b51d8_cgraph" id="classTLC59116__Unmanaged_aaab5a8d457987943aaf05fa2f91b51d8_cgraph">
-<area shape="rect" id="node2" href="classTLC59116__Unmanaged.html#ae15c27d8f55bf9a1d1e147f861860065" title="TLC59116_Unmanaged\l::LEDx_set_mode" alt="" coords="214,67,373,109"/><area shape="rect" id="node3" href="classTLC59116__Unmanaged.html#a437e3817f378c57b895ad99d29105c5c" title="TLC59116_Unmanaged\l::LEDOUTx_CHECK" alt="" coords="635,5,794,46"/><area shape="rect" id="node5" href="classTLC59116__Unmanaged.html#a1b34867e93dc76d3379e9f9fea1ba4f6" title="TLC59116_Unmanaged\l::LEDx_Register_mask" alt="" coords="425,34,583,75"/><area shape="rect" id="node6" href="classTLC59116__Unmanaged.html#a025a7e444437a01fecb8b398a6091faa" title="TLC59116_Unmanaged\l::LEDx_to_Register_bits" alt="" coords="421,99,587,141"/><area shape="rect" id="node7" href="classTLC59116__Unmanaged.html#a1dd4a181567c7ccf57301c9bd53a5305" title="TLC59116_Unmanaged\l::set_with_mask" alt="" coords="425,165,583,206"/><area shape="rect" id="node4" href="TLC59116__Unmanaged_8h.html#ab2ce20589d924c815fc785c51f49b0b7" title="TLC59116Warn" alt="" coords="843,12,957,39"/></map>
+<area shape="rect" id="node2" href="classTLC59116__Unmanaged.html#ae15c27d8f55bf9a1d1e147f861860065" title="TLC59116_Unmanaged\l::LEDx_set_mode" alt="" coords="214,61,373,102"/><area shape="rect" id="node3" href="classTLC59116__Unmanaged.html#a437e3817f378c57b895ad99d29105c5c" title="TLC59116_Unmanaged\l::LEDOUTx_CHECK" alt="" coords="635,31,794,73"/><area shape="rect" id="node5" href="classTLC59116__Unmanaged.html#a1dd4a181567c7ccf57301c9bd53a5305" title="TLC59116_Unmanaged\l::set_with_mask" alt="" coords="425,27,583,69"/><area shape="rect" id="node6" href="classTLC59116__Unmanaged.html#a1b34867e93dc76d3379e9f9fea1ba4f6" title="TLC59116_Unmanaged\l::LEDx_Register_mask" alt="" coords="425,93,583,134"/><area shape="rect" id="node7" href="classTLC59116__Unmanaged.html#a025a7e444437a01fecb8b398a6091faa" title="TLC59116_Unmanaged\l::LEDx_to_Register_bits" alt="" coords="421,158,587,199"/><area shape="rect" id="node4" href="TLC59116__Unmanaged_8h.html#ab2ce20589d924c815fc785c51f49b0b7" title="TLC59116Warn" alt="" coords="843,39,957,65"/></map>
 </div>
 </p>
 
@@ -1123,7 +1110,7 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classTLC59116__Unmanaged_a7b115c9538a731fd925dfd5dd44b3dc9_icgraph.png" border="0" usemap="#classTLC59116__Unmanaged_a7b115c9538a731fd925dfd5dd44b3dc9_icgraph" alt=""/></div>
 <map name="classTLC59116__Unmanaged_a7b115c9538a731fd925dfd5dd44b3dc9_icgraph" id="classTLC59116__Unmanaged_a7b115c9538a731fd925dfd5dd44b3dc9_icgraph">
-<area shape="rect" id="node2" href="classTLC59116.html#af10faab6bc072d4bbdd985980803f0b3" title="TLC59116::SUBADR_address" alt="" coords="213,12,413,39"/></map>
+<area shape="rect" id="node2" href="classTLC59116.html#af10faab6bc072d4bbdd985980803f0b3" title="Get the SUBADR_n address. " alt="" coords="213,12,413,39"/></map>
 </div>
 </p>
 
@@ -1230,7 +1217,7 @@ Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classTLC59116__Unmanaged_ad153a5bfb5fdea77b22575357984fc14_cgraph.png" border="0" usemap="#classTLC59116__Unmanaged_ad153a5bfb5fdea77b22575357984fc14_cgraph" alt=""/></div>
 <map name="classTLC59116__Unmanaged_ad153a5bfb5fdea77b22575357984fc14_cgraph" id="classTLC59116__Unmanaged_ad153a5bfb5fdea77b22575357984fc14_cgraph">
-<area shape="rect" id="node2" href="classTLC59116__Unmanaged.html#a5ceb02c4400ec111d4d59ee84d871d15" title="TLC59116_Unmanaged\l::i_out_d" alt="" coords="214,5,373,46"/><area shape="rect" id="node3" href="classTLC59116__Unmanaged.html#a03d8a362da99c6785c2f3f7bfc96a167" title="TLC59116_Unmanaged\l::reverse_cc" alt="" coords="214,70,373,111"/></map>
+<area shape="rect" id="node2" href="classTLC59116__Unmanaged.html#a03d8a362da99c6785c2f3f7bfc96a167" title="TLC59116_Unmanaged\l::reverse_cc" alt="" coords="214,5,373,46"/><area shape="rect" id="node3" href="classTLC59116__Unmanaged.html#a5ceb02c4400ec111d4d59ee84d871d15" title="TLC59116_Unmanaged\l::i_out_d" alt="" coords="214,70,373,111"/></map>
 </div>
 </p>
 
@@ -1239,7 +1226,7 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classTLC59116__Unmanaged_ad153a5bfb5fdea77b22575357984fc14_icgraph.png" border="0" usemap="#classTLC59116__Unmanaged_ad153a5bfb5fdea77b22575357984fc14_icgraph" alt=""/></div>
 <map name="classTLC59116__Unmanaged_ad153a5bfb5fdea77b22575357984fc14_icgraph" id="classTLC59116__Unmanaged_ad153a5bfb5fdea77b22575357984fc14_icgraph">
-<area shape="rect" id="node2" href="classTLC59116__Unmanaged.html#a57347bfab16f3e029d46f5996535e3b0" title="TLC59116_Unmanaged\l::i_out" alt="" coords="214,5,373,46"/></map>
+<area shape="rect" id="node2" href="classTLC59116.html#a7b12a12e134df87bfdc477cbc9153db6" title="TLC59116::milliamps" alt="" coords="221,5,366,32"/><area shape="rect" id="node3" href="classTLC59116__Unmanaged.html#a57347bfab16f3e029d46f5996535e3b0" title="TLC59116_Unmanaged\l::i_out" alt="" coords="214,57,373,98"/></map>
 </div>
 </p>
 
@@ -1282,7 +1269,7 @@ Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classTLC59116__Unmanaged_a57347bfab16f3e029d46f5996535e3b0_cgraph.png" border="0" usemap="#classTLC59116__Unmanaged_a57347bfab16f3e029d46f5996535e3b0_cgraph" alt=""/></div>
 <map name="classTLC59116__Unmanaged_a57347bfab16f3e029d46f5996535e3b0_cgraph" id="classTLC59116__Unmanaged_a57347bfab16f3e029d46f5996535e3b0_cgraph">
-<area shape="rect" id="node2" href="classTLC59116__Unmanaged.html#ad153a5bfb5fdea77b22575357984fc14" title="TLC59116_Unmanaged\l::i_out" alt="" coords="214,38,373,79"/><area shape="rect" id="node3" href="classTLC59116__Unmanaged.html#a5ceb02c4400ec111d4d59ee84d871d15" title="TLC59116_Unmanaged\l::i_out_d" alt="" coords="422,5,581,46"/><area shape="rect" id="node4" href="classTLC59116__Unmanaged.html#a03d8a362da99c6785c2f3f7bfc96a167" title="TLC59116_Unmanaged\l::reverse_cc" alt="" coords="422,70,581,111"/></map>
+<area shape="rect" id="node2" href="classTLC59116__Unmanaged.html#ad153a5bfb5fdea77b22575357984fc14" title="TLC59116_Unmanaged\l::i_out" alt="" coords="214,38,373,79"/><area shape="rect" id="node3" href="classTLC59116__Unmanaged.html#a03d8a362da99c6785c2f3f7bfc96a167" title="TLC59116_Unmanaged\l::reverse_cc" alt="" coords="422,5,581,46"/><area shape="rect" id="node4" href="classTLC59116__Unmanaged.html#a5ceb02c4400ec111d4d59ee84d871d15" title="TLC59116_Unmanaged\l::i_out_d" alt="" coords="422,70,581,111"/></map>
 </div>
 </p>
 
@@ -1337,7 +1324,7 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classTLC59116__Unmanaged_a5ceb02c4400ec111d4d59ee84d871d15_icgraph.png" border="0" usemap="#classTLC59116__Unmanaged_a5ceb02c4400ec111d4d59ee84d871d15_icgraph" alt=""/></div>
 <map name="classTLC59116__Unmanaged_a5ceb02c4400ec111d4d59ee84d871d15_icgraph" id="classTLC59116__Unmanaged_a5ceb02c4400ec111d4d59ee84d871d15_icgraph">
-<area shape="rect" id="node2" href="classTLC59116__Unmanaged.html#ad153a5bfb5fdea77b22575357984fc14" title="TLC59116_Unmanaged\l::i_out" alt="" coords="214,5,373,46"/><area shape="rect" id="node4" href="classTLC59116__Unmanaged.html#af18ad84df715c47b8f804ca40d0f1e85" title="TLC59116_Unmanaged\l::best_iref" alt="" coords="214,70,373,111"/><area shape="rect" id="node3" href="classTLC59116__Unmanaged.html#a57347bfab16f3e029d46f5996535e3b0" title="TLC59116_Unmanaged\l::i_out" alt="" coords="422,5,581,46"/></map>
+<area shape="rect" id="node2" href="classTLC59116__Unmanaged.html#ad153a5bfb5fdea77b22575357984fc14" title="TLC59116_Unmanaged\l::i_out" alt="" coords="214,53,373,94"/><area shape="rect" id="node5" href="classTLC59116__Unmanaged.html#af18ad84df715c47b8f804ca40d0f1e85" title="TLC59116_Unmanaged\l::best_iref" alt="" coords="214,118,373,159"/><area shape="rect" id="node3" href="classTLC59116.html#a7b12a12e134df87bfdc477cbc9153db6" title="TLC59116::milliamps" alt="" coords="434,5,579,32"/><area shape="rect" id="node4" href="classTLC59116__Unmanaged.html#a57347bfab16f3e029d46f5996535e3b0" title="TLC59116_Unmanaged\l::i_out" alt="" coords="427,57,586,98"/><area shape="rect" id="node6" href="classTLC59116.html#a2310679ba68d4479dad8108c345bfef0" title="TLC59116::set_milliamps" alt="" coords="421,125,592,152"/></map>
 </div>
 </p>
 
@@ -1452,7 +1439,7 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classTLC59116__Unmanaged_a1dd4a181567c7ccf57301c9bd53a5305_icgraph.png" border="0" usemap="#classTLC59116__Unmanaged_a1dd4a181567c7ccf57301c9bd53a5305_icgraph" alt=""/></div>
 <map name="classTLC59116__Unmanaged_a1dd4a181567c7ccf57301c9bd53a5305_icgraph" id="classTLC59116__Unmanaged_a1dd4a181567c7ccf57301c9bd53a5305_icgraph">
-<area shape="rect" id="node2" href="classTLC59116__Unmanaged.html#ae15c27d8f55bf9a1d1e147f861860065" title="TLC59116_Unmanaged\l::LEDx_set_mode" alt="" coords="214,5,373,46"/><area shape="rect" id="node3" href="classTLC59116__Unmanaged.html#aaab5a8d457987943aaf05fa2f91b51d8" title="TLC59116_Unmanaged\l::LEDx_set_mode" alt="" coords="422,5,581,46"/></map>
+<area shape="rect" id="node2" href="classTLC59116.html#ae7627e27217f48424fc470c46d984408" title="TLC59116::group_pwm" alt="" coords="439,5,596,32"/><area shape="rect" id="node3" href="classTLC59116.html#aee8072c3386b44ad81f629796ac129ef" title="TLC59116::group_blink" alt="" coords="439,57,595,84"/><area shape="rect" id="node4" href="classTLC59116.html#a6998e155661f477d79d290b5b5266ae8" title="Enable broadcast. " alt="" coords="213,171,389,213"/><area shape="rect" id="node5" href="classTLC59116.html#a55621702303ff89c6aa6c75533ac4192" title="Disable broadcast. " alt="" coords="213,237,389,278"/><area shape="rect" id="node6" href="classTLC59116__Unmanaged.html#ae15c27d8f55bf9a1d1e147f861860065" title="TLC59116_Unmanaged\l::LEDx_set_mode" alt="" coords="222,106,381,147"/><area shape="rect" id="node7" href="classTLC59116.html#a30d53b3f94554ddee4e4afe22ca4537e" title="Only change the channels (that are marked in bit_which) to on/off as marked in bit_pattern ..." alt="" coords="438,112,597,139"/><area shape="rect" id="node15" href="classTLC59116__Unmanaged.html#aaab5a8d457987943aaf05fa2f91b51d8" title="TLC59116_Unmanaged\l::LEDx_set_mode" alt="" coords="438,163,597,205"/><area shape="rect" id="node8" href="classTLC59116.html#a0ee3fae95f6eecdde3f20166e566c4ae" title="Alias for set_outputs() " alt="" coords="656,11,787,37"/><area shape="rect" id="node9" href="classTLC59116.html#a088e3396b527714b0ca679de2f889b3d" title="Turn on by bit pattern. " alt="" coords="646,61,797,88"/><area shape="rect" id="node10" href="classTLC59116.html#ab74add573a7d422715bc418becd7834b" title="Turn off by bit pattern. " alt="" coords="645,112,797,139"/><area shape="rect" id="node11" href="classTLC59116.html#a7dd7c2beaa0e7926caee771b5439f130" title="Turn one on/off, much like DigitalWrite. " alt="" coords="667,163,775,189"/><area shape="rect" id="node14" href="classTLC59116.html#ae910495809497c9ba15bfdbd1e805e17" title="Alias of set_outputs() above. " alt="" coords="662,213,781,240"/><area shape="rect" id="node12" href="classTLC59116.html#ab0456a6a0f1127df48bb6f2977a9eb00" title="Turn one on. " alt="" coords="847,137,951,164"/><area shape="rect" id="node13" href="classTLC59116.html#ad5e48f003949da34ef99623767005429" title="Turn one off. " alt="" coords="846,188,951,215"/></map>
 </div>
 </p>
 
@@ -1500,6 +1487,8 @@ Here is the caller graph for this function:</div>
 Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classTLC59116__Unmanaged_a9c8637b383d83af3fb9a2a151cc9be91_cgraph.png" border="0" usemap="#classTLC59116__Unmanaged_a9c8637b383d83af3fb9a2a151cc9be91_cgraph" alt=""/></div>
+<map name="classTLC59116__Unmanaged_a9c8637b383d83af3fb9a2a151cc9be91_cgraph" id="classTLC59116__Unmanaged_a9c8637b383d83af3fb9a2a151cc9be91_cgraph">
+</map>
 </div>
 </p>
 
@@ -1507,6 +1496,8 @@ Here is the call graph for this function:</div>
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classTLC59116__Unmanaged_a9c8637b383d83af3fb9a2a151cc9be91_icgraph.png" border="0" usemap="#classTLC59116__Unmanaged_a9c8637b383d83af3fb9a2a151cc9be91_icgraph" alt=""/></div>
+<map name="classTLC59116__Unmanaged_a9c8637b383d83af3fb9a2a151cc9be91_icgraph" id="classTLC59116__Unmanaged_a9c8637b383d83af3fb9a2a151cc9be91_icgraph">
+</map>
 </div>
 </p>
 
@@ -1548,7 +1539,7 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classTLC59116__Unmanaged_ac08f1bfdbd20fd8c5b4ef0f0676d1d98_icgraph.png" border="0" usemap="#classTLC59116__Unmanaged_ac08f1bfdbd20fd8c5b4ef0f0676d1d98_icgraph" alt=""/></div>
 <map name="classTLC59116__Unmanaged_ac08f1bfdbd20fd8c5b4ef0f0676d1d98_icgraph" id="classTLC59116__Unmanaged_ac08f1bfdbd20fd8c5b4ef0f0676d1d98_icgraph">
-<area shape="rect" id="node2" href="classTLC59116__Unmanaged.html#afdab6558e28a80a7be27282c5f6fdad3" title="TLC59116_Unmanaged\l::describe_actual" alt="" coords="214,5,373,46"/></map>
+<area shape="rect" id="node2" href="classTLC59116.html#a68f754b83544356e9194d950ecac841e" title="Print the registers, as we&#39;ve cached them. cf. describe_actual() " alt="" coords="224,5,363,46"/><area shape="rect" id="node3" href="classTLC59116__Unmanaged.html#afdab6558e28a80a7be27282c5f6fdad3" title="TLC59116_Unmanaged\l::describe_actual" alt="" coords="214,70,373,111"/></map>
 </div>
 </p>
 
@@ -1581,7 +1572,7 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classTLC59116__Unmanaged_a03d8a362da99c6785c2f3f7bfc96a167_icgraph.png" border="0" usemap="#classTLC59116__Unmanaged_a03d8a362da99c6785c2f3f7bfc96a167_icgraph" alt=""/></div>
 <map name="classTLC59116__Unmanaged_a03d8a362da99c6785c2f3f7bfc96a167_icgraph" id="classTLC59116__Unmanaged_a03d8a362da99c6785c2f3f7bfc96a167_icgraph">
-<area shape="rect" id="node2" href="classTLC59116__Unmanaged.html#ad153a5bfb5fdea77b22575357984fc14" title="TLC59116_Unmanaged\l::i_out" alt="" coords="214,5,373,46"/><area shape="rect" id="node4" href="classTLC59116__Unmanaged.html#af18ad84df715c47b8f804ca40d0f1e85" title="TLC59116_Unmanaged\l::best_iref" alt="" coords="214,70,373,111"/><area shape="rect" id="node3" href="classTLC59116__Unmanaged.html#a57347bfab16f3e029d46f5996535e3b0" title="TLC59116_Unmanaged\l::i_out" alt="" coords="422,5,581,46"/></map>
+<area shape="rect" id="node2" href="classTLC59116__Unmanaged.html#ad153a5bfb5fdea77b22575357984fc14" title="TLC59116_Unmanaged\l::i_out" alt="" coords="214,53,373,94"/><area shape="rect" id="node5" href="classTLC59116__Unmanaged.html#af18ad84df715c47b8f804ca40d0f1e85" title="TLC59116_Unmanaged\l::best_iref" alt="" coords="214,118,373,159"/><area shape="rect" id="node3" href="classTLC59116.html#a7b12a12e134df87bfdc477cbc9153db6" title="TLC59116::milliamps" alt="" coords="434,5,579,32"/><area shape="rect" id="node4" href="classTLC59116__Unmanaged.html#a57347bfab16f3e029d46f5996535e3b0" title="TLC59116_Unmanaged\l::i_out" alt="" coords="427,57,586,98"/><area shape="rect" id="node6" href="classTLC59116.html#a2310679ba68d4479dad8108c345bfef0" title="TLC59116::set_milliamps" alt="" coords="421,125,592,152"/></map>
 </div>
 </p>
 
@@ -1647,7 +1638,7 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classTLC59116__Unmanaged_ab29c684a0751a03c4dc1239e877ca083_icgraph.png" border="0" usemap="#classTLC59116__Unmanaged_ab29c684a0751a03c4dc1239e877ca083_icgraph" alt=""/></div>
 <map name="classTLC59116__Unmanaged_ab29c684a0751a03c4dc1239e877ca083_icgraph" id="classTLC59116__Unmanaged_ab29c684a0751a03c4dc1239e877ca083_icgraph">
-<area shape="rect" id="node2" href="classTLC59116__Unmanaged.html#afdab6558e28a80a7be27282c5f6fdad3" title="TLC59116_Unmanaged\l::describe_actual" alt="" coords="214,5,373,46"/></map>
+<area shape="rect" id="node2" href="classTLC59116.html#a404babbe19ecdbe89b3ce9d6f86032dd" title="TLC59116::resync_shadow\l_registers" alt="" coords="213,5,395,46"/><area shape="rect" id="node3" href="classTLC59116__Unmanaged.html#afdab6558e28a80a7be27282c5f6fdad3" title="TLC59116_Unmanaged\l::describe_actual" alt="" coords="225,70,383,111"/></map>
 </div>
 </p>
 
@@ -1671,7 +1662,7 @@ Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classTLC59116__Unmanaged_afdab6558e28a80a7be27282c5f6fdad3_cgraph.png" border="0" usemap="#classTLC59116__Unmanaged_afdab6558e28a80a7be27282c5f6fdad3_cgraph" alt=""/></div>
 <map name="classTLC59116__Unmanaged_afdab6558e28a80a7be27282c5f6fdad3_cgraph" id="classTLC59116__Unmanaged_afdab6558e28a80a7be27282c5f6fdad3_cgraph">
-<area shape="rect" id="node2" href="classTLC59116__Unmanaged.html#a6139f45bea0929e07c5549ef40fd1d6b" title="TLC59116_Unmanaged\l::address" alt="" coords="630,99,789,140"/><area shape="rect" id="node3" href="classTLC59116__Unmanaged.html#ac08f1bfdbd20fd8c5b4ef0f0676d1d98" title="TLC59116_Unmanaged\l::describe_registers" alt="" coords="214,40,373,82"/><area shape="rect" id="node5" href="classTLC59116__Unmanaged.html#ab29c684a0751a03c4dc1239e877ca083" title="TLC59116_Unmanaged\l::fetch_registers" alt="" coords="214,131,373,172"/><area shape="rect" id="node4" href="classTLC59116__Unmanaged.html#a573db7c0d642ef90c5e1e3d62a349b1a" title="TLC59116_Unmanaged\l::describe_group_mode" alt="" coords="422,40,581,82"/><area shape="rect" id="node6" href="classTLC59116__Unmanaged.html#ab3dd16039595af68e1c79feef58ee8fd" title="TLC59116_Unmanaged\l::_begin_trans" alt="" coords="422,158,581,199"/><area shape="rect" id="node7" href="classTLC59116__Unmanaged.html#ac1f3a139c4f723fa09720850c5efbccf" title="TLC59116_Unmanaged\l::_end_trans" alt="" coords="422,223,581,264"/></map>
+<area shape="rect" id="node2" href="classTLC59116__Unmanaged.html#ab29c684a0751a03c4dc1239e877ca083" title="TLC59116_Unmanaged\l::fetch_registers" alt="" coords="214,93,373,134"/><area shape="rect" id="node4" href="classTLC59116__Unmanaged.html#a6139f45bea0929e07c5549ef40fd1d6b" title="TLC59116_Unmanaged\l::address" alt="" coords="630,63,789,105"/><area shape="rect" id="node6" href="classTLC59116__Unmanaged.html#ac08f1bfdbd20fd8c5b4ef0f0676d1d98" title="TLC59116_Unmanaged\l::describe_registers" alt="" coords="214,239,373,281"/><area shape="rect" id="node3" href="classTLC59116__Unmanaged.html#ab3dd16039595af68e1c79feef58ee8fd" title="TLC59116_Unmanaged\l::_begin_trans" alt="" coords="422,5,581,46"/><area shape="rect" id="node5" href="classTLC59116__Unmanaged.html#ac1f3a139c4f723fa09720850c5efbccf" title="TLC59116_Unmanaged\l::_end_trans" alt="" coords="422,122,581,163"/><area shape="rect" id="node7" href="classTLC59116__Unmanaged.html#a573db7c0d642ef90c5e1e3d62a349b1a" title="TLC59116_Unmanaged\l::describe_group_mode" alt="" coords="422,239,581,281"/></map>
 </div>
 </p>
 
@@ -1704,7 +1695,7 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classTLC59116__Unmanaged_a573db7c0d642ef90c5e1e3d62a349b1a_icgraph.png" border="0" usemap="#classTLC59116__Unmanaged_a573db7c0d642ef90c5e1e3d62a349b1a_icgraph" alt=""/></div>
 <map name="classTLC59116__Unmanaged_a573db7c0d642ef90c5e1e3d62a349b1a_icgraph" id="classTLC59116__Unmanaged_a573db7c0d642ef90c5e1e3d62a349b1a_icgraph">
-<area shape="rect" id="node2" href="classTLC59116__Unmanaged.html#ac08f1bfdbd20fd8c5b4ef0f0676d1d98" title="TLC59116_Unmanaged\l::describe_registers" alt="" coords="214,5,373,46"/><area shape="rect" id="node3" href="classTLC59116__Unmanaged.html#afdab6558e28a80a7be27282c5f6fdad3" title="TLC59116_Unmanaged\l::describe_actual" alt="" coords="422,5,581,46"/></map>
+<area shape="rect" id="node2" href="classTLC59116__Unmanaged.html#ac08f1bfdbd20fd8c5b4ef0f0676d1d98" title="TLC59116_Unmanaged\l::describe_registers" alt="" coords="214,38,373,79"/><area shape="rect" id="node3" href="classTLC59116.html#a68f754b83544356e9194d950ecac841e" title="Print the registers, as we&#39;ve cached them. cf. describe_actual() " alt="" coords="432,5,571,46"/><area shape="rect" id="node4" href="classTLC59116__Unmanaged.html#afdab6558e28a80a7be27282c5f6fdad3" title="TLC59116_Unmanaged\l::describe_actual" alt="" coords="422,70,581,111"/></map>
 </div>
 </p>
 
@@ -1736,7 +1727,7 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classTLC59116__Unmanaged_a6139f45bea0929e07c5549ef40fd1d6b_icgraph.png" border="0" usemap="#classTLC59116__Unmanaged_a6139f45bea0929e07c5549ef40fd1d6b_icgraph" alt=""/></div>
 <map name="classTLC59116__Unmanaged_a6139f45bea0929e07c5549ef40fd1d6b_icgraph" id="classTLC59116__Unmanaged_a6139f45bea0929e07c5549ef40fd1d6b_icgraph">
-<area shape="rect" id="node2" href="classTLC59116__Unmanaged.html#ab29c684a0751a03c4dc1239e877ca083" title="TLC59116_Unmanaged\l::fetch_registers" alt="" coords="422,34,581,75"/><area shape="rect" id="node3" href="classTLC59116__Unmanaged.html#afdab6558e28a80a7be27282c5f6fdad3" title="TLC59116_Unmanaged\l::describe_actual" alt="" coords="630,5,789,46"/><area shape="rect" id="node4" href="classTLC59116__Unmanaged.html#affab9f9ecec5b26a737cf518515756b2" title="TLC59116_Unmanaged\l::normalize_address" alt="" coords="214,85,373,126"/><area shape="rect" id="node5" href="classTLC59116__Unmanaged.html#ab3dd16039595af68e1c79feef58ee8fd" title="TLC59116_Unmanaged\l::_begin_trans" alt="" coords="214,150,373,191"/><area shape="rect" id="node6" href="classTLC59116__Unmanaged.html#a2a09a2ec129171e92d5f742c211271e4" title="TLC59116_Unmanaged\l::control_register" alt="" coords="422,125,581,166"/><area shape="rect" id="node7" href="classTLC59116__Unmanaged.html#aed56b2a755ec2d9d2cc11199e8d4bbe4" title="TLC59116_Unmanaged\l::_begin_trans" alt="" coords="422,190,581,231"/></map>
+<area shape="rect" id="node2" href="classTLC59116.html#a24199b74fa82e207d54deb4142ac41fa" title="Master power switch (the TLC59116Manager sets this on/true by default) " alt="" coords="213,12,392,39"/><area shape="rect" id="node6" href="classTLC59116.html#a68f754b83544356e9194d950ecac841e" title="Print the registers, as we&#39;ve cached them. cf. describe_actual() " alt="" coords="233,63,372,105"/><area shape="rect" id="node7" href="classTLC59116__Unmanaged.html#ab29c684a0751a03c4dc1239e877ca083" title="TLC59116_Unmanaged\l::fetch_registers" alt="" coords="441,185,599,226"/><area shape="rect" id="node9" href="classTLC59116__Unmanaged.html#afdab6558e28a80a7be27282c5f6fdad3" title="TLC59116_Unmanaged\l::describe_actual" alt="" coords="659,122,818,163"/><area shape="rect" id="node10" href="classTLC59116__Unmanaged.html#affab9f9ecec5b26a737cf518515756b2" title="TLC59116_Unmanaged\l::normalize_address" alt="" coords="223,231,382,273"/><area shape="rect" id="node11" href="classTLC59116__Unmanaged.html#ab3dd16039595af68e1c79feef58ee8fd" title="TLC59116_Unmanaged\l::_begin_trans" alt="" coords="223,297,382,338"/><area shape="rect" id="node3" href="classTLC59116_1_1Broadcast.html#a7e4a899c574da03f81ada7aa7619c05f" title="Master power switch (the TLC59116Manager sets this on/true by default) " alt="" coords="445,5,595,46"/><area shape="rect" id="node4" href="classTLC59116Manager.html#a4f36fbb60b668b13d837a8f8705c8c4b" title="TLC59116Manager::reset" alt="" coords="654,12,823,39"/><area shape="rect" id="node5" href="classTLC59116Manager.html#a361db17d769a22a7908825bf13bd4e25" title="TLC59116Manager::init" alt="" coords="877,12,1035,39"/><area shape="rect" id="node8" href="classTLC59116.html#a404babbe19ecdbe89b3ce9d6f86032dd" title="TLC59116::resync_shadow\l_registers" alt="" coords="648,187,829,229"/><area shape="rect" id="node12" href="classTLC59116__Unmanaged.html#a2a09a2ec129171e92d5f742c211271e4" title="TLC59116_Unmanaged\l::control_register" alt="" coords="441,337,599,378"/><area shape="rect" id="node13" href="classTLC59116__Unmanaged.html#aed56b2a755ec2d9d2cc11199e8d4bbe4" title="TLC59116_Unmanaged\l::_begin_trans" alt="" coords="441,271,599,313"/></map>
 </div>
 </p>
 
@@ -1787,7 +1778,7 @@ Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classTLC59116__Unmanaged_a2a09a2ec129171e92d5f742c211271e4_cgraph.png" border="0" usemap="#classTLC59116__Unmanaged_a2a09a2ec129171e92d5f742c211271e4_cgraph" alt=""/></div>
 <map name="classTLC59116__Unmanaged_a2a09a2ec129171e92d5f742c211271e4_cgraph" id="classTLC59116__Unmanaged_a2a09a2ec129171e92d5f742c211271e4_cgraph">
-<area shape="rect" id="node2" href="classTLC59116__Unmanaged.html#ab3dd16039595af68e1c79feef58ee8fd" title="TLC59116_Unmanaged\l::_begin_trans" alt="" coords="214,5,373,46"/><area shape="rect" id="node4" href="classTLC59116__Unmanaged.html#ac1f3a139c4f723fa09720850c5efbccf" title="TLC59116_Unmanaged\l::_end_trans" alt="" coords="214,70,373,111"/><area shape="rect" id="node5" href="classTLC59116__Unmanaged.html#a90f341acf2e5acc3a2fec050ea3f2c18" title="TLC59116_Unmanaged\l::is_control_register" alt="" coords="214,135,373,177"/><area shape="rect" id="node6" href="TLC59116__Unmanaged_8h.html#ab2ce20589d924c815fc785c51f49b0b7" title="TLC59116Warn" alt="" coords="237,201,350,228"/><area shape="rect" id="node3" href="classTLC59116__Unmanaged.html#a6139f45bea0929e07c5549ef40fd1d6b" title="TLC59116_Unmanaged\l::address" alt="" coords="422,5,581,46"/></map>
+<area shape="rect" id="node2" href="classTLC59116__Unmanaged.html#a90f341acf2e5acc3a2fec050ea3f2c18" title="TLC59116_Unmanaged\l::is_control_register" alt="" coords="214,5,373,46"/><area shape="rect" id="node3" href="TLC59116__Unmanaged_8h.html#ab2ce20589d924c815fc785c51f49b0b7" title="TLC59116Warn" alt="" coords="237,71,350,97"/><area shape="rect" id="node4" href="classTLC59116__Unmanaged.html#ab3dd16039595af68e1c79feef58ee8fd" title="TLC59116_Unmanaged\l::_begin_trans" alt="" coords="214,122,373,163"/><area shape="rect" id="node6" href="classTLC59116__Unmanaged.html#ac1f3a139c4f723fa09720850c5efbccf" title="TLC59116_Unmanaged\l::_end_trans" alt="" coords="214,187,373,229"/><area shape="rect" id="node5" href="classTLC59116__Unmanaged.html#a6139f45bea0929e07c5549ef40fd1d6b" title="TLC59116_Unmanaged\l::address" alt="" coords="422,122,581,163"/></map>
 </div>
 </p>
 
@@ -1893,7 +1884,7 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classTLC59116__Unmanaged_ab3dd16039595af68e1c79feef58ee8fd_icgraph.png" border="0" usemap="#classTLC59116__Unmanaged_ab3dd16039595af68e1c79feef58ee8fd_icgraph" alt=""/></div>
 <map name="classTLC59116__Unmanaged_ab3dd16039595af68e1c79feef58ee8fd_icgraph" id="classTLC59116__Unmanaged_ab3dd16039595af68e1c79feef58ee8fd_icgraph">
-<area shape="rect" id="node2" href="classTLC59116__Unmanaged.html#a2a09a2ec129171e92d5f742c211271e4" title="TLC59116_Unmanaged\l::control_register" alt="" coords="214,5,373,46"/><area shape="rect" id="node3" href="classTLC59116__Unmanaged.html#ab29c684a0751a03c4dc1239e877ca083" title="TLC59116_Unmanaged\l::fetch_registers" alt="" coords="214,70,373,111"/><area shape="rect" id="node5" href="classTLC59116__Unmanaged.html#aed56b2a755ec2d9d2cc11199e8d4bbe4" title="TLC59116_Unmanaged\l::_begin_trans" alt="" coords="214,135,373,177"/><area shape="rect" id="node4" href="classTLC59116__Unmanaged.html#afdab6558e28a80a7be27282c5f6fdad3" title="TLC59116_Unmanaged\l::describe_actual" alt="" coords="422,70,581,111"/></map>
+<area shape="rect" id="node2" href="classTLC59116__Unmanaged.html#a2a09a2ec129171e92d5f742c211271e4" title="TLC59116_Unmanaged\l::control_register" alt="" coords="214,5,373,46"/><area shape="rect" id="node3" href="classTLC59116__Unmanaged.html#ab29c684a0751a03c4dc1239e877ca083" title="TLC59116_Unmanaged\l::fetch_registers" alt="" coords="214,70,373,111"/><area shape="rect" id="node6" href="classTLC59116__Unmanaged.html#aed56b2a755ec2d9d2cc11199e8d4bbe4" title="TLC59116_Unmanaged\l::_begin_trans" alt="" coords="214,135,373,177"/><area shape="rect" id="node4" href="classTLC59116.html#a404babbe19ecdbe89b3ce9d6f86032dd" title="TLC59116::resync_shadow\l_registers" alt="" coords="421,38,603,79"/><area shape="rect" id="node5" href="classTLC59116__Unmanaged.html#afdab6558e28a80a7be27282c5f6fdad3" title="TLC59116_Unmanaged\l::describe_actual" alt="" coords="433,103,591,145"/></map>
 </div>
 </p>
 
@@ -2072,7 +2063,7 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="classTLC59116__Unmanaged_ac1f3a139c4f723fa09720850c5efbccf_icgraph.png" border="0" usemap="#classTLC59116__Unmanaged_ac1f3a139c4f723fa09720850c5efbccf_icgraph" alt=""/></div>
 <map name="classTLC59116__Unmanaged_ac1f3a139c4f723fa09720850c5efbccf_icgraph" id="classTLC59116__Unmanaged_ac1f3a139c4f723fa09720850c5efbccf_icgraph">
-<area shape="rect" id="node2" href="classTLC59116__Unmanaged.html#a2a09a2ec129171e92d5f742c211271e4" title="TLC59116_Unmanaged\l::control_register" alt="" coords="214,5,373,46"/><area shape="rect" id="node3" href="classTLC59116__Unmanaged.html#ab29c684a0751a03c4dc1239e877ca083" title="TLC59116_Unmanaged\l::fetch_registers" alt="" coords="214,70,373,111"/><area shape="rect" id="node4" href="classTLC59116__Unmanaged.html#afdab6558e28a80a7be27282c5f6fdad3" title="TLC59116_Unmanaged\l::describe_actual" alt="" coords="422,70,581,111"/></map>
+<area shape="rect" id="node2" href="classTLC59116Manager.html#a4f36fbb60b668b13d837a8f8705c8c4b" title="TLC59116Manager::reset" alt="" coords="214,5,383,32"/><area shape="rect" id="node4" href="classTLC59116__Unmanaged.html#a2a09a2ec129171e92d5f742c211271e4" title="TLC59116_Unmanaged\l::control_register" alt="" coords="219,57,378,98"/><area shape="rect" id="node5" href="classTLC59116__Unmanaged.html#ab29c684a0751a03c4dc1239e877ca083" title="TLC59116_Unmanaged\l::fetch_registers" alt="" coords="219,122,378,163"/><area shape="rect" id="node3" href="classTLC59116Manager.html#a361db17d769a22a7908825bf13bd4e25" title="TLC59116Manager::init" alt="" coords="444,5,601,32"/><area shape="rect" id="node6" href="classTLC59116.html#a404babbe19ecdbe89b3ce9d6f86032dd" title="TLC59116::resync_shadow\l_registers" alt="" coords="432,89,613,130"/><area shape="rect" id="node7" href="classTLC59116__Unmanaged.html#afdab6558e28a80a7be27282c5f6fdad3" title="TLC59116_Unmanaged\l::describe_actual" alt="" coords="443,154,602,195"/></map>
 </div>
 </p>
 
@@ -3070,13 +3061,13 @@ Here is the call graph for this function:</div>
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following files:<ul>
-<li><a class="el" href="TLC59116__Unmanaged_8h_source.html">TLC59116_Unmanaged.h (Sat May 30 14:15:05 2015 -0400)</a></li>
-<li><a class="el" href="TLC59116__Unmanaged_8cpp.html">TLC59116_Unmanaged.cpp (Sat May 30 14:15:05 2015 -0400)</a></li>
+<li><a class="el" href="TLC59116__Unmanaged_8h_source.html">TLC59116_Unmanaged.h (Sat Jun 20 14:19:53 2015 -0400)</a></li>
+<li><a class="el" href="TLC59116__Unmanaged_8cpp.html">TLC59116_Unmanaged.cpp (Sat Jun 20 14:19:53 2015 -0400)</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat May 30 2015 14:54:00 for TLC59116 Library by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Jun 21 2015 13:58:20 for TLC59116 Library by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>

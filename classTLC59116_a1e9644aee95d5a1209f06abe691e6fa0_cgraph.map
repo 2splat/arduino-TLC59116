@@ -1,3 +1,3 @@
 <map id="TLC59116::group_blink" name="TLC59116::group_blink">
-<area shape="rect" id="node2" href="$classTLC59116.html#a733c11fc244a4b93b29f1ba90c81be8f" title="TLC59116::group_blink" alt="" coords="211,29,367,56"/>
+<area shape="rect" id="node2" href="$classTLC59116.html#a692e0217553872561f9667aff49852c5" title="Blink all the LEDs, at their current/last PWM setting. " alt="" coords="211,5,367,32"/>
 </map>

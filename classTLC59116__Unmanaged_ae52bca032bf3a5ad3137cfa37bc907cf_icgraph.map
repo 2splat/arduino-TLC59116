@@ -1,12 +1,12 @@
 <map id="TLC59116_Unmanaged::LEDOUTx_Register" name="TLC59116_Unmanaged::LEDOUTx_Register">
-<area shape="rect" id="node2" href="$classTLC59116.html#aee8072c3386b44ad81f629796ac129ef" title="TLC59116::group_blink" alt="" coords="215,5,371,32"/>
-<area shape="rect" id="node3" href="$classTLC59116.html#ae7627e27217f48424fc470c46d984408" title="TLC59116::group_pwm" alt="" coords="215,56,372,83"/>
-<area shape="rect" id="node4" href="$classTLC59116.html#a6122fb43d940c057fc6a5459e9dbd89b" title="TLC59116::set_outputs" alt="" coords="214,107,373,133"/>
-<area shape="rect" id="node5" href="$classTLC59116.html#a2a3ae3a05389a1e5df0abae735c6f143" title="TLC59116::pattern" alt="" coords="440,5,571,32"/>
-<area shape="rect" id="node6" href="$classTLC59116.html#a8d6069720cefe5bc8f587844d2cbc64c" title="TLC59116::pwm" alt="" coords="446,56,565,83"/>
-<area shape="rect" id="node7" href="$classTLC59116.html#aa235b425dc34d160cfbe7b6cf2c9f939" title="TLC59116::reset_pattern" alt="" coords="422,107,589,133"/>
-<area shape="rect" id="node8" href="$classTLC59116.html#a7dd7c2beaa0e7926caee771b5439f130" title="TLC59116::set" alt="" coords="451,157,559,184"/>
-<area shape="rect" id="node11" href="$classTLC59116.html#a42a4856ff8aa1920b1d66539e128b308" title="TLC59116::set_pattern" alt="" coords="428,208,583,235"/>
-<area shape="rect" id="node9" href="$classTLC59116.html#ad5e48f003949da34ef99623767005429" title="TLC59116::off" alt="" coords="638,132,743,159"/>
-<area shape="rect" id="node10" href="$classTLC59116.html#ab0456a6a0f1127df48bb6f2977a9eb00" title="TLC59116::on" alt="" coords="639,183,743,209"/>
+<area shape="rect" id="node2" href="$classTLC59116.html#a30d53b3f94554ddee4e4afe22ca4537e" title="Only change the channels (that are marked in bit_which) to on/off as marked in bit_pattern ..." alt="" coords="214,107,373,133"/>
+<area shape="rect" id="node10" href="$classTLC59116.html#ae7627e27217f48424fc470c46d984408" title="TLC59116::group_pwm" alt="" coords="215,157,372,184"/>
+<area shape="rect" id="node11" href="$classTLC59116.html#aee8072c3386b44ad81f629796ac129ef" title="TLC59116::group_blink" alt="" coords="215,208,371,235"/>
+<area shape="rect" id="node3" href="$classTLC59116.html#a0ee3fae95f6eecdde3f20166e566c4ae" title="Alias for set_outputs() " alt="" coords="432,5,563,32"/>
+<area shape="rect" id="node4" href="$classTLC59116.html#a088e3396b527714b0ca679de2f889b3d" title="Turn on by bit pattern. " alt="" coords="422,56,573,83"/>
+<area shape="rect" id="node5" href="$classTLC59116.html#ab74add573a7d422715bc418becd7834b" title="Turn off by bit pattern. " alt="" coords="421,107,573,133"/>
+<area shape="rect" id="node6" href="$classTLC59116.html#a7dd7c2beaa0e7926caee771b5439f130" title="Turn one on/off, much like DigitalWrite. " alt="" coords="443,157,551,184"/>
+<area shape="rect" id="node9" href="$classTLC59116.html#ae910495809497c9ba15bfdbd1e805e17" title="Alias of set_outputs() above. " alt="" coords="438,208,557,235"/>
+<area shape="rect" id="node7" href="$classTLC59116.html#ab0456a6a0f1127df48bb6f2977a9eb00" title="Turn one on. " alt="" coords="623,132,727,159"/>
+<area shape="rect" id="node8" href="$classTLC59116.html#ad5e48f003949da34ef99623767005429" title="Turn one off. " alt="" coords="622,183,727,209"/>
 </map>

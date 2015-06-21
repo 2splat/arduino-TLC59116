@@ -11,8 +11,11 @@
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/search.js"></script>
 <script type="text/javascript">
-  $(document).ready(function() { searchBox.OnSelectItem(0); });
+  $(document).ready(function() {
+    if ($('.searchresults').length > 0) { searchBox.DOMSearchField().focus(); }
+  });
 </script>
+<link rel="search" href="search-opensearch.php?v=opensearch.xml" type="application/opensearchdescription+xml" title="TLC59116 Library"/>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
 </head>
 <body>
@@ -23,7 +26,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">TLC59116 Library
-   &#160;<span id="projectnumber">layers</span>
+   &#160;<span id="projectnumber">v0.2</span>
    </div>
   </td>
  </tr>
@@ -43,37 +46,19 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
-        <span class="left">
-          <img id="MSearchSelect" src="search/mag_sel.png"
-               onmouseover="return searchBox.OnSearchSelectShow()"
-               onmouseout="return searchBox.OnSearchSelectHide()"
-               alt=""/>
-          <input type="text" id="MSearchField" value="Search" accesskey="S"
-               onfocus="searchBox.OnSearchFieldFocus(true)" 
-               onblur="searchBox.OnSearchFieldFocus(false)" 
-               onkeyup="searchBox.OnSearchFieldChange(event)"/>
-          </span><span class="right">
-            <a id="MSearchClose" href="javascript:searchBox.CloseResultsWindow()"><img id="MSearchCloseImg" border="0" src="search/close.png" alt=""/></a>
-          </span>
+          <div class="left">
+            <form id="FSearchBox" action="search.html" method="get">
+              <img id="MSearchSelect" src="search/mag.png" alt=""/>
+              <input type="text" id="MSearchField" name="query" value="Search" size="20" accesskey="S" 
+                     onfocus="searchBox.OnSearchFieldFocus(true)" 
+                     onblur="searchBox.OnSearchFieldFocus(false)"/>
+            </form>
+          </div><div class="right"></div>
         </div>
       </li>
     </ul>
   </div>
 </div><!-- top -->
-<!-- window showing the filter options -->
-<div id="MSearchSelectWindow"
-     onmouseover="return searchBox.OnSearchSelectShow()"
-     onmouseout="return searchBox.OnSearchSelectHide()"
-     onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Friends</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Macros</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Pages</a></div>
-
-<!-- iframe showing the search results (closed by default) -->
-<div id="MSearchResultsWindow">
-<iframe src="javascript:void(0)" frameborder="0" 
-        name="MSearchResults" id="MSearchResults">
-</iframe>
-</div>
-
 <div class="header">
   <div class="headertitle">
 <div class="title">TLC59116 Library Documentation</div>  </div>
@@ -113,7 +98,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>I have not tested this with any Makefile setups. Please send me info on how that works for you.</p>
 <h3>Installation</h3>
 <ol type="1">
-<li>Download the <a href="https://github.com/2splat/arduino-TLC59116/raw/#BRANCH#/arduino_TLC59116.zip">library zip file</a>.</li>
+<li>Download the <a href="https://github.com/2splat/arduino-TLC59116/raw/master/arduino_TLC59116.zip">library zip file</a>.</li>
 </ol>
 <ol type="1">
 <li>Add the library to the Arduino IDE<ol type="a">
@@ -205,7 +190,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <li>NB: That is the current version's documentation. You can download other versions by going to the <a href="https://github.com/2splat/arduino-TLC59116">repository</a>, choosing the branch of interest, navigating to the <code>arduino_TLC59116_doc.zip</code>, and clicking on the "raw" button.</li>
 </ul>
 </li>
-<li>Or, download a <a href="https://github.com/2splat/arduino-TLC59116/raw/#BRANCH#/arduino_TLC59116_doc.zip">zip</a> of the documentation from the repository.</li>
+<li>Or, download a <a href="https://github.com/2splat/arduino-TLC59116/raw/master/arduino_TLC59116_doc.zip">zip</a> of the documentation from the repository.</li>
 <li>Some known bugs are noted in the documentation (summary on <a href="https://2splat.github.io/arduino-TLC59116/bug.html">"Related Pages::Bugs"</a>).</li>
 <li>Some things that aren't done are on the <a href="https://2splat.github.io/arduino-TLC59116/todo.html">"Related Pages::Todo"</a></li>
 </ul>
@@ -244,16 +229,19 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </ol>
 </li>
 </ol>
+<ol type="a">
+<li>Releasing to github is by rules in the makefile, signaled by a flag file ".master-is-release"</li>
+</ol>
 </li>
 </ol>
-<h3>CreditS</h3>
+<h3>Credits</h3>
 <ol type="1">
 <li>I2C scan function adapted from Nick Gammon (written 20th April 2011), <a href="http://www.gammon.com.au/forum/?id=10896&reply=6#reply6">http://www.gammon.com.au/forum/?id=10896&amp;reply=6#reply6</a>. Thanks Nick! </li>
 </ol>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat May 30 2015 14:54:00 for TLC59116 Library by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Jun 21 2015 13:58:20 for TLC59116 Library by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>
