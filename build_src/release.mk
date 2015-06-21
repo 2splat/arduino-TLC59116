@@ -26,7 +26,7 @@ update_tag :
 		echo "Already tagged at head as `git describe master`"; \
 	else \
 		echo "Last tag " `git describe --long master | sed 's/-[^-]\+$$//; s/-\([0-9]\+\)/, \1 commit behind/'`; \
-		# figure out and tag: either +1 or .0
+		true 'figure out and tag: either +1 or .0'; \
 		set -x; \
 		if [ "$(last_released_branch)" = "$(dev_branch)" ]; then \
 			newtag="`perl -e '@parts=split(/\./,"$(released_tag)"); $$parts[-1]++; print join(".",@parts),"\n";'`"; \
