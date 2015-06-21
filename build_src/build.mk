@@ -64,16 +64,6 @@ arduino_$(Device)_doc.zip : doc/html/index.html
 	rm arduino_$(Device)_doc.zip 2>/dev/null || true
 	cd doc && (cd html && git ls-tree -r --name-only HEAD) | awk '{print "html/"$$0}' | egrep '\.(html|js|cs|map|png|css)' | xargs -s 2000 zip -u ../arduino_$(Device)_doc.zip
 
-build/html/.git/config : build/html/.git .git/config
-	@# copy the remote.github
-	@if git config --get-regexp '^remote\.github' >/dev/null; then \
-	if ! (cd build/html; git config --get-regexp '^remote\.github' >/dev/null); then \
-	perl -n -e '(/^\[remote "github"/.../\[/) && push(@x,$$_); END {pop @x; print @x}' .git/config >> $@; \
-	fi;fi
-
-build/html/.git :
-	git clone --branch gh-pages .git build/html
-
 # Make the README.html because we want to say the version
 README.html : README.md BRANCH
 ifeq ($(shell which markdown),)

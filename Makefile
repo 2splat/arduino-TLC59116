@@ -15,9 +15,9 @@ arduino_inc_dirs := $(arduino_dir)/hardware/arduino/cores/arduino,$(arduino_dir)
 ino_link := $(shell basename `/bin/pwd`).ino
 test_example_srcs := $(shell find examples/test_features -name '*.h' -o -name '*.cpp' | xargs basename )
 branch := $(shell git symbolic-ref --short HEAD)
-released_tag := $(shell git describe --abbrev=0 master)
+released_tag = $(shell git describe --abbrev=0 master)
 # can fail, if not the assumed tag & dev-branch named vn.n.n
-last_released_branch := $(shell git describe --abbrev=0 master | sed 's/\.[0-9]\+$$//')
+last_released_branch = $(shell git describe --abbrev=0 master | sed 's/\.[0-9]\+$$//')
 dev_branch := $(shell git describe --abbrev=0 master | sed 's/\.[0-9]\+$$//')
 
 # Policy: Release from "master" branch. Indicate this working dir is the release with: touch .master-is-release

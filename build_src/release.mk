@@ -7,12 +7,10 @@ what_release :
 
 .PHONY : release
 release : dev_branch_real working_dir_clean merge_dev update_tag
-	# figure out branch to merge: same as last or override with dev_branch=vx.x
 
 .PHONY : dev_branch_real
 dev_branch_real :
 	if [ "`git branch --list '$(dev_branch)'`" = '' ]; then echo "No such branch: '$(dev_branch)'"; exit 1; fi
-	# merge (as necessary)
 
 .PHONY : merge_dev
 merge_dev :
@@ -44,12 +42,32 @@ gh-pages : build build/html build/html/.git/config
 	# copy doc/html to build/html and push to gh-pages
 	@rsync -r --links --safe-links --hard-links --perms --whole-file --delete --prune-empty-dirs --exclude '*.md5' --filter 'protect .git/' doc/html/ build/html
 	@cd build/html && git status --porcelain | awk '/^\?\?/ {print $$2}' | egrep '\.(html|js|cs|map|png|css|gitignore)' | xargs --no-run-if-empty git add
-	@git diff-index --quiet HEAD -- || (echo "Working dir not committed, not committing gh-pages branch" && false)	
-	@if !(cd build/html && git diff-index --quiet HEAD --);then \
-		(echo -n "branch: "; git branch | grep '*' | awk '{print $$2}'; git log -n 1) | (cd build/html && git commit -a -F -);\
+	# @( git diff --quiet && git diff --cached --quiet) || (echo "Working dir not committed, not committing gh-pages branch" && false)	
+	@if !(cd build/html && ( git diff --quiet && git diff --cached --quiet));then \
+		(echo "version: $(released_tag)"; \
+		 echo "branch: $(branch)"; \
+		 git log -n 1; \
+		) | (cd build/html && git commit -a -F -);\
 		cd build/html; \
 		git log -n 1 --oneline; \
 	fi
-	@ cd build/html;\
-	git config --get-regexp '^remote\.github' >/dev/null || (git push github gh-pages || true)
+	git checkout gh-pages && git pull gh-pages-build gh-pages
+	# @ cd build/html;\
+	# git config --get-regexp '^remote\.github' >/dev/null || (git push github gh-pages || true)
+
+build/html/.git/config : build/html/.git .git/config gh-page-update
+	@# copy the remote.github
+	@if git config --get-regexp '^remote\.github' >/dev/null; then \
+	if ! (cd build/html; git config --get-regexp '^remote\.github' >/dev/null); then \
+	perl -n -e '(/^\[remote "github"/.../\[/) && push(@x,$$_); END {pop @x; print @x}' .git/config >> $@; \
+	fi;fi
+
+.PHONY : gh-page-update
+gh-page-update :
+	cd build/html && git fetch ../.. gh-pages 
+
+build/html/.git :
+	git clone --branch gh-pages .git build/html
+	git config remote.gh-pages-build.url build/html/.git
+	git config remote.gh-pages-build.fetch '+refs/heads/*:refs/remotes/gh-pages-build/*'
 
