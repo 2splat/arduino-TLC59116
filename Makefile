@@ -15,14 +15,17 @@ arduino_inc_dirs := $(arduino_dir)/hardware/arduino/cores/arduino,$(arduino_dir)
 ino_link := $(shell basename `/bin/pwd`).ino
 test_example_srcs := $(shell find examples/test_features -name '*.h' -o -name '*.cpp' | xargs basename )
 branch := $(shell git symbolic-ref --short HEAD)
-released_tag = $(shell git describe master)
+released_tag := $(shell git describe --abbrev=0 master)
+# can fail, if not the assumed tag & dev-branch named vn.n.n
+last_released_branch := $(shell git describe --abbrev=0 master | sed 's/\.[0-9]\+$$//')
+dev_branch := $(shell git describe --abbrev=0 master | sed 's/\.[0-9]\+$$//')
 
 # Policy: Release from "master" branch. Indicate this working dir is the release with: touch .master-is-release
 # So, on "master", there are only make-targets for release activities,
 # And on non-master, building-type acivities.
 ifeq ($(shell test '$(branch)' = 'master' && test "$$MASTEROVERRIDE" = '' && test -e .master-is-release && echo 1),1)
 
-inhibit := $(shell echo "release-tasks only for master branch. if you know what you are doing, use: env MASTEROVERRIDE=1 ..." > /dev/stderr)
+# inhibit := $(shell echo "release-tasks only for master branch. if you know what you are doing, use: env MASTEROVERRIDE=1 ..." > /dev/stderr)
 include build_src/release.mk
 
 else
@@ -62,5 +65,5 @@ FORCE :
 
 .PHONY : working_dir_clean
 working_dir_clean :
-	@ git diff --quiet || git diff --cached --quiet || (echo "Working dir un-clean"; exit 1)
+	@ (git diff --quiet && git diff --cached --quiet) || (echo "Working dir un-clean"; exit 1)
 

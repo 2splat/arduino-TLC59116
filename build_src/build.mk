@@ -64,21 +64,6 @@ arduino_$(Device)_doc.zip : doc/html/index.html
 	rm arduino_$(Device)_doc.zip 2>/dev/null || true
 	cd doc && (cd html && git ls-tree -r --name-only HEAD) | awk '{print "html/"$$0}' | egrep '\.(html|js|cs|map|png|css)' | xargs -s 2000 zip -u ../arduino_$(Device)_doc.zip
 
-.PHONY : gh-pages
-# for git push pre-push hook!
-gh-pages : build build/html build/html/.git/config
-	# copy doc/html to build/html and push to gh-pages
-	@rsync -r --links --safe-links --hard-links --perms --whole-file --delete --prune-empty-dirs --exclude '*.md5' --filter 'protect .git/' doc/html/ build/html
-	@cd build/html && git status --porcelain | awk '/^\?\?/ {print $$2}' | egrep '\.(html|js|cs|map|png|css|gitignore)' | xargs --no-run-if-empty git add
-	@git diff-index --quiet HEAD -- || (echo "Working dir not committed, not committing gh-pages branch" && false)	
-	@if !(cd build/html && git diff-index --quiet HEAD --);then \
-		(echo -n "branch: "; git branch | grep '*' | awk '{print $$2}'; git log -n 1) | (cd build/html && git commit -a -F -);\
-		cd build/html; \
-		git log -n 1 --oneline; \
-	fi
-	@ cd build/html;\
-	git config --get-regexp '^remote\.github' >/dev/null || (git push github gh-pages || true)
-
 build/html/.git/config : build/html/.git .git/config
 	@# copy the remote.github
 	@if git config --get-regexp '^remote\.github' >/dev/null; then \
