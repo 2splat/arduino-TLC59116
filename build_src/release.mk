@@ -51,7 +51,7 @@ gh-pages : build build/html build/html/.git/config
 		cd build/html; \
 		git log -n 1 --oneline; \
 	fi
-	git checkout gh-pages && git pull gh-pages-build gh-pages
+	git checkout gh-pages && git pull gh-pages-build gh-pages && git checkout master
 	# @ cd build/html;\
 	# git config --get-regexp '^remote\.github' >/dev/null || (git push github gh-pages || true)
 
