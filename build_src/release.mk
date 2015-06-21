@@ -8,7 +8,7 @@ what_release :
 .PHONY : release
 release : dev_branch_real working_dir_clean merge_dev update_tag gh-pages
 	# push code
-	git config --get-regexp '^remote\.github' >/dev/null || (git push --tags github : || true)
+	git config --get-regexp '^remote\.github' >/dev/null && (git push --tags github : || true)
 
 
 .PHONY : dev_branch_real
