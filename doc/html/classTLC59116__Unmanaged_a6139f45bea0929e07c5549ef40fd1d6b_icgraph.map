@@ -1,8 +1,14 @@
 <map id="TLC59116_Unmanaged::address" name="TLC59116_Unmanaged::address">
-<area shape="rect" id="node2" href="$classTLC59116__Unmanaged.html#ab29c684a0751a03c4dc1239e877ca083" title="TLC59116_Unmanaged\l::fetch_registers" alt="" coords="422,34,581,75"/>
-<area shape="rect" id="node3" href="$classTLC59116__Unmanaged.html#afdab6558e28a80a7be27282c5f6fdad3" title="TLC59116_Unmanaged\l::describe_actual" alt="" coords="630,5,789,46"/>
-<area shape="rect" id="node4" href="$classTLC59116__Unmanaged.html#affab9f9ecec5b26a737cf518515756b2" title="TLC59116_Unmanaged\l::normalize_address" alt="" coords="214,85,373,126"/>
-<area shape="rect" id="node5" href="$classTLC59116__Unmanaged.html#ab3dd16039595af68e1c79feef58ee8fd" title="TLC59116_Unmanaged\l::_begin_trans" alt="" coords="214,150,373,191"/>
-<area shape="rect" id="node6" href="$classTLC59116__Unmanaged.html#a2a09a2ec129171e92d5f742c211271e4" title="TLC59116_Unmanaged\l::control_register" alt="" coords="422,125,581,166"/>
-<area shape="rect" id="node7" href="$classTLC59116__Unmanaged.html#aed56b2a755ec2d9d2cc11199e8d4bbe4" title="TLC59116_Unmanaged\l::_begin_trans" alt="" coords="422,190,581,231"/>
+<area shape="rect" id="node2" href="$classTLC59116.html#a24199b74fa82e207d54deb4142ac41fa" title="Master power switch (the TLC59116Manager sets this on/true by default) " alt="" coords="213,12,392,39"/>
+<area shape="rect" id="node6" href="$classTLC59116.html#a68f754b83544356e9194d950ecac841e" title="Print the registers, as we&#39;ve cached them. cf. describe_actual() " alt="" coords="233,63,372,105"/>
+<area shape="rect" id="node7" href="$classTLC59116__Unmanaged.html#ab29c684a0751a03c4dc1239e877ca083" title="TLC59116_Unmanaged\l::fetch_registers" alt="" coords="441,185,599,226"/>
+<area shape="rect" id="node9" href="$classTLC59116__Unmanaged.html#afdab6558e28a80a7be27282c5f6fdad3" title="TLC59116_Unmanaged\l::describe_actual" alt="" coords="659,122,818,163"/>
+<area shape="rect" id="node10" href="$classTLC59116__Unmanaged.html#affab9f9ecec5b26a737cf518515756b2" title="TLC59116_Unmanaged\l::normalize_address" alt="" coords="223,231,382,273"/>
+<area shape="rect" id="node11" href="$classTLC59116__Unmanaged.html#ab3dd16039595af68e1c79feef58ee8fd" title="TLC59116_Unmanaged\l::_begin_trans" alt="" coords="223,297,382,338"/>
+<area shape="rect" id="node3" href="$classTLC59116_1_1Broadcast.html#a7e4a899c574da03f81ada7aa7619c05f" title="Master power switch (the TLC59116Manager sets this on/true by default) " alt="" coords="445,5,595,46"/>
+<area shape="rect" id="node4" href="$classTLC59116Manager.html#a4f36fbb60b668b13d837a8f8705c8c4b" title="TLC59116Manager::reset" alt="" coords="654,12,823,39"/>
+<area shape="rect" id="node5" href="$classTLC59116Manager.html#a361db17d769a22a7908825bf13bd4e25" title="TLC59116Manager::init" alt="" coords="877,12,1035,39"/>
+<area shape="rect" id="node8" href="$classTLC59116.html#a404babbe19ecdbe89b3ce9d6f86032dd" title="TLC59116::resync_shadow\l_registers" alt="" coords="648,187,829,229"/>
+<area shape="rect" id="node12" href="$classTLC59116__Unmanaged.html#a2a09a2ec129171e92d5f742c211271e4" title="TLC59116_Unmanaged\l::control_register" alt="" coords="441,337,599,378"/>
+<area shape="rect" id="node13" href="$classTLC59116__Unmanaged.html#aed56b2a755ec2d9d2cc11199e8d4bbe4" title="TLC59116_Unmanaged\l::_begin_trans" alt="" coords="441,271,599,313"/>
 </map>

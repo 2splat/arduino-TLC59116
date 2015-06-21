@@ -1,4 +1,5 @@
 <map id="TLC59116_Unmanaged::describe_group_mode" name="TLC59116_Unmanaged::describe_group_mode">
-<area shape="rect" id="node2" href="$classTLC59116__Unmanaged.html#ac08f1bfdbd20fd8c5b4ef0f0676d1d98" title="TLC59116_Unmanaged\l::describe_registers" alt="" coords="214,5,373,46"/>
-<area shape="rect" id="node3" href="$classTLC59116__Unmanaged.html#afdab6558e28a80a7be27282c5f6fdad3" title="TLC59116_Unmanaged\l::describe_actual" alt="" coords="422,5,581,46"/>
+<area shape="rect" id="node2" href="$classTLC59116__Unmanaged.html#ac08f1bfdbd20fd8c5b4ef0f0676d1d98" title="TLC59116_Unmanaged\l::describe_registers" alt="" coords="214,38,373,79"/>
+<area shape="rect" id="node3" href="$classTLC59116.html#a68f754b83544356e9194d950ecac841e" title="Print the registers, as we&#39;ve cached them. cf. describe_actual() " alt="" coords="432,5,571,46"/>
+<area shape="rect" id="node4" href="$classTLC59116__Unmanaged.html#afdab6558e28a80a7be27282c5f6fdad3" title="TLC59116_Unmanaged\l::describe_actual" alt="" coords="422,70,581,111"/>
 </map>

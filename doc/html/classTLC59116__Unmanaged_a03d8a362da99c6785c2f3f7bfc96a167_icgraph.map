@@ -1,5 +1,7 @@
 <map id="TLC59116_Unmanaged::reverse_cc" name="TLC59116_Unmanaged::reverse_cc">
-<area shape="rect" id="node2" href="$classTLC59116__Unmanaged.html#ad153a5bfb5fdea77b22575357984fc14" title="TLC59116_Unmanaged\l::i_out" alt="" coords="214,5,373,46"/>
-<area shape="rect" id="node4" href="$classTLC59116__Unmanaged.html#af18ad84df715c47b8f804ca40d0f1e85" title="TLC59116_Unmanaged\l::best_iref" alt="" coords="214,70,373,111"/>
-<area shape="rect" id="node3" href="$classTLC59116__Unmanaged.html#a57347bfab16f3e029d46f5996535e3b0" title="TLC59116_Unmanaged\l::i_out" alt="" coords="422,5,581,46"/>
+<area shape="rect" id="node2" href="$classTLC59116__Unmanaged.html#ad153a5bfb5fdea77b22575357984fc14" title="TLC59116_Unmanaged\l::i_out" alt="" coords="214,53,373,94"/>
+<area shape="rect" id="node5" href="$classTLC59116__Unmanaged.html#af18ad84df715c47b8f804ca40d0f1e85" title="TLC59116_Unmanaged\l::best_iref" alt="" coords="214,118,373,159"/>
+<area shape="rect" id="node3" href="$classTLC59116.html#a7b12a12e134df87bfdc477cbc9153db6" title="TLC59116::milliamps" alt="" coords="434,5,579,32"/>
+<area shape="rect" id="node4" href="$classTLC59116__Unmanaged.html#a57347bfab16f3e029d46f5996535e3b0" title="TLC59116_Unmanaged\l::i_out" alt="" coords="427,57,586,98"/>
+<area shape="rect" id="node6" href="$classTLC59116.html#a2310679ba68d4479dad8108c345bfef0" title="TLC59116::set_milliamps" alt="" coords="421,125,592,152"/>
 </map>

@@ -1,8 +1,8 @@
 <map id="TLC59116_Unmanaged::LEDx_set_mode" name="TLC59116_Unmanaged::LEDx_set_mode">
-<area shape="rect" id="node2" href="$classTLC59116__Unmanaged.html#ae15c27d8f55bf9a1d1e147f861860065" title="TLC59116_Unmanaged\l::LEDx_set_mode" alt="" coords="214,67,373,109"/>
-<area shape="rect" id="node3" href="$classTLC59116__Unmanaged.html#a437e3817f378c57b895ad99d29105c5c" title="TLC59116_Unmanaged\l::LEDOUTx_CHECK" alt="" coords="635,5,794,46"/>
-<area shape="rect" id="node5" href="$classTLC59116__Unmanaged.html#a1b34867e93dc76d3379e9f9fea1ba4f6" title="TLC59116_Unmanaged\l::LEDx_Register_mask" alt="" coords="425,34,583,75"/>
-<area shape="rect" id="node6" href="$classTLC59116__Unmanaged.html#a025a7e444437a01fecb8b398a6091faa" title="TLC59116_Unmanaged\l::LEDx_to_Register_bits" alt="" coords="421,99,587,141"/>
-<area shape="rect" id="node7" href="$classTLC59116__Unmanaged.html#a1dd4a181567c7ccf57301c9bd53a5305" title="TLC59116_Unmanaged\l::set_with_mask" alt="" coords="425,165,583,206"/>
-<area shape="rect" id="node4" href="$TLC59116__Unmanaged_8h.html#ab2ce20589d924c815fc785c51f49b0b7" title="TLC59116Warn" alt="" coords="843,12,957,39"/>
+<area shape="rect" id="node2" href="$classTLC59116__Unmanaged.html#ae15c27d8f55bf9a1d1e147f861860065" title="TLC59116_Unmanaged\l::LEDx_set_mode" alt="" coords="214,61,373,102"/>
+<area shape="rect" id="node3" href="$classTLC59116__Unmanaged.html#a437e3817f378c57b895ad99d29105c5c" title="TLC59116_Unmanaged\l::LEDOUTx_CHECK" alt="" coords="635,31,794,73"/>
+<area shape="rect" id="node5" href="$classTLC59116__Unmanaged.html#a1dd4a181567c7ccf57301c9bd53a5305" title="TLC59116_Unmanaged\l::set_with_mask" alt="" coords="425,27,583,69"/>
+<area shape="rect" id="node6" href="$classTLC59116__Unmanaged.html#a1b34867e93dc76d3379e9f9fea1ba4f6" title="TLC59116_Unmanaged\l::LEDx_Register_mask" alt="" coords="425,93,583,134"/>
+<area shape="rect" id="node7" href="$classTLC59116__Unmanaged.html#a025a7e444437a01fecb8b398a6091faa" title="TLC59116_Unmanaged\l::LEDx_to_Register_bits" alt="" coords="421,158,587,199"/>
+<area shape="rect" id="node4" href="$TLC59116__Unmanaged_8h.html#ab2ce20589d924c815fc785c51f49b0b7" title="TLC59116Warn" alt="" coords="843,39,957,65"/>
 </map>

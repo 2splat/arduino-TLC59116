@@ -1,5 +1,8 @@
 <map id="TLC59116_Unmanaged::_end_trans" name="TLC59116_Unmanaged::_end_trans">
-<area shape="rect" id="node2" href="$classTLC59116__Unmanaged.html#a2a09a2ec129171e92d5f742c211271e4" title="TLC59116_Unmanaged\l::control_register" alt="" coords="214,5,373,46"/>
-<area shape="rect" id="node3" href="$classTLC59116__Unmanaged.html#ab29c684a0751a03c4dc1239e877ca083" title="TLC59116_Unmanaged\l::fetch_registers" alt="" coords="214,70,373,111"/>
-<area shape="rect" id="node4" href="$classTLC59116__Unmanaged.html#afdab6558e28a80a7be27282c5f6fdad3" title="TLC59116_Unmanaged\l::describe_actual" alt="" coords="422,70,581,111"/>
+<area shape="rect" id="node2" href="$classTLC59116Manager.html#a4f36fbb60b668b13d837a8f8705c8c4b" title="TLC59116Manager::reset" alt="" coords="214,5,383,32"/>
+<area shape="rect" id="node4" href="$classTLC59116__Unmanaged.html#a2a09a2ec129171e92d5f742c211271e4" title="TLC59116_Unmanaged\l::control_register" alt="" coords="219,57,378,98"/>
+<area shape="rect" id="node5" href="$classTLC59116__Unmanaged.html#ab29c684a0751a03c4dc1239e877ca083" title="TLC59116_Unmanaged\l::fetch_registers" alt="" coords="219,122,378,163"/>
+<area shape="rect" id="node3" href="$classTLC59116Manager.html#a361db17d769a22a7908825bf13bd4e25" title="TLC59116Manager::init" alt="" coords="444,5,601,32"/>
+<area shape="rect" id="node6" href="$classTLC59116.html#a404babbe19ecdbe89b3ce9d6f86032dd" title="TLC59116::resync_shadow\l_registers" alt="" coords="432,89,613,130"/>
+<area shape="rect" id="node7" href="$classTLC59116__Unmanaged.html#afdab6558e28a80a7be27282c5f6fdad3" title="TLC59116_Unmanaged\l::describe_actual" alt="" coords="443,154,602,195"/>
 </map>

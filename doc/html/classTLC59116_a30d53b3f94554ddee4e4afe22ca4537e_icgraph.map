@@ -3,7 +3,7 @@
 <area shape="rect" id="node3" href="$classTLC59116.html#a088e3396b527714b0ca679de2f889b3d" title="Turn on by bit pattern. " alt="" coords="214,56,365,83"/>
 <area shape="rect" id="node4" href="$classTLC59116.html#ab74add573a7d422715bc418becd7834b" title="Turn off by bit pattern. " alt="" coords="213,107,365,133"/>
 <area shape="rect" id="node5" href="$classTLC59116.html#a7dd7c2beaa0e7926caee771b5439f130" title="Turn one on/off, much like DigitalWrite. " alt="" coords="235,157,343,184"/>
-<area shape="rect" id="node8" href="$classTLC59116.html#ae910495809497c9ba15bfdbd1e805e17" title="Alias of set_outputs. " alt="" coords="230,208,349,235"/>
+<area shape="rect" id="node8" href="$classTLC59116.html#ae910495809497c9ba15bfdbd1e805e17" title="Alias of set_outputs() above. " alt="" coords="230,208,349,235"/>
 <area shape="rect" id="node6" href="$classTLC59116.html#ab0456a6a0f1127df48bb6f2977a9eb00" title="Turn one on. " alt="" coords="415,132,519,159"/>
 <area shape="rect" id="node7" href="$classTLC59116.html#ad5e48f003949da34ef99623767005429" title="Turn one off. " alt="" coords="414,183,519,209"/>
 </map>

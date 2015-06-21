@@ -1,9 +1,0 @@
-<map id="TLC59116::set_outputs" name="TLC59116::set_outputs">
-<area shape="rect" id="node2" href="$classTLC59116.html#a2a3ae3a05389a1e5df0abae735c6f143" title="TLC59116::pattern" alt="" coords="232,5,363,32"/>
-<area shape="rect" id="node3" href="$classTLC59116.html#a8d6069720cefe5bc8f587844d2cbc64c" title="TLC59116::pwm" alt="" coords="238,56,357,83"/>
-<area shape="rect" id="node4" href="$classTLC59116.html#aa235b425dc34d160cfbe7b6cf2c9f939" title="TLC59116::reset_pattern" alt="" coords="214,107,381,133"/>
-<area shape="rect" id="node5" href="$classTLC59116.html#a7dd7c2beaa0e7926caee771b5439f130" title="TLC59116::set" alt="" coords="243,157,351,184"/>
-<area shape="rect" id="node8" href="$classTLC59116.html#a42a4856ff8aa1920b1d66539e128b308" title="TLC59116::set_pattern" alt="" coords="220,208,375,235"/>
-<area shape="rect" id="node6" href="$classTLC59116.html#ad5e48f003949da34ef99623767005429" title="TLC59116::off" alt="" coords="430,132,535,159"/>
-<area shape="rect" id="node7" href="$classTLC59116.html#ab0456a6a0f1127df48bb6f2977a9eb00" title="TLC59116::on" alt="" coords="431,183,535,209"/>
-</map>

@@ -1,4 +1,4 @@
-<h3>Arduino Library for TI TLC59116 LED-driver</h3>
+<h3>Arduino Library for TI TLC59116 LED-driver (v0.2)</h3>
 
 <p>This provides a high level interface:</p>
 
@@ -36,7 +36,7 @@
 <h3>Installation</h3>
 
 <ol>
-<li>Download the <a href="https://github.com/2splat/arduino-TLC59116/raw/layers/arduino_TLC59116.zip">library zip file</a>.</li>
+<li>Download the <a href="https://github.com/2splat/arduino-TLC59116/raw/master/arduino_TLC59116.zip">library zip file</a>.</li>
 <li>Add the library to the Arduino IDE
 <ol>
 <li>(cf. the <a href="http://arduino.cc/en/guide/libraries">official instructions</a>)</li>
@@ -99,7 +99,7 @@
 <li>For the high-level/friendly, start at the <a href="https://2splat.github.io/arduino-TLC59116/classTLC59116.html">TLC59116 Class</a></li>
 <li>NB: That is the current version's documentation. You can download other versions by going to the <a href="https://github.com/2splat/arduino-TLC59116">repository</a>, choosing the branch of interest, navigating to the <code>arduino_TLC59116_doc.zip</code>, and clicking on the "raw" button.</li>
 </ul></li>
-<li>Or, download a <a href="https://github.com/2splat/arduino-TLC59116/raw/layers/arduino_TLC59116_doc.zip">zip</a> of the documentation from the repository.</li>
+<li>Or, download a <a href="https://github.com/2splat/arduino-TLC59116/raw/master/arduino_TLC59116_doc.zip">zip</a> of the documentation from the repository.</li>
 <li>Some known bugs are noted in the documentation (summary on <a href="https://2splat.github.io/arduino-TLC59116/bug.html">"Related Pages::Bugs"</a>).</li>
 <li>Some things that aren't done are on the <a href="https://2splat.github.io/arduino-TLC59116/todo.html">"Related Pages::Todo"</a></li>
 </ul>
@@ -124,10 +124,11 @@
 <li>It tries to be tolerant of missing tools.</li>
 <li>It touches up a few files to insert the git-branch as the version.</li>
 </ol></li>
+<li>Releasing to github is by rules in the makefile, signaled by a flag file ".master-is-release"</li>
 </ol></li>
 </ol>
 
-<h3>CreditS</h3>
+<h3>Credits</h3>
 
 <ol>
 <li>I2C scan function adapted from Nick Gammon (written 20th April 2011), http://www.gammon.com.au/forum/?id=10896&amp;reply=6#reply6. Thanks Nick!</li>

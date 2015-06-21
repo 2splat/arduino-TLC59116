@@ -1,4 +1,4 @@
-### Arduino Library for TI TLC59116 LED-driver 
+### Arduino Library for TI TLC59116 LED-driver (#BRANCH#)
 
 This provides a high level interface:
 
@@ -25,7 +25,7 @@ I have not tested this with any Makefile setups. Please send me info on how that
 
 ### Installation
 
-1.  Download the [library zip file](https://github.com/2splat/arduino-TLC59116/raw/#BRANCH#/arduino_TLC59116.zip).
+1.  Download the [library zip file](https://github.com/2splat/arduino-TLC59116/raw/master/arduino_TLC59116.zip).
 1.  Add the library to the Arduino IDE
     1.  (cf. the [official instructions](http://arduino.cc/en/guide/libraries))
     1.  For Arduino IDE 1.0.5:
@@ -64,7 +64,7 @@ HTML documentation, with examples, and explanation:
 - Online: <https://2splat.github.io/arduino-TLC59116>
     - For the high-level/friendly, start at the [TLC59116 Class](https://2splat.github.io/arduino-TLC59116/classTLC59116.html)
     - NB: That is the current version's documentation. You can download other versions by going to the [repository](https://github.com/2splat/arduino-TLC59116), choosing the branch of interest, navigating to the `arduino_TLC59116_doc.zip`, and clicking on the "raw" button.
-- Or, download a [zip](https://github.com/2splat/arduino-TLC59116/raw/#BRANCH#/arduino_TLC59116_doc.zip) of the documentation from the repository.
+- Or, download a [zip](https://github.com/2splat/arduino-TLC59116/raw/master/arduino_TLC59116_doc.zip) of the documentation from the repository.
 - Some known bugs are noted in the documentation (summary on ["Related Pages::Bugs"](https://2splat.github.io/arduino-TLC59116/bug.html)).
 - Some things that aren't done are on the ["Related Pages::Todo"](https://2splat.github.io/arduino-TLC59116/todo.html)
 
@@ -82,7 +82,8 @@ HTML documentation, with examples, and explanation:
     1. The default `make` target constructs everything.
        1.  It tries to be tolerant of missing tools.
        1.  It touches up a few files to insert the git-branch as the version.
+    1. Releasing to github is by rules in the makefile, signaled by a flag file ".master-is-release"
 
-### CreditS
+### Credits
 1. I2C scan function adapted from Nick Gammon (written 20th April 2011), http://www.gammon.com.au/forum/?id=10896&reply=6#reply6. Thanks Nick!
 
