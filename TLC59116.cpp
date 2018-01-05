@@ -4,7 +4,7 @@
 #define TLC59116_WARNINGS 1
 
 #include "TLC59116.h"
-extern "C" void atexit( void ) { } // so I can have statics in a method, i.e. singleton
+// extern "C" void atexit( void ) { } // so I can have statics in a method, i.e. singleton
 
 // #define WARN Serial.print
 #define WARN TLC59116Warn

@@ -14,7 +14,7 @@
 #include <Arduino.h>
 #include <Wire.h> // Usage.Include+: You have to do this in your .ino also
 #include <avr/pgmspace.h> // Usage.Include+: You have to do this in your .ino also
-#include "TLC59116_Unmanaged.h"
+#include <TLC59116_Unmanaged.h>
 
 extern TwoWire Wire;
 class TLC59116Manager;
@@ -46,8 +46,7 @@ class TLC59116Manager;
   - Output pins ("channels") are numbered 0..15.
   - Channels are "sinks", acting like Arduino pins that are LOW, even for PWM.
     - Connect the minus side of LEDs to the output pins.
-    - Instead of HIGH/LOW like DigitalWrite(), we use on/off/set.
-    - Channels are considered ON, OFF, , instead of HIGH/LOW (or, at some PWM value)
+    - Channels are considered ON, or OFF, instead of HIGH/LOW (or, at some PWM value)
     - PWM is 8 bit.
   - I2C addresses start at 0x60. See TLC59116_Unmanaged for the available addresses (up to 14).
   - The device provides a constant-current control (external and software settable).
@@ -403,7 +402,8 @@ class TLC59116 : public TLC59116_Unmanaged {
     */
     TLC59116& set_milliamps(byte ma, int Rext=Rext_Min); // Rext_Min ohms is 120ma at reset.
 
-    int milliamps(int Rext=Rext_Min) {return i_out(shadow_registers[IREF_Register]); } ///< The calculated current setting
+	// MUST call resync_shadow_registers or this will return stale data
+    int milliamps(int Rext=Rext_Min) {resync_shadow_registers(); return i_out(shadow_registers[IREF_Register], Rext); } ///< The calculated current setting
     ///@}
 
     // Error detect
@@ -446,7 +446,7 @@ class TLC59116 : public TLC59116_Unmanaged {
   private:
     // FIXME: move Power_Up_Register_Values to FLASH
     /// The state of the device on power-up/reset.
-    static const unsigned char Power_Up_Register_Values[TLC59116_Unmanaged::Control_Register_Max + 1] PROGMEM;
+    static const unsigned char Power_Up_Register_Values[TLC59116_Unmanaged::Control_Register_Max + 1];
 
     TLC59116Manager &manager; /// so we can find the manager for a few things
     // void (*on_reset)(byte /* manager[i] */); 
@@ -524,6 +524,14 @@ class TLC59116Manager {
 
   friend class TLC59116;
 
+  private:
+  	// Moved and reorderd the following to remove a ton of [-Wreorder] compile warnings. 
+	// Specific bus
+    TwoWire &i2cbus;
+	long init_frequency;
+    byte reset_actions;
+  
+  
   public:
     static const byte MaxDevicesPerI2C = 15; // 16 addresses - reset (subadr1..subadr3 and allcall can be disabled)
   
@@ -535,6 +543,7 @@ class TLC59116Manager {
     static const byte Already = 0b1000; // internal use, leave unset
 
     static const long Default_Frequency = 100000L; // default to 100khz, it's the default for Wire
+
 
     // Protocol: * Get a manager via a constructor
     // Simple constructor, uses Wire (standard I2C pins), 100khz bus speed, resets devices, and enables outputs
@@ -596,10 +605,6 @@ class TLC59116Manager {
     TLC59116Manager& operator=(const TLC59116Manager&); // undefined
     int scan(); // client code can't rescan
 
-    // Specific bus
-    TwoWire &i2cbus;
-    byte reset_actions;
-    long init_frequency;
 
     // Need to track extant
     TLC59116* devices[MaxDevicesPerI2C]; // that's 420 bytes of ram

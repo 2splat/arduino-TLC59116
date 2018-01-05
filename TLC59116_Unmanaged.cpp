@@ -4,7 +4,7 @@
 #define TLC59116_DEV 1
 #define TLC59116_WARNINGS 1
 
-#include "TLC59116_Unmanaged.h"
+#include <TLC59116_Unmanaged.h>
 #include <Wire.h>
 
 // The convenience method sometlc.delay(x) hides the normal delay. Use ::delay(...)
@@ -153,6 +153,9 @@ byte TLC59116_Unmanaged::i_out_d(byte CM, byte HC, byte D, int Rext) {
   return ((1.26 * ((1 + HC) * (1.0 + D/64.0) / 4.0)) / (double)Rext) * (CM ? 15 : 5) *1000;
   }
 
+  
+// TODO:  This value appears to calculate the setting correctly but it is not storing the setting correctly.
+//  Afterwards, if you call tlc.milliamps(x) the value returned appears to be 1/2 of expected.  (Test case, Rext=1000)
 byte TLC59116_Unmanaged::best_iref(byte ma, int Rext) {
   byte HC; // [6]
   byte CM; // [7]
