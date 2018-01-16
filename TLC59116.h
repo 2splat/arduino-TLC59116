@@ -446,7 +446,7 @@ class TLC59116 : public TLC59116_Unmanaged {
   private:
     // FIXME: move Power_Up_Register_Values to FLASH
     /// The state of the device on power-up/reset.
-    static const unsigned char Power_Up_Register_Values[TLC59116_Unmanaged::Control_Register_Max + 1];
+    static const unsigned char Power_Up_Register_Values[TLC59116_Unmanaged::Control_Register_Max + 1] PROGMEM;
 
     TLC59116Manager &manager; /// so we can find the manager for a few things
     // void (*on_reset)(byte /* manager[i] */); 
@@ -528,7 +528,7 @@ class TLC59116Manager {
   	// Moved and reorderd the following to remove a ton of [-Wreorder] compile warnings. 
 	// Specific bus
     TwoWire &i2cbus;
-	long init_frequency;
+    long init_frequency;
     byte reset_actions;
   
   
@@ -543,7 +543,6 @@ class TLC59116Manager {
     static const byte Already = 0b1000; // internal use, leave unset
 
     static const long Default_Frequency = 100000L; // default to 100khz, it's the default for Wire
-
 
     // Protocol: * Get a manager via a constructor
     // Simple constructor, uses Wire (standard I2C pins), 100khz bus speed, resets devices, and enables outputs
