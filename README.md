@@ -88,3 +88,4 @@ HTML documentation, with examples, and explanation:
 1. I2C scan function adapted from Nick Gammon (written 20th April 2011), http://www.gammon.com.au/forum/?id=10896&reply=6#reply6. Thanks Nick!
 2. Bug fix to milliamps(), and updated for Arduino 1.8+, by Red Byer aka github mizraith. Thanks!
 3. library.properties and keywords.txt fixes by perl1234
+4. more library.properties fixes by jmkao
