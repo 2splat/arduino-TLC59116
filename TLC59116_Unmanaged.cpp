@@ -194,8 +194,8 @@ byte TLC59116_Unmanaged::best_iref(byte ma, int Rext) {
         byte proposed = i_out_d(CMp, HCp, Dp, Rext);
         // The solutions overlap, so:
         if ( proposed >= actual) {
-		  actual = proposed;
-	      HC=HCp; CM=CMp; D=Dp;
+          actual = proposed;
+          HC=HCp; CM=CMp; D=Dp;
           }
         // printf("segment 3, actual %dma HC %d, CM %d, D %03o\n",actual, HC, CM, D);
         }
@@ -206,13 +206,15 @@ byte TLC59116_Unmanaged::best_iref(byte ma, int Rext) {
         }
       }
     }
+
   // Under conditions where Rext is set to properly limit max current (say 1k resistor for 20mA max output)
   // the above logic may result in a value for D which is greater than 63.   This value will then get
   // truncated by the reverse_cc() call (which only takes the lower 5 bits), effectively cutting your output
   // current setting in half.   It would be better to just rail D.   
   if (D > 63) {
-	D = 63;   
+    D = 63;   
     }  
+
   byte iref = 0;
   // CC (D reversed)
   iref = reverse_cc(D);

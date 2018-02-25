@@ -402,7 +402,8 @@ class TLC59116 : public TLC59116_Unmanaged {
     */
     TLC59116& set_milliamps(byte ma, int Rext=Rext_Min); // Rext_Min ohms is 120ma at reset.
 
-	// MUST call resync_shadow_registers or this will return stale data
+    // MUST call resync_shadow_registers or this will return stale data
+    // FIXME: store/update shadow-registers correctly rather than resync
     int milliamps(int Rext=Rext_Min) {resync_shadow_registers(); return i_out(shadow_registers[IREF_Register], Rext); } ///< The calculated current setting
     ///@}
 
@@ -525,8 +526,8 @@ class TLC59116Manager {
   friend class TLC59116;
 
   private:
-  	// Moved and reorderd the following to remove a ton of [-Wreorder] compile warnings. 
-	// Specific bus
+    // Moved and reorderd the following to remove a ton of [-Wreorder] compile warnings. 
+    // Specific bus
     TwoWire &i2cbus;
     long init_frequency;
     byte reset_actions;

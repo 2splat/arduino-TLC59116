@@ -4,7 +4,6 @@
 #define TLC59116_WARNINGS 1
 
 #include "TLC59116.h"
-// extern "C" void atexit( void ) { } // so I can have statics in a method, i.e. singleton
 
 // #define WARN Serial.print
 #define WARN TLC59116Warn
@@ -454,5 +453,3 @@ void TLC59116::Broadcast::propagate_register(byte register_num) {
   byte my_value = shadow_registers[register_num];
   for (byte i=0; i<= manager.device_ct; i++) { manager.devices[i]->shadow_registers[register_num]=my_value; }
   }
-
-
