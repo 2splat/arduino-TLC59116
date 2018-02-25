@@ -12,6 +12,7 @@
 */
 
 #include <Arduino.h>
+#include <HardwareSerial.h>
 #include <Wire.h> // Usage.Include+: You have to do this in your .ino also
 #include <avr/pgmspace.h> // Usage.Include+: You have to do this in your .ino also
 #include <TLC59116_Unmanaged.h>

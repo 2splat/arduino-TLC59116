@@ -59,6 +59,7 @@
 */
 
 #include <Arduino.h>
+#include <HardwareSerial.h>
 
 // Set this to 1/true for lowlevel debugging messages
 #ifndef TLC59116_LOWLEVEL
